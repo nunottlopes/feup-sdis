@@ -29,6 +29,13 @@ public class Peer {
             peer = new Peer(args);
     }
 
+    private static boolean checkArgs(String args[]) {
+        if(args.length != 9)
+            return false;
+        else
+            return true;
+    }
+
     private Peer(String args[]) {
         this.protocolVersion = args[0];
         this.peerID = Integer.parseInt(args[1]);
@@ -55,12 +62,5 @@ public class Peer {
         new Thread(this.MDB).start();
         new Thread(this.MDR).start();
 
-    }
-
-    private static boolean checkArgs(String args[]){
-        if(args.length != 9)
-            return false;
-        else
-            return true;
     }
 }
