@@ -12,8 +12,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class Peer {
 
     private static final int MAX_THREADS = 200;
+    private static final String ROOT = "peer"; // Final root should be ROOT + PeerID
+    private static final String BACKUP_FOLDER = "backup/";
+    private static final String RESTORE_FOLDER = "restore/";
 
     private static Peer instance;
+
 
     private String protocolVersion;
     private int peerID;
@@ -91,5 +95,13 @@ public class Peer {
 
     public int getId() {
         return peerID;
+    }
+
+    public String getBackupPath(int fileid) {
+        return ROOT + peerID + "/" + BACKUP_FOLDER + "fileId" + fileid;
+    }
+
+    public String getRestorePath(int fileid) {
+        return ROOT + peerID + "/" + RESTORE_FOLDER;
     }
 }

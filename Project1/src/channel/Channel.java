@@ -1,5 +1,7 @@
 package channel;
 
+import message.InvalidPacketException;
+import message.Message;
 import message.MessageHandler;
 import peer.Peer;
 
@@ -73,6 +75,8 @@ public class Channel implements Runnable{
                 Peer.getInstance().getPool().execute(new MessageHandler(packet));
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (InvalidPacketException e) {
+                System.out.println("Invalid Packet Received: " + e);
             }
         }
 

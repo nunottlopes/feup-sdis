@@ -6,8 +6,8 @@ public class MessageHandler implements Runnable {
 
     private Message msg;
 
-    public MessageHandler(DatagramPacket packet) {
-//        msg = Message(packet);
+    public MessageHandler(DatagramPacket packet) throws InvalidPacketException {
+        this.msg = new Message(packet);
 
     }
 

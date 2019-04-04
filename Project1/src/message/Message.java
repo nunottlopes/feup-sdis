@@ -27,15 +27,16 @@ public class Message {
 
     private byte[] body;
 
-    public Message(DatagramPacket packet) throws Exception {
+    public Message(DatagramPacket packet) throws InvalidPacketException {
         if(!parseHeader(packet.getData())) {
-            throw new Exception("Invalid Message Header!");
+            throw new InvalidPacketException("Invalid Message Header");
         }
 
         if (type == MessageType.PUTCHUNK || type == MessageType.CHUNK) {
-            parseBody(packet.getData(), packet.getData().length);
+            if(!parseBody(packet.getData(), packet.getData().length)) {
+                throw new InvalidPacketException("Invalid Message Body");
+            }
         }
-
     }
 
     private boolean parseHeader(byte[] data) {
@@ -81,8 +82,14 @@ public class Message {
         }
     }
 
-    private void parseBody(byte[] data, int data_length) {
-        this.body = Arrays.copyOfRange(data, header_length + 2 * CRLF.length(), data_length);
+    private boolean parseBody(byte[] data, int data_length) {
+        int from = header_length + 2 * CRLF.length();
+        int to   = data_length;
+
+        if(from > to) return false;
+
+        this.body = Arrays.copyOfRange(data, from, to);
+        return true;
     }
 
     private boolean parsePUTCHUNK(String[] fields) {

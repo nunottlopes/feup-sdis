@@ -21,34 +21,34 @@ class MessageTest {
         String data = "PUTCHUNK 1.0 1 2 3 4 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "   PUTCHUNK 1.0 1      2    3 4   " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "PUTCHUNK 1.0 1 2 3 4";
+            new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
+        });
+
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "PUTCHUNK 1.0 1 2 3 4 6 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "   PUTCHUNK 1.0 1     2 3    4 6 ";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "PUTCHUNK 1.0 a 2 3 4" + Message.CRLF + Message.CRLF + generateRandomBody(20);
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "PUTCHUNK 1.0 a 2 3 4 6 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
-            new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
-        });
-
-        assertThrows(Exception.class, () -> {
-            String m = "PUTCHUNK 1.0 1 2 3 a b ";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "PUTCHUNK 1.0 1 2 3 a";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -59,41 +59,41 @@ class MessageTest {
         String data = "STORED 1.0 2 3 4";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "   STORED   1.0 1      2    3   ";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "STORED 1.0 2 3 4 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "STORED 1.0 1 2 3 4 6";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "   STORED 1.0 1     2 3    6";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "STORED 1.0 1 2";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "STORED 1.0 a b c 4 6";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "STORED 1.0 a b c";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "STORED 1.0 1 2 aa 6";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "STORED 1.0 1 2 aa";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -104,41 +104,41 @@ class MessageTest {
         String data = "GETCHUNK 1.0 1 2 3";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "   GETCHUNK 1.0 1      2    3   ";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "GETCHUNK 1.0 1 2 3 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "GETCHUNK 1.0 1 2 3 4";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "   GETCHUNK 1.0 1     2 3    4 ";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "GETCHUNK 1.0 1 2";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "GETCHUNK 1.0 aa 2 bb 4";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "GETCHUNK 1.0 aa 2 bb ";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "GETCHUNK 1.0 bb v 3 4 ";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "GETCHUNK 1.0 bb v 3";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -149,34 +149,39 @@ class MessageTest {
         String data = "CHUNK 1.0 1 2 3 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "   CHUNK 1.0 1      2    3   " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "CHUNK 1.0 1 2 3";
+            new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
+        });
+
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "CHUNK 1.0 1 2 3 4 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "   CHUNK 1.0 1     2 3    4 6";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "CHUNK 1.0 1 2";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "CHUNK 1.0 aa 2 3 4 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "CHUNK 1.0 aa 2 3 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "CHUNK 1.0 1 2 v 4 6";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "CHUNK 1.0 1 2 v";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -187,41 +192,41 @@ class MessageTest {
         String data = "DELETE 1.0 1 2";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "   DELETE 1.0 1      2     ";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "DELETE 1.0 1 2" + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "DELETE 1.0 1 2 3";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "   DELETE 1.0 1     2 3    ";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "DELETE 1.0 1";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "DELETE 1.0 a 2 3";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "DELETE 1.0 a 2";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "DELETE 1.0 b 2 3";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "DELETE 1.0 1 b";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -232,41 +237,41 @@ class MessageTest {
         String data = "REMOVED 1.0 1 2 3";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "   REMOVED 1.0 1      2    3   ";
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
         data = "REMOVED 1.0 1 2 3 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
         try {
             new Message(new DatagramPacket(data.getBytes(), data.getBytes().length));
-        } catch (Exception e) {
+        } catch (InvalidPacketException e) {
             fail(e);
         }
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "REMOVED 1.0 1 2 3 4";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "   REMOVED 1.0 1     2 3    4";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "REMOVED 1.0 1 2";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "REMOVED 1.0 1 a b 4 " + Message.CRLF + Message.CRLF + generateRandomBody(20);
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "REMOVED 1.0 1 a b" + Message.CRLF + Message.CRLF + generateRandomBody(20);
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
-            String m = "REMOVED 1.0 a 2 3 b";
+        assertThrows(InvalidPacketException.class, () -> {
+            String m = "REMOVED 1.0 a 2";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -274,25 +279,24 @@ class MessageTest {
 
     @Test
     public void parseUnhandledMessage() {
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "   BBBB 1.0 1      2    3   ";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "AAAA 1.0 1 2 3";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "CHUNKA 1.0 1 2 3 4 " + Message.CRLF + Message.CRLF + "cljadjasjaslcjlsacjlascnacln";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
-        assertThrows(Exception.class, () -> {
+        assertThrows(InvalidPacketException.class, () -> {
             String m = "   GETDELETE 1.0 1     2 3    4 " + Message.CRLF + Message.CRLF + "cljadjasjaslcjlsacjlascnacln";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
-
     }
 }
