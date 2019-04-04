@@ -1,5 +1,8 @@
 package channel;
 
+import message.MessageHandler;
+import peer.Peer;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -26,9 +29,9 @@ public class Channel implements Runnable{
         this(address, port, type, 64000);
     }
 
-    public Channel(String address, int port, Type type, int CHUNCK_SIZE) {
+    public Channel(String address, int port, Type type, int CHUNK_SIZE) {
 
-        this.MAX_BUF_SIZE = CHUNCK_SIZE + CHANNEL_OFFSET;
+        this.MAX_BUF_SIZE = CHUNK_SIZE + CHANNEL_OFFSET;
         this.type = type;
 
         try {
@@ -58,15 +61,6 @@ public class Channel implements Runnable{
     }
 
 
-    public void sendMessage(String message){
-
-        try {
-            this.socket.send(new DatagramPacket(message.getBytes(), message.getBytes().length,this.address, this.port));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void run() {
         byte[] received_data = new byte[MAX_BUF_SIZE];
@@ -76,7 +70,7 @@ public class Channel implements Runnable{
         while(true) {
             try {
                 this.socket.receive(packet);
-                // TODO: HANDLE MSG
+                Peer.getInstance().getPool().execute(new MessageHandler(packet));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -84,5 +78,11 @@ public class Channel implements Runnable{
 
     }
 
+    public InetAddress getAddress() {
+        return address;
+    }
 
+    public int getPort() {
+        return port;
+    }
 }
