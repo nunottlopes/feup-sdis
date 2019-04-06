@@ -1,6 +1,7 @@
 package peer;
 
 import channel.Channel;
+import rmi.RemoteInterface;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,7 +10,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-public class Peer {
+public class Peer implements RemoteInterface {
 
     private static final int MAX_THREADS = 200;
     private static final String ROOT = "peer"; // Final root should be ROOT + PeerID
@@ -87,6 +88,26 @@ public class Peer {
                 message.getBytes().length,
                 channels.get(channel).getAddress(),
                 channels.get(channel).getPort()));
+    }
+
+    public void backup(String filepath, int replicationDegree) {
+        // TODO:
+    }
+
+    public void restore(String filepath) {
+        // TODO:
+    }
+
+    public void delete(String filepath) {
+        // TODO:
+    }
+
+    public void reclaim(int spaceReclaim) {
+        // TODO:
+    }
+
+    public void state() {
+        // TODO:
     }
 
     public ScheduledThreadPoolExecutor getPool() {
