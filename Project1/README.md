@@ -8,19 +8,19 @@ Compile:
 javac -d out/production/Project1 src/*/*.java
 ```
 
-Start RMI:
+Run RMI:
 ```
 > make rmi
 rmiregistry -J-Djava.class.path=out/production/Project1
 ```
 
-Start Peer:
+Run Peer:
 ```
 > make peer
 java -cp out/production/Project1 peer.Peer 2.0 1 Peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 ```
 
-Start TestApp:
+Run TestApp:
 
 ```
 > make backup
@@ -58,18 +58,18 @@ Compile:
 javac -d out/production/Project1 src/*/*.java
 ```
 
-Start RMI:
+Run RMI:
 ```
 > make rmi
 rmiregistry -J-Djava.class.path=out/production/Project1
 ```
 
-Start Peer:
+Run Peer:
 ```
 > java -cp out/production/Project1 peer.Peer <version> <server id> <access_point> <MC_IP_address> <MC_port> <MDB_IP_address> <MDB_port> <MDR_IP_address> <MDR_port>
 ```
 
-Start TestApp:
+Run TestApp:
 
 ```
 > java -cp out/production/Project1 test.TestApp <peer_access_point> BACKUP <file_path> <desired_replication_degree>
