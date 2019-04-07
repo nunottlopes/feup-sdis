@@ -7,8 +7,6 @@ import java.rmi.registry.Registry;
 
 public class TestApp {
 
-    private static String host = "localhost";
-
     public static void main(String[] args) {
         if(args.length < 2 || args.length > 4) {
             System.out.println("Usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");
@@ -20,7 +18,7 @@ public class TestApp {
             String subProtocol = args[1];
             String filePath;
 
-            Registry registry = LocateRegistry.getRegistry(host);
+            Registry registry = LocateRegistry.getRegistry();
             RemoteInterface stub = (RemoteInterface) registry.lookup(peerAccessPoint);
 
             switch (subProtocol.toLowerCase()) {
