@@ -3,6 +3,7 @@ package channel;
 import message.InvalidPacketException;
 import message.Message;
 import message.MessageHandler;
+import peer.Chunk;
 import peer.Peer;
 
 import java.io.IOException;
@@ -27,11 +28,11 @@ public class Channel implements Runnable{
     private int port;
     private MulticastSocket socket;
 
-    public Channel(String address, int port, Type type) {
-        this(address, port, type, 64000);
+    public Channel(String address, int port, Type type) throws IOException {
+        this(address, port, type, Chunk.MAX_SIZE);
     }
 
-    public Channel(String address, int port, Type type, int CHUNK_SIZE) {
+    public Channel(String address, int port, Type type, int CHUNK_SIZE) throws IOException {
 
         this.MAX_BUF_SIZE = CHUNK_SIZE + CHANNEL_OFFSET;
         this.type = type;
@@ -46,15 +47,11 @@ public class Channel implements Runnable{
         start();
     }
 
-    private void start() {
-        try {
-            this.socket = new MulticastSocket(this.port);
-            this.socket.setTimeToLive(1);
-            this.socket.joinGroup(this.address);
-            System.out.println("--- Started " + this.type + " Channel ---");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void start() throws IOException {
+        this.socket = new MulticastSocket(this.port);
+        this.socket.setTimeToLive(1);
+        this.socket.joinGroup(this.address);
+        System.out.println("--- Started " + this.type + " Channel ---");
     }
 
     public void close() {

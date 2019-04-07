@@ -1,5 +1,5 @@
 OUT_DIR := out/production/Project1
-TEST_FILE := random.pdf
+TEST_FILE := files/test
 TEST_APP_CLASS := test.TestApp
 PEER_CLASS := peer.Peer
 PEER_ACCESS_POINT := Peer1

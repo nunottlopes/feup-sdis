@@ -7,7 +7,6 @@ import peer.FileManager;
 import peer.Peer;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 
 public class Backup {
 
@@ -16,8 +15,7 @@ public class Backup {
     private String path;
     private Chunk chunk;
 
-    public Backup(Message msg){
-        System.out.println("PUTCHUNK received");
+    public Backup(Message msg) {
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
 
@@ -69,12 +67,6 @@ public class Backup {
         };
 
         Message msg = new Message(Message.MessageType.STORED, args);
-
-        Channel c = p.getChannel(Channel.Type.MC);
-        try {
-            p.getSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        p.send(Channel.Type.MC, msg, true);
     }
 }

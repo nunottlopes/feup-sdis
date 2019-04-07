@@ -31,7 +31,7 @@ public class Message {
         }
 
         if (type == MessageType.PUTCHUNK || type == MessageType.CHUNK) {
-            if(!parseBody(packet.getData(), packet.getData().length)) {
+            if(!parseBody(packet.getData(), packet.getLength())) {
                 throw new InvalidPacketException("Invalid Message Body");
             }
         }
@@ -60,6 +60,11 @@ public class Message {
             default:
 
         }
+    }
+
+    public Message(MessageType type, String[] args, byte[] body) {
+        this(type, args);
+        this.body = body;
     }
 
     private boolean parseHeader(byte[] data) {
@@ -233,7 +238,7 @@ public class Message {
         return body;
     }
 
-    public String getHeader() {
+    public String getHeaderString() {
         String str;
 
         switch (type) {
@@ -265,7 +270,7 @@ public class Message {
     }
 
     public byte[] getBytes() {
-        byte[] header = getHeader().getBytes();
+        byte[] header = getHeaderString().getBytes();
 
         if(body != null) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();

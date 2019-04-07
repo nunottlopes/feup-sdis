@@ -314,4 +314,19 @@ class MessageTest {
         assertNull(msg.getBody());
 
     }
+
+    @Test
+    public void makePUTCHUNK() {
+        String[] args = {"1.0", "1", "file1", "1", "3"};
+        Message msg = new Message(Message.MessageType.PUTCHUNK, args, generateRandomBody(300));
+
+        assertEquals(Message.MessageType.PUTCHUNK, msg.getType());
+        assertEquals("1.0", msg.getVersion());
+        assertEquals(1, msg.getSenderId());
+        assertEquals("file1", msg.getFileId());
+        assertEquals(1, msg.getChunkNo());
+        assertEquals(3, msg.getReplicationDeg());
+        assertNotNull(msg.getBody());
+
+    }
 }

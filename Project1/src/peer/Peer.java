@@ -1,17 +1,25 @@
 package peer;
 
 import channel.Channel;
+import message.Message;
+import protocol.InvalidProtocolExecution;
+import protocol.ProtocolInfo;
+import protocol.backup.BackupInitiator;
 import rmi.RemoteInterface;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Peer implements RemoteInterface {
 
@@ -22,6 +30,7 @@ public class Peer implements RemoteInterface {
 
     private static Peer instance;
     private FileManager fileManager;
+    private ProtocolInfo protocolInfo;
 
 
     private String protocolVersion;
@@ -32,10 +41,9 @@ public class Peer implements RemoteInterface {
     private DatagramSocket socket;
 
     private ScheduledThreadPoolExecutor pool;
+    private ScheduledExecutorService executor;
 
-    public static void main(String args[]) {
-        System.setProperty("java.net.preferIPv4Stack", "true");
-
+    public static void main(String args[]) throws IOException, AlreadyBoundException {
         if(!checkArgs(args)) {
             System.out.println("Usage: Java Peer <protocol version> <peer id> " +
                     "<service access point> <MCReceiver address> <MCReceiver port> <MDBReceiver address> " +
@@ -45,17 +53,13 @@ public class Peer implements RemoteInterface {
 
         Peer.instance = new Peer(args);
 
-        try {
-            // RMI Connection
-            RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
+        // RMI Connection
+        RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
 
-            Registry registry = LocateRegistry.getRegistry();
-            registry.bind(Peer.accessPoint, stub);
+        Registry registry = LocateRegistry.getRegistry();
+        registry.bind(Peer.accessPoint, stub);
 
-            System.out.println("--- Peer ready ---");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println("--- Peer ready ---");
     }
 
     private static boolean checkArgs(String args[]) {
@@ -73,20 +77,20 @@ public class Peer implements RemoteInterface {
             return null;
     }
 
+    public Peer(String args[]) throws IOException {
+        System.setProperty("java.net.preferIPv4Stack", "true");
 
-    private Peer(String args[]) {
         fileManager = new FileManager();
+        protocolInfo = new ProtocolInfo();
 
         this.protocolVersion = args[0];
         this.peerID = Integer.parseInt(args[1]);
         this.accessPoint = args[2];
         this.pool = new ScheduledThreadPoolExecutor(MAX_THREADS);
+        this.executor = Executors.newScheduledThreadPool(1);
 
-        try {
-            this.socket = new DatagramSocket();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
+        this.socket = new DatagramSocket();
+
 
         Channel MC = new Channel(args[3], Integer.parseInt(args[4]), Channel.Type.MC);
         Channel MDB = new Channel(args[5], Integer.parseInt(args[6]), Channel.Type.MDB);
@@ -102,17 +106,16 @@ public class Peer implements RemoteInterface {
         channels.put(Channel.Type.MDR, MDR);
     }
 
-    private void send(String message, Channel.Type channel) throws IOException {
-        this.socket.send(new DatagramPacket(
-                message.getBytes(),
-                message.getBytes().length,
-                channels.get(channel).getAddress(),
-                channels.get(channel).getPort()));
-    }
 
     public void backup(String filepath, int replicationDegree) {
-        System.out.println("BACKUP SERVICE -> FILE PATH = " + filepath + " REPLICATION DEGREEE = " + replicationDegree);
-        // TODO:
+        System.out.println("\n---- BACKUP SERVICE ---- FILE PATH = " + filepath + " | REPLICATION DEGREEE = " + replicationDegree);
+        BackupInitiator backupInitiator = new BackupInitiator(filepath, replicationDegree);
+        try {
+            backupInitiator.run();
+        } catch (InvalidProtocolExecution e) {
+            System.out.println(e);
+        }
+        System.out.println("---- FINISHED BACKUP SERVICE ----\n");
     }
 
     public void restore(String filepath) {
@@ -147,14 +150,6 @@ public class Peer implements RemoteInterface {
         return protocolVersion;
     }
 
-    public DatagramSocket getSocket() {
-        return socket;
-    }
-
-    public Channel getChannel(Channel.Type type) {
-        return channels.get(type);
-    }
-
     public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
 
     public String getRestorePath() {
@@ -162,4 +157,28 @@ public class Peer implements RemoteInterface {
     }
 
     public FileManager getFileManager() { return fileManager; }
+
+    public ProtocolInfo getProtocolInfo() {
+        return protocolInfo;
+    }
+
+    public synchronized void send(Channel.Type channel, Message msg, boolean delayed) {
+        int delay = 0;
+
+        if(delayed) {
+            Random r = new Random();
+            delay = r.nextInt(400);
+        }
+
+        Channel c = channels.get(channel);
+
+        executor.schedule(() -> {
+            try {
+                this.socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
+//                System.out.print("Sent: " + msg.getHeaderString());
+            } catch (IOException e) {
+                System.out.println("Error sending message to " + c.getAddress());
+            }
+        }, delay, TimeUnit.MILLISECONDS);
+    }
 }

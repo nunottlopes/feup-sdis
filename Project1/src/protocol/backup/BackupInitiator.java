@@ -1,6 +1,11 @@
 package protocol.backup;
 
+import channel.Channel;
+import message.Message;
+import peer.Chunk;
 import peer.Peer;
+import protocol.InvalidProtocolExecution;
+import protocol.ProtocolInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,26 +14,90 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class BackupInitiator {
 
+    public static final int MAX_NUM_CHUNKS = 1000000;
+    public static final int MAX_RETRANSMISSIONS = 5;
+
     private String path;
     private int repDegree;
+    private String fileId;
+    private File file;
 
     public BackupInitiator(String path, int repDegree) {
         this.path = path;
         this.repDegree = repDegree;
     }
 
-    public void run() {
-        File file = new File(path);
+    public void run() throws InvalidProtocolExecution {
+
+        byte[] data = getFileData();
+        fileId = generateFileId(file);
+
+        ArrayList<Chunk> chunks = splitIntoChunks(data);
+
+        if(!validBackup(repDegree, chunks.size())) return;
+
+        Peer.getInstance().getProtocolInfo().startBackup(fileId);
+
+        ArrayList<Thread> threads = new ArrayList<>(chunks.size());
+        for(Chunk c : chunks) {
+            Thread t = new Thread(() -> {
+                int delay = 1;
+
+                String[] args = {
+                        Peer.getInstance().getVersion(),
+                        Integer.toString(Peer.getInstance().getId()),
+                        fileId,
+                        Integer.toString(c.getChunkNo()),
+                        Integer.toString(c.getRepDegree())
+                };
+                Message msg = new Message(Message.MessageType.PUTCHUNK, args, c.getData());
 
 
-        FileInputStream in_stream = null;
+                ProtocolInfo status = Peer.getInstance().getProtocolInfo();
+
+                for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
+                    if(status.getChunkRepDegree(c.getFileId(), c.getChunkNo()) >= c.getRepDegree()) break;
+                    Peer.getInstance().send(Channel.Type.MDB, msg, false);
+
+                    try {
+                        TimeUnit.SECONDS.sleep(delay);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    delay *= 2;
+                }
+            });
+            threads.add(t);
+            t.start();
+        }
+
+        for(Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        Peer.getInstance().getProtocolInfo().endBackup(fileId);
+
+    }
+
+    private byte[] getFileData() throws InvalidProtocolExecution {
+        file = new File(path);
+
+
+        FileInputStream in_stream;
         try {
             in_stream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "File not found!");
         }
 
         byte[] data = new byte[(int) file.length()];
@@ -40,7 +109,44 @@ public class BackupInitiator {
             e.printStackTrace();
         }
 
-//        int chunks_num= file_data.length / (Chunk.MAX_SIZE) +1;
+        return data;
+
+    }
+
+    private boolean validBackup(int repDegree, int n_chunks) throws InvalidProtocolExecution {
+        if(repDegree > 9) {
+            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "Max number of replication degree is 9");
+        }
+        if(n_chunks > MAX_NUM_CHUNKS) {
+            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP,"Backup Error: Max file size is 64GBytes");
+        }
+        return true;
+    }
+
+    private ArrayList<Chunk> splitIntoChunks(byte[] data) {
+        ArrayList<Chunk> ret = new ArrayList<>();
+
+        int n = data.length / (Chunk.MAX_SIZE) + 1;
+
+        for(int i = 0; i < n; i++) {
+
+            byte[] chunk_data;
+
+            if(i == n-1) {
+                if(data.length % Chunk.MAX_SIZE ==0) {
+                    chunk_data= new byte[0];
+                } else {
+                    chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + (data.length % Chunk.MAX_SIZE));
+                }
+            } else {
+                chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + Chunk.MAX_SIZE);
+            }
+
+            Chunk chunk=new Chunk(fileId, i, repDegree, chunk_data);
+            ret.add(chunk);
+        }
+
+        return ret;
     }
 
     private String generateFileId(File f) {

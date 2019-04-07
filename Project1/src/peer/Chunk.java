@@ -2,7 +2,7 @@ package peer;
 
 public class Chunk {
 
-    private final static int MAX_SIZE = 64*1000;
+    public final static int MAX_SIZE = 64*1000;
 
     private String fileId;
     private int chunkNo;

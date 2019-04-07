@@ -6,19 +6,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static sun.java2d.pipe.BufferedOpCodes.SAVE_STATE;
-
 public class FileManager {
     public static final long MAX_CAPACITY = 8*1000000;
     private long free_mem;
     private long used_mem;
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk> > backedupChunks;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk> > chunksStored;
 
     public FileManager() {
         free_mem = MAX_CAPACITY;
         used_mem = 0;
-        backedupChunks = new ConcurrentHashMap<>();
+        chunksStored = new ConcurrentHashMap<>();
     }
 
     public void createFolder(String path) {
@@ -31,15 +29,15 @@ public class FileManager {
 
     public void addChunk(Chunk chunk) {
         ConcurrentHashMap<Integer, Chunk> chunks;
-        chunks = backedupChunks.getOrDefault(chunk.getFileId(), new ConcurrentHashMap<>());
+        chunks = chunksStored.getOrDefault(chunk.getFileId(), new ConcurrentHashMap<>());
         chunks.putIfAbsent(chunk.getChunkNo(), chunk);
 
-        backedupChunks.putIfAbsent(chunk.getFileId(), chunks);
+        chunksStored.putIfAbsent(chunk.getFileId(), chunks);
 
     }
 
     public boolean hasChunk(String fileId, int chunkNo) {
-        ConcurrentHashMap<Integer, Chunk> chunks = backedupChunks.get(fileId);
+        ConcurrentHashMap<Integer, Chunk> chunks = chunksStored.get(fileId);
 
         return chunks != null && chunks.containsKey(chunkNo);
     }
