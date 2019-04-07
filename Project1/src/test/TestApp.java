@@ -7,6 +7,8 @@ import java.rmi.registry.Registry;
 
 public class TestApp {
 
+    private static String host = "localhost";
+
     public static void main(String[] args) {
         if(args.length < 2 || args.length > 4) {
             System.out.println("Usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");
@@ -14,14 +16,9 @@ public class TestApp {
         }
 
         try {
-            String host = "localhost";
             String peerAccessPoint = args[0];
             String subProtocol = args[1];
             String filePath;
-
-//            if(!parseRMILocation(peerAccessPoint))
-//                System.out.println("Wrong Peer Access Point");
-//                return;
 
             Registry registry = LocateRegistry.getRegistry(host);
             RemoteInterface stub = (RemoteInterface) registry.lookup(peerAccessPoint);
@@ -75,10 +72,5 @@ public class TestApp {
             System.err.println("Client exception: " + e.toString());
             e.printStackTrace();
         }
-    }
-
-    private static boolean parseRMILocation(String accessPoint){
-        //TODO:
-        return false;
     }
 }
