@@ -17,6 +17,7 @@ public class TestApp {
             String peerAccessPoint = args[0];
             String subProtocol = args[1];
             String filePath;
+            String response = null;
 
             Registry registry = LocateRegistry.getRegistry();
             RemoteInterface stub = (RemoteInterface) registry.lookup(peerAccessPoint);
@@ -29,7 +30,7 @@ public class TestApp {
                     }
                     filePath = args[2];
                     int replicationDegree = Integer.parseInt(args[3]);
-                    stub.backup(filePath, replicationDegree);
+                    response = stub.backup(filePath, replicationDegree);
                     break;
                 case "restore":
                     if(args.length != 3){
@@ -37,7 +38,7 @@ public class TestApp {
                         return;
                     }
                     filePath = args[2];
-                    stub.restore(filePath);
+                    response = stub.restore(filePath);
                     break;
                 case "delete":
                     if(args.length != 3){
@@ -45,7 +46,7 @@ public class TestApp {
                         return;
                     }
                     filePath = args[2];
-                    stub.delete(filePath);
+                    response = stub.delete(filePath);
                     break;
                 case "reclaim":
                     if(args.length != 3){
@@ -53,19 +54,21 @@ public class TestApp {
                         return;
                     }
                     int spaceReclaim = Integer.parseInt(args[2]);
-                    stub.reclaim(spaceReclaim);
+                    response = stub.reclaim(spaceReclaim);
                     break;
                 case "state":
                     if(args.length != 2){
                         System.out.println("Usage: java TestApp <peer_ap> STATE");
                         return;
                     }
-                    stub.state();
+                    response = stub.state();
                     break;
                 default:
                     System.out.println("ERROR: <sub_protocol> can only be BACKUP, RESTORE, DELETE, RECLAIM OR STATE");
                     break;
             }
+
+            System.out.println("RESPONSE: "+ response);
         } catch (Exception e) {
             System.err.println("Client exception: " + e.toString());
             e.printStackTrace();

@@ -110,29 +110,39 @@ public class Peer implements RemoteInterface {
                 channels.get(channel).getPort()));
     }
 
-    public void backup(String filepath, int replicationDegree) {
+    public String backup(String filepath, int replicationDegree) {
         System.out.println("BACKUP SERVICE -> FILE PATH = " + filepath + " REPLICATION DEGREEE = " + replicationDegree);
         // TODO:
+
+        return "RESPONSE";
     }
 
-    public void restore(String filepath) {
+    public String restore(String filepath) {
         System.out.println("RESTORE SERVICE -> FILE PATH = " + filepath);
         // TODO:
+
+        return "RESPONSE";
     }
 
-    public void delete(String filepath) {
+    public String delete(String filepath) {
         System.out.println("DELETE SERVICE -> FILE PATH = " + filepath);
         // TODO:
+
+        return "RESPONSE";
     }
 
-    public void reclaim(int spaceReclaim) {
+    public String reclaim(int spaceReclaim) {
         System.out.println("RECLAIM SERVICE -> DISK SPACE RECLAIM = " + spaceReclaim);
         // TODO:
+
+        return "RESPONSE";
     }
 
-    public void state() {
+    public String state() {
         System.out.println("STATE SERVICE");
         // TODO:
+
+        return "RESPONSE";
     }
 
     public ScheduledThreadPoolExecutor getPool() {
