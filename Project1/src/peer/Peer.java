@@ -1,15 +1,19 @@
 package peer;
 
 import channel.Channel;
+import rmi.RemoteInterface;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-public class Peer {
+public class Peer implements RemoteInterface {
 
     private static final int MAX_THREADS = 200;
     private static final String ROOT = "peer"; // Final root should be ROOT + PeerID
@@ -22,7 +26,7 @@ public class Peer {
 
     private String protocolVersion;
     private int peerID;
-    private String accessPoint;
+    private static String accessPoint;
 
     private HashMap<Channel.Type, Channel> channels;
     private DatagramSocket socket;
@@ -32,12 +36,26 @@ public class Peer {
     public static void main(String args[]) {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
-        if(!checkArgs(args))
+        if(!checkArgs(args)) {
             System.out.println("Usage: Java Peer <protocol version> <peer id> " +
                     "<service access point> <MCReceiver address> <MCReceiver port> <MDBReceiver address> " +
                     "<MDBReceiver port> <MDRReceiver address> <MDRReceiver port>");
-        else
-            Peer.instance = new Peer(args);
+            return;
+        }
+
+        Peer.instance = new Peer(args);
+
+        try {
+            // RMI Connection
+            RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
+
+            Registry registry = LocateRegistry.getRegistry();
+            registry.bind(Peer.accessPoint, stub);
+
+            System.out.println("--- Peer ready ---");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static boolean checkArgs(String args[]) {
@@ -90,6 +108,31 @@ public class Peer {
                 message.getBytes().length,
                 channels.get(channel).getAddress(),
                 channels.get(channel).getPort()));
+    }
+
+    public void backup(String filepath, int replicationDegree) {
+        System.out.println("BACKUP SERVICE -> FILE PATH = " + filepath + " REPLICATION DEGREEE = " + replicationDegree);
+        // TODO:
+    }
+
+    public void restore(String filepath) {
+        System.out.println("RESTORE SERVICE -> FILE PATH = " + filepath);
+        // TODO:
+    }
+
+    public void delete(String filepath) {
+        System.out.println("DELETE SERVICE -> FILE PATH = " + filepath);
+        // TODO:
+    }
+
+    public void reclaim(int spaceReclaim) {
+        System.out.println("RECLAIM SERVICE -> DISK SPACE RECLAIM = " + spaceReclaim);
+        // TODO:
+    }
+
+    public void state() {
+        System.out.println("STATE SERVICE");
+        // TODO:
     }
 
     public ScheduledThreadPoolExecutor getPool() {
