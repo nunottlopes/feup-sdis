@@ -121,21 +121,39 @@ public class Peer implements RemoteInterface {
     public void restore(String filepath) {
         System.out.println("RESTORE SERVICE -> FILE PATH = " + filepath);
         // TODO:
+
     }
 
     public void delete(String filepath) {
         System.out.println("DELETE SERVICE -> FILE PATH = " + filepath);
         // TODO:
+
     }
 
-    public void reclaim(int spaceReclaim) {
+    public void reclaim(long spaceReclaim) {
         System.out.println("RECLAIM SERVICE -> DISK SPACE RECLAIM = " + spaceReclaim);
         // TODO:
+
     }
 
-    public void state() {
+    public String state() {
         System.out.println("STATE SERVICE");
         // TODO:
+
+//        - For each file whose backup it has initiated:
+//              The file pathname
+//              The backup service id of the file
+//              The desired replication degree
+//              For each chunk of the file:
+//                  Its id
+//                  Its perceived replication degree
+//        - For each chunk it stores:
+//              Its id
+//              Its size (in KBytes)
+//              Its perceived replication degree
+//        - The peer's storage capacity, i.e. the maximum amount of disk space that can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
+
+        // return "RESPONSE";
     }
 
     public ScheduledThreadPoolExecutor getPool() {
