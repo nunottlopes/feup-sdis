@@ -30,3 +30,6 @@ reclaim:
 
 state:
 	java -cp $(OUT_DIR) $(TEST_APP_CLASS) $(PEER_ACCESS_POINT) STATE
+
+snooper:
+	java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003

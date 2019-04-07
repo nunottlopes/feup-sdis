@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class Peer implements RemoteInterface {
 
     private static final int MAX_THREADS = 200;
-    private static final String ROOT = "peer"; // Final root should be ROOT + PeerID
+    private static final String ROOT = "database/peer"; // Final root should be ROOT + PeerID
     private static final String BACKUP_FOLDER = "backup/";
     private static final String RESTORE_FOLDER = "restore/";
 
@@ -153,7 +153,7 @@ public class Peer implements RemoteInterface {
 //              Its perceived replication degree
 //        - The peer's storage capacity, i.e. the maximum amount of disk space that can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
 
-        // return "RESPONSE";
+        return "RESPONSE";
     }
 
     public ScheduledThreadPoolExecutor getPool() {
