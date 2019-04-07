@@ -1,5 +1,7 @@
 package message;
 
+import protocol.backup.Backup;
+
 import java.net.DatagramPacket;
 
 public class MessageHandler implements Runnable {
@@ -13,6 +15,8 @@ public class MessageHandler implements Runnable {
 
     @Override
     public void run() {
-
+        if(this.msg.getType() == Message.MessageType.PUTCHUNK) {
+            new Backup(this.msg);
+        }
     }
 }

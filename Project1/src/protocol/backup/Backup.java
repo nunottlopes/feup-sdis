@@ -1,22 +1,80 @@
 package protocol.backup;
 
+import channel.Channel;
+import message.Message;
+import peer.Chunk;
+import peer.FileManager;
 import peer.Peer;
 
-public class Backup implements Runnable {
+import java.io.IOException;
+import java.net.DatagramPacket;
 
-    private Peer parent_peer;
-    private String request_message;
+public class Backup {
 
-    public Backup(Peer parent_peer, String request_message){
-        this.parent_peer = parent_peer;
-        this.request_message = request_message;
+    private Message msg;
+    private FileManager fm;
+    private String path;
+    private Chunk chunk;
 
-        System.out.println("Starting Backup Service");
+    public Backup(Message msg){
+        System.out.println("PUTCHUNK received");
+        this.msg = msg;
+        this.fm = Peer.getInstance().getFileManager();
+
+
+        if(msg.getSenderId() == Peer.getInstance().getId()) {
+            return;
+        }
+
+        if (!this.fm.hasChunk(msg.getFileId(), msg.getChunkNo())) {
+            path = Peer.getInstance().getBackupPath(msg.getFileId());
+            this.fm.createFolder(path);
+            start();
+        }
+
     }
 
+    private void start() {
+        chunk = new Chunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getReplicationDeg(), this.msg.getBody());
+        if(saveChunk()) {
+            sendSTORED();
+        }
 
-    @Override
-    public void run() {
+    }
 
+    private boolean saveChunk() {
+        boolean success;
+        try {
+            success = fm.saveFile(Integer.toString(chunk.getChunkNo()), path, chunk.getData());
+        } catch (IOException e) {
+            System.out.println("Error storing chunk");
+            return false;
+        }
+
+        if(success) {
+            fm.addChunk(chunk);
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    private synchronized void sendSTORED() {
+        Peer p = Peer.getInstance();
+        String[] args = {
+                p.getVersion(),
+                Integer.toString(p.getId()),
+                chunk.getFileId(),
+                Integer.toString(chunk.getChunkNo())
+        };
+
+        Message msg = new Message(Message.MessageType.STORED, args);
+
+        Channel c = p.getChannel(Channel.Type.MC);
+        try {
+            p.getSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -17,6 +17,7 @@ public class Peer {
     private static final String RESTORE_FOLDER = "restore/";
 
     private static Peer instance;
+    private FileManager fileManager;
 
 
     private String protocolVersion;
@@ -56,6 +57,8 @@ public class Peer {
 
 
     private Peer(String args[]) {
+        fileManager = new FileManager();
+
         this.protocolVersion = args[0];
         this.peerID = Integer.parseInt(args[1]);
         this.accessPoint = args[2];
@@ -97,11 +100,23 @@ public class Peer {
         return peerID;
     }
 
-    public String getBackupPath(int fileid) {
-        return ROOT + peerID + "/" + BACKUP_FOLDER + "fileId" + fileid;
+    public String getVersion() {
+        return protocolVersion;
     }
 
-    public String getRestorePath(int fileid) {
+    public DatagramSocket getSocket() {
+        return socket;
+    }
+
+    public Channel getChannel(Channel.Type type) {
+        return channels.get(type);
+    }
+
+    public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
+
+    public String getRestorePath() {
         return ROOT + peerID + "/" + RESTORE_FOLDER;
     }
+
+    public FileManager getFileManager() { return fileManager; }
 }

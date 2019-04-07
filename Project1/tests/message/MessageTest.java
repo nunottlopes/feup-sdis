@@ -221,12 +221,12 @@ class MessageTest {
         });
 
         assertThrows(InvalidPacketException.class, () -> {
-            String m = "DELETE 1.0 a 2";
+            String m = "DELETE 1.0 a a";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
         assertThrows(InvalidPacketException.class, () -> {
-            String m = "DELETE 1.0 1 b";
+            String m = "DELETE 1.0 a 1";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
 
@@ -298,5 +298,20 @@ class MessageTest {
             String m = "   GETDELETE 1.0 1     2 3    4 " + Message.CRLF + Message.CRLF + "cljadjasjaslcjlsacjlascnacln";
             new Message(new DatagramPacket(m.getBytes(), m.getBytes().length));
         });
+    }
+
+    @Test
+    public void makeSTORED() {
+        String[] args = {"1.0", "1", "file1", "1"};
+        Message msg = new Message(Message.MessageType.STORED, args);
+
+        assertEquals(Message.MessageType.STORED, msg.getType());
+        assertEquals("1.0", msg.getVersion());
+        assertEquals(1, msg.getSenderId());
+        assertEquals("file1", msg.getFileId());
+        assertEquals(1, msg.getChunkNo());
+        assertEquals(0, msg.getReplicationDeg());
+        assertNull(msg.getBody());
+
     }
 }

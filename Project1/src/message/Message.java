@@ -1,10 +1,8 @@
 package message;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.DatagramPacket;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Message {
@@ -20,8 +18,8 @@ public class Message {
     private MessageType type;
     private String version;
     private int senderId;
-    private int fileId;
-    private int chunckNo;
+    private String fileId;
+    private int chunkNo;
     private int replicationDeg;
     private int header_length;
 
@@ -36,6 +34,31 @@ public class Message {
             if(!parseBody(packet.getData(), packet.getData().length)) {
                 throw new InvalidPacketException("Invalid Message Body");
             }
+        }
+    }
+
+    public Message(MessageType type, String[] args) {
+        this.type = type;
+        ArrayList<String> list = new ArrayList<>();
+        list.addAll(Arrays.asList(args));
+        list.add(0, this.type.toString());
+        args = list.toArray(new String[list.size()]);
+
+        switch (type) {
+            case PUTCHUNK:
+                parsePUTCHUNK(args);
+            case STORED:
+                parseSTORED(args);
+            case GETCHUNK:
+                parseGETCHUNK(args);
+            case CHUNK:
+                parseCHUNK(args);
+            case DELETE:
+                parseDELETE(args);
+            case REMOVED:
+                parseREMOVED(args);
+            default:
+
         }
     }
 
@@ -94,13 +117,12 @@ public class Message {
 
     private boolean parsePUTCHUNK(String[] fields) {
         if(fields.length != 6) return false;
-        System.out.println("Received: PUTCHUNK " + version + " " + senderId + " " + fileId + " " + chunckNo + " " + replicationDeg);
 
         try {
             version = fields[1];
             senderId = Integer.parseInt(fields[2]);
-            fileId = Integer.parseInt(fields[3]);
-            chunckNo = Integer.parseInt(fields[4]);
+            fileId = fields[3];
+            chunkNo = Integer.parseInt(fields[4]);
             replicationDeg = Integer.parseInt(fields[5]);
         } catch (NumberFormatException e) {
             return false;
@@ -111,13 +133,12 @@ public class Message {
 
     private boolean parseSTORED(String[] fields) {
         if(fields.length != 5) return false;
-        System.out.println("Received: STORED " + version + " " + senderId + " " + fileId + " " + chunckNo);
 
         try {
             version = fields[1];
             senderId = Integer.parseInt(fields[2]);
-            fileId = Integer.parseInt(fields[3]);
-            chunckNo = Integer.parseInt(fields[4]);
+            fileId = fields[3];
+            chunkNo = Integer.parseInt(fields[4]);
         } catch (NumberFormatException e) {
             return false;
         }
@@ -127,13 +148,12 @@ public class Message {
 
     private boolean parseGETCHUNK(String[] fields) {
         if(fields.length != 5) return false;
-        System.out.println("Received: GETCHUNK " + version + " " + senderId + " " + fileId + " " + chunckNo);
 
         try {
             version = fields[1];
             senderId = Integer.parseInt(fields[2]);
-            fileId = Integer.parseInt(fields[3]);
-            chunckNo = Integer.parseInt(fields[4]);
+            fileId = fields[3];
+            chunkNo = Integer.parseInt(fields[4]);
         } catch (NumberFormatException e) {
             return false;
         }
@@ -143,13 +163,12 @@ public class Message {
 
     private boolean parseCHUNK(String[] fields) {
         if(fields.length != 5) return false;
-        System.out.println("Received: CHUNK " + version + " " + senderId + " " + fileId + " " + chunckNo);
 
         try {
             version = fields[1];
             senderId = Integer.parseInt(fields[2]);
-            fileId = Integer.parseInt(fields[3]);
-            chunckNo = Integer.parseInt(fields[4]);
+            fileId = fields[3];
+            chunkNo = Integer.parseInt(fields[4]);
         } catch (NumberFormatException e) {
             return false;
         }
@@ -159,12 +178,11 @@ public class Message {
 
     private boolean parseDELETE(String[] fields) {
         if(fields.length != 4) return false;
-        System.out.println("Received: DELETE " + version + " " + senderId + " " + fileId);
 
         version = fields[1];
         try {
             senderId = Integer.parseInt(fields[2]);
-            fileId = Integer.parseInt(fields[3]);
+            fileId = fields[3];
         } catch (NumberFormatException e) {
             return false;
         }
@@ -174,17 +192,93 @@ public class Message {
 
     private boolean parseREMOVED(String[] fields) {
         if(fields.length != 5) return false;
-        System.out.println("Received: REMOVED " + version + " " + senderId + " " + fileId + " " + chunckNo);
 
         try {
             version = fields[1];
             senderId = Integer.parseInt(fields[2]);
-            fileId = Integer.parseInt(fields[3]);
-            chunckNo = Integer.parseInt(fields[4]);
+            fileId = fields[3];
+            chunkNo = Integer.parseInt(fields[4]);
         } catch (NumberFormatException e) {
             return false;
         }
 
         return true;
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public int getSenderId() {
+        return senderId;
+    }
+
+    public String getFileId() {
+        return fileId;
+    }
+
+    public int getChunkNo() {
+        return chunkNo;
+    }
+
+    public int getReplicationDeg() {
+        return replicationDeg;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
+
+    public String getHeader() {
+        String str;
+
+        switch (type) {
+            case PUTCHUNK:
+                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + replicationDeg + " " + CRLF + CRLF;
+                break;
+            case STORED:
+                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
+                break;
+            case GETCHUNK:
+                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
+                break;
+            case CHUNK:
+                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
+                break;
+            case DELETE:
+                str = type + " " + version + " " + senderId + " " + fileId + CRLF + CRLF;
+                break;
+            case REMOVED:
+                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
+                break;
+            default:
+                str = "";
+                break;
+
+        }
+
+        return str;
+    }
+
+    public byte[] getBytes() {
+        byte[] header = getHeader().getBytes();
+
+        if(body != null) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try {
+                out.write(header);
+                out.write(body);
+            } catch (IOException e) {
+                System.out.println("Couldn't get Message bytes");
+            }
+
+            return out.toByteArray();
+        }
+
+        return header;
     }
 }
