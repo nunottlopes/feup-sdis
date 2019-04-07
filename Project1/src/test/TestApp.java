@@ -53,7 +53,7 @@ public class TestApp {
                         System.out.println("Usage: java TestApp <peer_ap> RECLAIM <disk_space_to_reclaim>");
                         return;
                     }
-                    int spaceReclaim = Integer.parseInt(args[2]);
+                    long spaceReclaim = Long.parseLong(args[2]);
                     response = stub.reclaim(spaceReclaim);
                     break;
                 case "state":
