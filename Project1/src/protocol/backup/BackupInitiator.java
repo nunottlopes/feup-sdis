@@ -7,6 +7,7 @@ import peer.Peer;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -62,7 +63,6 @@ public class BackupInitiator {
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    if(status.getChunkRepDegree(c.getFileId(), c.getChunkNo()) >= c.getRepDegree()) break;
                     Peer.getInstance().send(Channel.Type.MDB, msg, false);
 
                     try {
@@ -71,6 +71,9 @@ public class BackupInitiator {
                         e.printStackTrace();
                     }
                     delay *= 2;
+                    int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
+                    if(currentRepDegree >= c.getRepDegree()) break;
+//                    System.out.println("Desired Replication Degree not achieved (" + currentRepDegree + "/" + c.getRepDegree() + ") . Resending PUTCHUNK");
                 }
             });
             threads.add(t);
@@ -162,6 +165,6 @@ public class BackupInitiator {
             e.printStackTrace();
         }
         byte[] hash = digest.digest(s.getBytes(StandardCharsets.UTF_8));
-        return new String(hash);
+        return new HexBinaryAdapter().marshal(hash);
     }
 }
