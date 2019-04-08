@@ -2,34 +2,45 @@ OUT_DIR := out/production/Project1
 TEST_FILE := files/test
 TEST_APP_CLASS := test.TestApp
 PEER_CLASS := peer.Peer
-PEER_ACCESS_POINT := Peer1
 
 all: mkdir
-	javac -d $(OUT_DIR) src/*/*.java
+	javac -d $(OUT_DIR) src/*/*/*.java src/*/*.java
 
 mkdir:
 	@mkdir -p $(OUT_DIR)
 
-peer:
-	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 1 $(PEER_ACCESS_POINT) 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+peer1:
+	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 1 Peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+
+peer2:
+	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 2 Peer2 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+
+peer3:
+	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 3 Peer3 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+
+peer4:
+	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 4 Peer4 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
 rmi:
 	rmiregistry -J-Djava.class.path=$(OUT_DIR)
 
 backup:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) $(PEER_ACCESS_POINT) BACKUP $(TEST_FILE) 3
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 BACKUP $(TEST_FILE) 3
 
 restore:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) $(PEER_ACCESS_POINT) RESTORE $(TEST_FILE)
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 RESTORE $(TEST_FILE)
 
 delete:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) $(PEER_ACCESS_POINT) DELETE $(TEST_FILE)
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 DELETE $(TEST_FILE)
 
 reclaim:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) $(PEER_ACCESS_POINT) RECLAIM 12345
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 RECLAIM 12345
 
 state:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) $(PEER_ACCESS_POINT) STATE
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 STATE
 
 snooper:
 	java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003
+
+clean:
+	@rm -rf out/ database/
