@@ -16,6 +16,9 @@ public class Backup {
     private Chunk chunk;
 
     public Backup(Message msg) {
+
+        System.out.println("PUTCHUNK received");
+
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
 
@@ -28,6 +31,9 @@ public class Backup {
             path = Peer.getInstance().getBackupPath(msg.getFileId());
             this.fm.createFolder(path);
             start();
+        } else {
+            chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
+            sendSTORED();
         }
 
     }
@@ -57,16 +63,15 @@ public class Backup {
         return true;
     }
 
-    private synchronized void sendSTORED() {
-        Peer p = Peer.getInstance();
+    private void sendSTORED() {
         String[] args = {
-                p.getVersion(),
-                Integer.toString(p.getId()),
+                Peer.getInstance().getVersion(),
+                Integer.toString(Peer.getInstance().getId()),
                 chunk.getFileId(),
                 Integer.toString(chunk.getChunkNo())
         };
-
+        System.out.println("Stored");
         Message msg = new Message(Message.MessageType.STORED, args);
-        p.send(Channel.Type.MC, msg, true);
+        Peer.getInstance().send(Channel.Type.MC, msg, true);
     }
 }

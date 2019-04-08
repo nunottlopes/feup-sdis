@@ -22,7 +22,7 @@ public class MessageHandler implements Runnable {
         }
         if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
 //            System.out.print("Received: " + this.msg.getHeaderString());
-            Peer.getInstance().getProtocolInfo().incRepDegree(this.msg.getFileId(), this.msg.getChunkNo());
+            Peer.getInstance().getProtocolInfo().incRepDegree(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getSenderId());
         }
     }
 }

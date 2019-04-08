@@ -42,6 +42,10 @@ public class FileManager {
         return chunks != null && chunks.containsKey(chunkNo);
     }
 
+    public Chunk getChunk(String fileId, int chunkNo) {
+        return chunksStored.get(fileId).get(chunkNo);
+    }
+
     public boolean saveFile(String fileName, String path, byte[] data) throws IOException {
         long file_size = data.length;
 
