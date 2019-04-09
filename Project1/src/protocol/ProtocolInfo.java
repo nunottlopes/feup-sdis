@@ -1,12 +1,14 @@
 package protocol;
 
+import peer.Peer;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ProtocolInfo {
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer>> > chunksRepDegree;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > backupRepDegree;
 
     private boolean backingUp;
@@ -34,8 +36,11 @@ public class ProtocolInfo {
         }
 
         else {
-            chunksRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
-            chunksRepDegree.get(fileId).get(chunkNo).add(peerId);
+            if(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)) {
+                chunksRepDegree.putIfAbsent(fileId, new ConcurrentHashMap<>());
+                chunksRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+                chunksRepDegree.get(fileId).get(chunkNo).add(peerId);
+            }
         }
     }
 
