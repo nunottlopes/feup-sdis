@@ -88,7 +88,7 @@ public class BackupInitiator {
             }
         }
 
-        Peer.getInstance().getProtocolInfo().endBackup(fileId);
+        Peer.getInstance().getProtocolInfo().endBackup(fileId, this.repDegree, this.path);
 
     }
 

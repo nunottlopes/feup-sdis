@@ -2,8 +2,12 @@ package peer;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
@@ -12,11 +16,13 @@ public class FileManager {
     private long used_mem;
 
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk> > chunksStored;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk> > backedupFiles;
 
     public FileManager() {
         free_mem = MAX_CAPACITY;
         used_mem = 0;
         chunksStored = new ConcurrentHashMap<>();
+        backedupFiles = new ConcurrentHashMap<>();
     }
 
     public void createFolder(String path) {
@@ -33,7 +39,6 @@ public class FileManager {
         chunks.putIfAbsent(chunk.getChunkNo(), chunk);
 
         chunksStored.putIfAbsent(chunk.getFileId(), chunks);
-
     }
 
     public boolean hasChunk(String fileId, int chunkNo) {
@@ -66,5 +71,35 @@ public class FileManager {
         used_mem += file_size;
 
         return true;
+    }
+
+    public void updateChunkPerceivedRepDegree(String fileId, int chunkNo, int peerId){
+        Chunk chunk = chunksStored.get(fileId).get(chunkNo);
+        if (chunk != null)
+            chunk.addPerceivedRepDegreePeerId(peerId);
+    }
+
+    public void addBackedupChunk(String fileId, ConcurrentHashMap<Integer,Set<Integer>> perceivedRepDegreeList, int repDegree, String path) {
+        int chunkNo;
+        Chunk chunk;
+        ConcurrentHashMap<Integer, Chunk> chunks = new ConcurrentHashMap<>();
+        for (Map.Entry<Integer, Set<Integer>> item : perceivedRepDegreeList.entrySet()){
+            chunkNo = item.getKey();
+            chunk = new Chunk(fileId, chunkNo, repDegree, item.getValue());
+            chunks.putIfAbsent(chunkNo, chunk);
+        }
+        backedupFiles.putIfAbsent(path, chunks);
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> getBackedupFiles() {
+        return backedupFiles;
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> getChunksStored() {
+        return chunksStored;
+    }
+
+    public long getUsed_mem() {
+        return used_mem;
     }
 }

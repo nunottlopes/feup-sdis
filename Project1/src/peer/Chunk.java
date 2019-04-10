@@ -1,5 +1,8 @@
 package peer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Chunk {
 
     public final static int MAX_SIZE = 64*1000;
@@ -8,12 +11,26 @@ public class Chunk {
     private int chunkNo;
     private int repDegree;
     private byte[] data;
+    private Set<Integer> perceivedRepDegree;
 
     public Chunk(String fileId, int chunkNo, int repDegree, byte[] data) {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
         this.repDegree = repDegree;
         this.data = data;
+        this.perceivedRepDegree = new HashSet<>();
+        this.perceivedRepDegree.add(Peer.getInstance().getId());
+    }
+
+    public Chunk(String fileId, int chunkNo, int repDegree, Set<Integer> perceivedRepDegree) {
+        this.fileId = fileId;
+        this.chunkNo = chunkNo;
+        this.repDegree = repDegree;
+        this.perceivedRepDegree = perceivedRepDegree;
+    }
+
+    public int getPerceivedRepDegree() {
+        return perceivedRepDegree.size();
     }
 
     public String getFileId() {
@@ -30,5 +47,13 @@ public class Chunk {
 
     public byte[] getData() {
         return data;
+    }
+
+    public void addPerceivedRepDegreePeerId(int peerId){
+        this.perceivedRepDegree.add(peerId);
+    }
+
+    public int getSize(){
+        return data.length;
     }
 }

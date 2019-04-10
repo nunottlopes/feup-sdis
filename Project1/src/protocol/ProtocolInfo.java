@@ -24,8 +24,9 @@ public class ProtocolInfo {
         backupRepDegree.putIfAbsent(fileId, new ConcurrentHashMap<>());
     }
 
-    public void endBackup(String fileId) {
+    public void endBackup(String fileId, int repDegree, String path) {
         backingUp = false;
+        Peer.getInstance().getFileManager().addBackedupChunk(fileId, backupRepDegree.get(fileId), repDegree, path);
         backupRepDegree.remove(fileId);
     }
 
@@ -46,6 +47,7 @@ public class ProtocolInfo {
 
     public int getChunkRepDegree(String fileId, int chunkNo) {
         if(backingUp) {
+            backupRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
             return backupRepDegree.get(fileId).get(chunkNo).size();
         } else {
             if(chunksRepDegree.containsKey(fileId)) {
@@ -56,5 +58,13 @@ public class ProtocolInfo {
         }
 
         return 0;
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer>>> getBackupRepDegree() {
+        return backupRepDegree;
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer>>> getChunksRepDegree() {
+        return chunksRepDegree;
     }
 }

@@ -15,11 +15,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.concurrent.*;
 
 public class Peer implements RemoteInterface {
 
@@ -115,7 +114,7 @@ public class Peer implements RemoteInterface {
         } catch (InvalidProtocolExecution e) {
             System.out.println(e);
         }
-        System.out.println("---- FINISHED BACKUP SERVICE ----\n");
+        System.out.println("---- FINISHED BACKUP SERVICE ----");
     }
 
     public void restore(String filepath) {
@@ -137,23 +136,42 @@ public class Peer implements RemoteInterface {
     }
 
     public String state() {
-        System.out.println("STATE SERVICE");
+        System.out.println("\n---- STATE SERVICE ----");
         // TODO:
+        String ret = "INITIATED BACKUP FILES";
+        if(Peer.instance.getFileManager().getBackedupFiles().entrySet().size() == 0)
+            ret += "No file backup initialized here\n";
+        for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : Peer.instance.getFileManager().getBackedupFiles().entrySet()){
+            String path_name = item.getKey();
+            ConcurrentHashMap<Integer, Chunk> chunkMap = item.getValue();
+            String fileId = chunkMap.get(0).getFileId();
+            int desiredRepDegree = chunkMap.get(0).getRepDegree();
 
-//        - For each file whose backup it has initiated:
-//              The file pathname
-//              The backup service id of the file
-//              The desired replication degree
-//              For each chunk of the file:
-//                  Its id
-//                  Its perceived replication degree
-//        - For each chunk it stores:
-//              Its id
-//              Its size (in KBytes)
-//              Its perceived replication degree
+            ret += "\n> File Pathname = " + path_name + "\n> File ID = " + fileId + "\n> Desired Replication Degree= " + desiredRepDegree + "\n";
+
+            for(Integer chunkno : chunkMap.keySet()){
+                ret += "\t- Chunk ID = "+ chunkno + "\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+            }
+
+        }
+        ret += "\n\nSTORED CHUNKS";
+        if(Peer.instance.getFileManager().getChunksStored().entrySet().size() == 0)
+            ret += "No chunk stored here";
+        for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : Peer.instance.getFileManager().getChunksStored().entrySet()){
+            String fileId = item.getKey();
+            ConcurrentHashMap<Integer, Chunk> chunkMap = item.getValue();
+
+            ret += "\n> File ID = " + fileId + "\n";
+
+            for(Integer chunkno : chunkMap.keySet()){
+                ret += "\t- Chunk ID = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + "\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+            }
+
+        }
+
 //        - The peer's storage capacity, i.e. the maximum amount of disk space that can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
-
-        return "RESPONSE";
+        System.out.println("---- FINISHED STATE SERVICE ----");
+        return ret;
     }
 
     public ScheduledThreadPoolExecutor getPool() {

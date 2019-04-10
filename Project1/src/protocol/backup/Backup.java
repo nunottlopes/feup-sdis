@@ -49,14 +49,14 @@ public class Backup {
     private boolean saveChunk() {
         boolean success;
         try {
-            success = fm.saveFile(Integer.toString(chunk.getChunkNo()), path, chunk.getData());
+            success = this.fm.saveFile(Integer.toString(chunk.getChunkNo()), path, chunk.getData());
         } catch (IOException e) {
             System.out.println("Error storing chunk");
             return false;
         }
 
         if(success) {
-            fm.addChunk(chunk);
+            this.fm.addChunk(chunk);
         } else {
             return false;
         }

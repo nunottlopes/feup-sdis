@@ -61,7 +61,7 @@ public class TestApp {
                         return;
                     }
                     String response = stub.state();
-                    System.out.println("RESPONSE: "+ response);
+                    System.out.println(response);
                     break;
                 default:
                     System.out.println("ERROR: <sub_protocol> can only be BACKUP, RESTORE, DELETE, RECLAIM OR STATE");
