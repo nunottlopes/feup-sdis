@@ -102,4 +102,8 @@ public class FileManager {
     public long getUsed_mem() {
         return used_mem;
     }
+
+    public long getMaxMemory(){
+        return free_mem+used_mem;
+    }
 }

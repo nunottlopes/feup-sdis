@@ -137,11 +137,10 @@ public class Peer implements RemoteInterface {
 
     public String state() {
         System.out.println("\n---- STATE SERVICE ----");
-        // TODO:
         String ret = "INITIATED BACKUP FILES";
-        if(Peer.instance.getFileManager().getBackedupFiles().entrySet().size() == 0)
-            ret += "No file backup initialized here\n";
-        for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : Peer.instance.getFileManager().getBackedupFiles().entrySet()){
+        if(fileManager.getBackedupFiles().entrySet().size() == 0)
+            ret += "\nNo files backup initialized here\n";
+        for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : fileManager.getBackedupFiles().entrySet()){
             String path_name = item.getKey();
             ConcurrentHashMap<Integer, Chunk> chunkMap = item.getValue();
             String fileId = chunkMap.get(0).getFileId();
@@ -155,21 +154,20 @@ public class Peer implements RemoteInterface {
 
         }
         ret += "\n\nSTORED CHUNKS";
-        if(Peer.instance.getFileManager().getChunksStored().entrySet().size() == 0)
-            ret += "No chunk stored here";
-        for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : Peer.instance.getFileManager().getChunksStored().entrySet()){
+        if(fileManager.getChunksStored().entrySet().size() == 0)
+            ret += "\nNo chunks stored here";
+        for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : fileManager.getChunksStored().entrySet()){
             String fileId = item.getKey();
             ConcurrentHashMap<Integer, Chunk> chunkMap = item.getValue();
 
             ret += "\n> File ID = " + fileId + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
-                ret += "\t- Chunk ID = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + "\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+                ret += "\t- Chunk ID = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + " Bytes\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
             }
 
         }
-
-//        - The peer's storage capacity, i.e. the maximum amount of disk space that can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
+        ret += "\nPEER STORAGE\n> Peer Max Memory = " + (fileManager.getMaxMemory()/1000) + " KBytes\n> Used Memory = " + (fileManager.getUsed_mem()/1000) + " KBytes\n";
         System.out.println("---- FINISHED STATE SERVICE ----");
         return ret;
     }
