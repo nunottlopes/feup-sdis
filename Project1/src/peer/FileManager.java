@@ -2,15 +2,14 @@ package peer;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class FileManager {
+public class FileManager implements Serializable {
     public static final long MAX_CAPACITY = 8*1000000;
     private long free_mem;
     private long used_mem;

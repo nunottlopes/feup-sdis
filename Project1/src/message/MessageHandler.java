@@ -18,9 +18,11 @@ public class MessageHandler implements Runnable {
     public void run() {
         if(this.msg.getType() == Message.MessageType.PUTCHUNK && msg.getSenderId() != Peer.getInstance().getId()) {
             new Backup(this.msg);
+            Peer.getInstance().writePeerToFile();
         }
         if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
             Peer.getInstance().getProtocolInfo().incRepDegree(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getSenderId());
+            Peer.getInstance().writePeerToFile();
         }
     }
 }

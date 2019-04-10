@@ -7,7 +7,7 @@ import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
 import rmi.RemoteInterface;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.rmi.AlreadyBoundException;
@@ -23,14 +23,14 @@ import java.util.concurrent.*;
 public class Peer implements RemoteInterface {
 
     private static final int MAX_THREADS = 200;
-    private static final String ROOT = "database/peer"; // Final root should be ROOT + PeerID
+    private static final String ROOT_CHUNKS = "database/chunks/peer"; // Final chunk root should be ROOT_CHUNKS + PeerID
     private static final String BACKUP_FOLDER = "backup/";
     private static final String RESTORE_FOLDER = "restore/";
+    private static final String ROOT_PEERS = "database/peers/";
 
     private static Peer instance;
     private FileManager fileManager;
     private ProtocolInfo protocolInfo;
-
 
     private String protocolVersion;
     private int peerID;
@@ -79,12 +79,15 @@ public class Peer implements RemoteInterface {
     public Peer(String args[]) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
-        fileManager = new FileManager();
-        protocolInfo = new ProtocolInfo();
-
         this.protocolVersion = args[0];
         this.peerID = Integer.parseInt(args[1]);
         this.accessPoint = args[2];
+
+        if(!loadPeerFromFile()){
+            fileManager = new FileManager();
+            protocolInfo = new ProtocolInfo();
+        }
+
         this.pool = new ScheduledThreadPoolExecutor(MAX_THREADS);
         this.executor = Executors.newScheduledThreadPool(1);
 
@@ -114,6 +117,7 @@ public class Peer implements RemoteInterface {
         } catch (InvalidProtocolExecution e) {
             System.out.println(e);
         }
+        writePeerToFile();
         System.out.println("---- FINISHED BACKUP SERVICE ----");
     }
 
@@ -121,18 +125,21 @@ public class Peer implements RemoteInterface {
         System.out.println("RESTORE SERVICE -> FILE PATH = " + filepath);
         // TODO:
 
+        writePeerToFile();
     }
 
     public void delete(String filepath) {
         System.out.println("DELETE SERVICE -> FILE PATH = " + filepath);
         // TODO:
 
+        writePeerToFile();
     }
 
     public void reclaim(long spaceReclaim) {
         System.out.println("RECLAIM SERVICE -> DISK SPACE RECLAIM = " + spaceReclaim);
         // TODO:
 
+        writePeerToFile();
     }
 
     public String state() {
@@ -172,6 +179,47 @@ public class Peer implements RemoteInterface {
         return ret;
     }
 
+    public boolean loadPeerFromFile(){
+        try {
+            FileInputStream fis_filemanager = new FileInputStream(new File(getStoredFileManagerFilePath()));
+            ObjectInputStream ois_filemanager = new ObjectInputStream(fis_filemanager);
+            fileManager = (FileManager) ois_filemanager.readObject();
+
+            FileInputStream fis_protocolinfo = new FileInputStream(new File(getStoredProtocolInfoFilePath()));
+            ObjectInputStream ois_protocolinfo = new ObjectInputStream(fis_protocolinfo);
+            protocolInfo = (ProtocolInfo) ois_protocolinfo.readObject();
+
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public void writePeerToFile(){
+        File directory = new File(ROOT_PEERS);
+        if(!directory.exists())
+            directory.mkdirs();
+        try {
+            FileOutputStream fos_filemanager = new FileOutputStream(new File(getStoredFileManagerFilePath()));
+            ObjectOutputStream oos_filemanager = new ObjectOutputStream(fos_filemanager);
+            oos_filemanager.writeObject(fileManager);
+
+            FileOutputStream fos_protocolinfo = new FileOutputStream(new File(getStoredProtocolInfoFilePath()));
+            ObjectOutputStream oos_protocolinfo = new ObjectOutputStream(fos_protocolinfo);
+            oos_protocolinfo.writeObject(protocolInfo);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ScheduledThreadPoolExecutor getPool() {
         return pool;
     }
@@ -184,10 +232,18 @@ public class Peer implements RemoteInterface {
         return protocolVersion;
     }
 
-    public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
+    public String getStoredFileManagerFilePath(){
+        return ROOT_PEERS + "peer" + peerID + "-file_manager";
+    }
+
+    public String getStoredProtocolInfoFilePath(){
+        return ROOT_PEERS + "peer" + peerID + "-protocol_info";
+    }
+
+    public String getBackupPath(String fileid) { return ROOT_CHUNKS + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
 
     public String getRestorePath() {
-        return ROOT + peerID + "/" + RESTORE_FOLDER;
+        return ROOT_CHUNKS + peerID + "/" + RESTORE_FOLDER;
     }
 
     public FileManager getFileManager() { return fileManager; }
