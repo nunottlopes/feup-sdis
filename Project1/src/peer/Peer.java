@@ -167,7 +167,7 @@ public class Peer implements RemoteInterface {
             }
 
         }
-        ret += "\nPEER STORAGE\n> Peer Max Memory = " + (fileManager.getMaxMemory()/1000) + " KBytes\n> Used Memory = " + (fileManager.getUsed_mem()/1000) + " KBytes\n";
+        ret += "\n\nPEER STORAGE\n> Peer Max Memory = " + (fileManager.getMaxMemory()/1000) + " KBytes\n> Used Memory = " + (fileManager.getUsed_mem()/1000) + " KBytes\n";
         System.out.println("---- FINISHED STATE SERVICE ----");
         return ret;
     }

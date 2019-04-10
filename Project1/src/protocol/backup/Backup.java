@@ -17,7 +17,9 @@ public class Backup {
 
     public Backup(Message msg) {
 
-        System.out.println("PUTCHUNK received");
+        System.out.println("\n> PUTCHUNK received");
+        System.out.println("- File Id = " + msg.getFileId());
+        System.out.println("- Chunk No = " + msg.getChunkNo());
 
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
@@ -70,7 +72,11 @@ public class Backup {
                 chunk.getFileId(),
                 Integer.toString(chunk.getChunkNo())
         };
-        System.out.println("Stored");
+
+        System.out.println("\n> STORED");
+        System.out.println("- File Id = " + chunk.getFileId());
+        System.out.println("- Chunk No = " + chunk.getChunkNo());
+
         Message msg = new Message(Message.MessageType.STORED, args);
         Peer.getInstance().send(Channel.Type.MC, msg, true);
     }

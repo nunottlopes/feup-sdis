@@ -43,6 +43,8 @@ public class ProtocolInfo {
                 chunksRepDegree.get(fileId).get(chunkNo).add(peerId);
             }
         }
+
+        Peer.getInstance().getFileManager().updateChunkPerceivedRepDegree(fileId, chunkNo, peerId);
     }
 
     public int getChunkRepDegree(String fileId, int chunkNo) {

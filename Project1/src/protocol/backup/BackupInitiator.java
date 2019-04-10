@@ -73,7 +73,6 @@ public class BackupInitiator {
                     delay *= 2;
                     int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
                     if(currentRepDegree >= c.getRepDegree()) break;
-//                    System.out.println("Desired Replication Degree not achieved (" + currentRepDegree + "/" + c.getRepDegree() + ") . Resending PUTCHUNK");
                 }
             });
             threads.add(t);
