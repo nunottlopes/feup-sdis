@@ -13,12 +13,14 @@ public class Chunk implements Serializable {
     private int repDegree;
     private byte[] data;
     private Set<Integer> perceivedRepDegree;
+    private int size;
 
     public Chunk(String fileId, int chunkNo, int repDegree, byte[] data) {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
         this.repDegree = repDegree;
         this.data = data;
+        this.size = data.length;
         this.perceivedRepDegree = new HashSet<>();
         this.perceivedRepDegree.add(Peer.getInstance().getId());
     }
@@ -50,11 +52,16 @@ public class Chunk implements Serializable {
         return data;
     }
 
+    public int getSize(){
+        return size;
+    }
+
+    public void clearData(){
+        data = null;
+    }
+
     public void addPerceivedRepDegreePeerId(int peerId){
         this.perceivedRepDegree.add(peerId);
     }
 
-    public int getSize(){
-        return data.length;
-    }
 }
