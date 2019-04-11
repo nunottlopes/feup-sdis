@@ -2,7 +2,6 @@ package globals;
 
 import peer.Peer;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
