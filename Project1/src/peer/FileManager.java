@@ -35,6 +35,7 @@ public class FileManager implements Serializable {
     public void addChunk(Chunk chunk) {
         ConcurrentHashMap<Integer, Chunk> chunks;
         chunks = chunksStored.getOrDefault(chunk.getFileId(), new ConcurrentHashMap<>());
+        chunk.clearData();
         chunks.putIfAbsent(chunk.getChunkNo(), chunk);
 
         chunksStored.putIfAbsent(chunk.getFileId(), chunks);

@@ -23,10 +23,10 @@ import java.util.concurrent.*;
 public class Peer implements RemoteInterface {
 
     private static final int MAX_THREADS = 200;
-    private static final String ROOT_CHUNKS = "database/chunks/peer"; // Final chunk root should be ROOT_CHUNKS + PeerID
+    private static final String ROOT = "database/peer"; // Final root should be ROOT + PeerID
     private static final String BACKUP_FOLDER = "backup/";
     private static final String RESTORE_FOLDER = "restore/";
-    private static final String ROOT_PEERS = "database/peers/";
+    private static final String STATE_FOLDER = "state/";
 
     private static Peer instance;
     private FileManager fileManager;
@@ -201,7 +201,7 @@ public class Peer implements RemoteInterface {
     }
 
     public void writePeerToFile(){
-        File directory = new File(ROOT_PEERS);
+        File directory = new File(ROOT + peerID + "/" + STATE_FOLDER);
         if(!directory.exists())
             directory.mkdirs();
         try {
@@ -233,17 +233,17 @@ public class Peer implements RemoteInterface {
     }
 
     public String getStoredFileManagerFilePath(){
-        return ROOT_PEERS + "peer" + peerID + "-file_manager";
+        return ROOT + peerID + "/" + STATE_FOLDER + "file_manager";
     }
 
     public String getStoredProtocolInfoFilePath(){
-        return ROOT_PEERS + "peer" + peerID + "-protocol_info";
+        return ROOT + peerID + "/" + STATE_FOLDER + "protocol_info";
     }
 
-    public String getBackupPath(String fileid) { return ROOT_CHUNKS + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
+    public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
 
     public String getRestorePath() {
-        return ROOT_CHUNKS + peerID + "/" + RESTORE_FOLDER;
+        return ROOT + peerID + "/" + RESTORE_FOLDER;
     }
 
     public FileManager getFileManager() { return fileManager; }
