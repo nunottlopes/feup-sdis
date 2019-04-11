@@ -1,20 +1,17 @@
 package protocol.backup;
 
 import channel.Channel;
+import globals.Globals;
 import message.Message;
 import peer.Chunk;
 import peer.Peer;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +34,7 @@ public class BackupInitiator {
     public void run() throws InvalidProtocolExecution {
 
         byte[] data = getFileData();
-        fileId = generateFileId(file);
+        fileId = Globals.generateFileId(file);
 
         ArrayList<Chunk> chunks = splitIntoChunks(data);
 
@@ -151,19 +148,4 @@ public class BackupInitiator {
         return ret;
     }
 
-    private String generateFileId(File f) {
-        String file_id = f.getName() + f.lastModified() + Peer.getInstance().getId();
-        return sha256(file_id);
-    }
-
-    public String sha256(String s) {
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        byte[] hash = digest.digest(s.getBytes(StandardCharsets.UTF_8));
-        return new HexBinaryAdapter().marshal(hash);
-    }
 }

@@ -5,6 +5,7 @@ import message.Message;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
+import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
 
 import java.io.IOException;
@@ -118,8 +119,14 @@ public class Peer implements RemoteInterface {
     }
 
     public void restore(String filepath) {
-        System.out.println("RESTORE SERVICE -> FILE PATH = " + filepath);
-        // TODO:
+        System.out.println("\n----- RESTORE SERVICE ----- FILE PATH = " + filepath);
+        RestoreInitiator restoreInitiator = new RestoreInitiator(filepath);
+        try {
+            restoreInitiator.run();
+        } catch (InvalidProtocolExecution e) {
+            System.out.println(e);
+        }
+        System.out.println("---- FINISHED BACKUP SERVICE ----");
 
     }
 
