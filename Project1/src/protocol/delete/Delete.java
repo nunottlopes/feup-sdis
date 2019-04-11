@@ -1,7 +1,14 @@
 package protocol.delete;
 
 import message.Message;
+import peer.FileManager;
 
 public class Delete {
-    public Delete(Message msg) {}
+
+    private Message msg;
+    private FileManager fm;
+
+    public Delete(Message msg) {
+        this.msg = msg;
+    }
 }
