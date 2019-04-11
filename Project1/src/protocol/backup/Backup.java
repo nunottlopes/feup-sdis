@@ -7,6 +7,8 @@ import peer.FileManager;
 import peer.Peer;
 
 import java.io.IOException;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class Backup {
 
@@ -42,9 +44,16 @@ public class Backup {
 
     private void start() {
         chunk = new Chunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getReplicationDeg(), this.msg.getBody());
-        if(saveChunk()) {
-            sendSTORED();
-        }
+
+        Random r = new Random();
+        int delay = r.nextInt(400);
+        Peer.getInstance().getExecutor().schedule(() -> {
+            if(Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
+                if(saveChunk()) {
+                    sendSTORED();
+                }
+            }
+        }, delay, TimeUnit.MILLISECONDS);
 
     }
 
@@ -78,6 +87,9 @@ public class Backup {
         System.out.println("- Chunk No = " + chunk.getChunkNo());
 
         Message msg = new Message(Message.MessageType.STORED, args);
-        Peer.getInstance().send(Channel.Type.MC, msg, true);
+
+
+        Peer.getInstance().send(Channel.Type.MC, msg);
+
     }
 }

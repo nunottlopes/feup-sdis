@@ -14,12 +14,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class BackupInitiator {
 
     public static final int MAX_NUM_CHUNKS = 1000000;
     public static final int MAX_RETRANSMISSIONS = 5;
+
+    private ThreadPoolExecutor pool;
 
     private String path;
     private int repDegree;
@@ -29,6 +34,7 @@ public class BackupInitiator {
     public BackupInitiator(String path, int repDegree) {
         this.path = path;
         this.repDegree = repDegree;
+        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(500);
     }
 
     public void run() throws InvalidProtocolExecution {
@@ -42,9 +48,10 @@ public class BackupInitiator {
 
         Peer.getInstance().getProtocolInfo().startBackup(fileId);
 
-        ArrayList<Thread> threads = new ArrayList<>(chunks.size());
+        CountDownLatch latch = new CountDownLatch(chunks.size());
+
         for(Chunk c : chunks) {
-            Thread t = new Thread(() -> {
+            pool.execute(() -> {
                 int delay = 1;
 
                 String[] args = {
@@ -60,7 +67,7 @@ public class BackupInitiator {
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    Peer.getInstance().send(Channel.Type.MDB, msg, false);
+                    Peer.getInstance().send(Channel.Type.MDB, msg);
 
                     try {
                         TimeUnit.SECONDS.sleep(delay);
@@ -71,18 +78,17 @@ public class BackupInitiator {
                     int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
                     if(currentRepDegree >= c.getRepDegree()) break;
                 }
+
+                latch.countDown();
             });
-            threads.add(t);
-            t.start();
         }
 
-        for(Thread t : threads) {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
 
         Peer.getInstance().getProtocolInfo().endBackup(fileId, this.repDegree, this.path);
 

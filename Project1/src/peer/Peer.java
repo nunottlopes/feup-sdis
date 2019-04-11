@@ -259,23 +259,18 @@ public class Peer implements RemoteInterface {
         return protocolInfo;
     }
 
-    public synchronized void send(Channel.Type channel, Message msg, boolean delayed) {
-        int delay = 0;
+    public ScheduledExecutorService getExecutor() {
+        return executor;
+    }
 
-        if(delayed) {
-            Random r = new Random();
-            delay = r.nextInt(400);
-        }
-
+    public synchronized void send(Channel.Type channel, Message msg) {
         Channel c = channels.get(channel);
 
-        executor.schedule(() -> {
-            try {
-                this.socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
-//                System.out.print("Sent: " + msg.getHeaderString());
-            } catch (IOException e) {
-                System.out.println("Error sending message to " + c.getAddress());
-            }
-        }, delay, TimeUnit.MILLISECONDS);
+        try {
+            this.socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
+            //       System.out.print("Sent: " + msg.getHeaderString());
+        } catch (IOException e) {
+            System.out.println("Error sending message to " + c.getAddress());
+        }
     }
 }
