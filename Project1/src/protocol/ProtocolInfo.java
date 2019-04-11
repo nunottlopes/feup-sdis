@@ -2,11 +2,12 @@ package protocol;
 
 import peer.Peer;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ProtocolInfo {
+public class ProtocolInfo implements Serializable {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > backupRepDegree;

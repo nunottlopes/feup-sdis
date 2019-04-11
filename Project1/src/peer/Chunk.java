@@ -1,9 +1,10 @@
 package peer;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Chunk {
+public class Chunk implements Serializable {
 
     public final static int MAX_SIZE = 64*1000;
 
