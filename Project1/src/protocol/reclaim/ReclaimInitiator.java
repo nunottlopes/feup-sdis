@@ -3,10 +3,12 @@ package protocol.reclaim;
 import channel.Channel;
 import message.Message;
 import peer.Chunk;
+import peer.ChunkComparator;
 import peer.FileManager;
 import peer.Peer;
-import protocol.InvalidProtocolExecution;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ReclaimInitiator {
@@ -19,17 +21,48 @@ public class ReclaimInitiator {
         this.fm = Peer.getInstance().getFileManager();
     }
 
-    public void run() throws InvalidProtocolExecution {
+    public void run() {
         if(spaceReclaim == 0){
-            // reclaim all the disk space being used by the service
+            // Reclaim all the disk space being used by the service / Delete all chunks
             deleteAllChunks();
+            System.out.println("Removed all stored chunks");
         }
         else if(fm.getUsed_mem() < spaceReclaim){
-            // only need to reduce free mem available for peer file manager
+            // Only need to reduce free mem available for peer file manager
             fm.updateFreeMem(spaceReclaim);
+            System.out.println("Only updated storage size");
         }
         else{
-            //TODO: algorithm to choose which chunks to delete in order to have the space reclaim asked
+            // Choosing best chunks to be removed in order to reduce peer memory
+            removeNecessaryChunks();
+        }
+    }
+
+    private void removeNecessaryChunks() {
+        List<Chunk> chunks = fm.getAllStoredChunks();
+
+        // SORT ORDER:
+        // -> First the chunks that have greater perceived replication degree than desired replication degree
+        // -> Second the chunks that have the same perceived replication degree and desired replication degree
+        // -> Third the chunks that have less perceived replication degree than desired replication degree
+        // NOTE: Inside each case the chunks are ordered by greater data size
+        Collections.sort(chunks, new ChunkComparator());
+
+        int i = 0;
+        Chunk chunk;
+        String path, fileId;
+        int chunkNo;
+        while (fm.getUsed_mem() > spaceReclaim){
+            chunk = chunks.get(i);
+            chunkNo = chunk.getChunkNo();
+            fileId = chunk.getFileId();
+            path = Peer.getInstance().getBackupPath(fileId);
+            fm.removeChunkFile(path, Integer.toString(chunkNo));
+            fm.removeChunk(chunk.getFileId(), chunkNo);
+            fm.removeFolderIfEmpty(path);
+            fm.updateFreeMem(spaceReclaim); //To avoid doing backup of delete filed
+            sendREMOVED(fileId, chunkNo);
+            i++;
         }
     }
 
@@ -44,7 +77,7 @@ public class ReclaimInitiator {
                 sendREMOVED(fileId, chunkNo);
             }
             fm.getChunksStored().remove(fileId);
-            this.fm.removeFileFolder(path);
+            fm.removeFileFolder(path);
         }
     }
 

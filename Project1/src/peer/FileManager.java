@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +48,10 @@ public class FileManager implements Serializable {
         ConcurrentHashMap<Integer, Chunk> chunks = chunksStored.get(fileId);
 
         return chunks != null && chunks.containsKey(chunkNo);
+    }
+
+    public void removeChunk(String fileId, int chunkNo) {
+        chunksStored.get(fileId).remove(chunkNo);
     }
 
     public Chunk getChunk(String fileId, int chunkNo) {
@@ -95,6 +101,16 @@ public class FileManager implements Serializable {
         return true;
     }
 
+    public void removeFolderIfEmpty(String path){
+        File file = new File(path);
+
+        if (file.exists()){
+            if(file.list().length == 0){
+                file.delete();
+            }
+        }
+    }
+
     public void addBackedupChunk(String fileId, ConcurrentHashMap<Integer,Set<Integer>> perceivedRepDegreeList, int repDegree, String path) {
         int chunkNo;
         Chunk chunk;
@@ -134,6 +150,16 @@ public class FileManager implements Serializable {
         return chunksStored.containsKey(fileId);
     }
 
+    public List<Chunk> getAllStoredChunks(){
+        List<Chunk> chunks =  new ArrayList<>();;
+        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry_file : chunksStored.entrySet()){
+            for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
+                chunks.add(entry_chunk.getValue());
+            }
+        }
+        return chunks;
+    }
+
     public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> getBackedupFiles() {
         return backedupFiles;
     }
@@ -152,5 +178,9 @@ public class FileManager implements Serializable {
 
     public void updateFreeMem(long spaceReclaim) {
         this.free_mem = spaceReclaim - this.used_mem;
+    }
+
+    public long getFree_mem() {
+        return free_mem;
     }
 }
