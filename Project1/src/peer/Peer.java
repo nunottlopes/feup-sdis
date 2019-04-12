@@ -136,8 +136,7 @@ public class Peer implements RemoteInterface {
     }
 
     public void delete(String filepath) {
-        System.out.println("----- DELETE SERVICE ----- FILE PATH = " + filepath);
-        // TODO:
+        System.out.println("\n----- DELETE SERVICE ----- FILE PATH = " + filepath);
         DeleteInitiator deleteInitiator = new DeleteInitiator(filepath);
         try {
             deleteInitiator.run();
@@ -145,7 +144,7 @@ public class Peer implements RemoteInterface {
             System.out.println(e);
         }
         writePeerToFile();
-        System.out.println("---- FINISHED DELETE SERVICE ----");
+        System.out.println("\n---- FINISHED DELETE SERVICE ----");
     }
 
     public void reclaim(long spaceReclaim) {

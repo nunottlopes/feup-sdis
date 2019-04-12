@@ -83,14 +83,12 @@ public class Backup {
                 Integer.toString(chunk.getChunkNo())
         };
 
-        System.out.println("\n> STORED");
-        System.out.println("- File Id = " + chunk.getFileId());
-        System.out.println("- Chunk No = " + chunk.getChunkNo());
-
         Message msg = new Message(Message.MessageType.STORED, args);
-
 
         Peer.getInstance().send(Channel.Type.MC, msg);
 
+        System.out.println("\n> STORED sent");
+        System.out.println("- File Id = " + chunk.getFileId());
+        System.out.println("- Chunk No = " + chunk.getChunkNo());
     }
 }
