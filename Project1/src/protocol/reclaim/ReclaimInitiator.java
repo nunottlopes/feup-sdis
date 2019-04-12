@@ -6,6 +6,8 @@ import peer.Chunk;
 import peer.ChunkComparator;
 import peer.FileManager;
 import peer.Peer;
+import protocol.InvalidProtocolExecution;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -21,19 +23,17 @@ public class ReclaimInitiator {
         this.fm = Peer.getInstance().getFileManager();
     }
 
-    public void run() {
+    public void run() throws InvalidProtocolExecution{
         if(spaceReclaim == 0){
             // Reclaim all the disk space being used by the service / Delete all chunks
             deleteAllChunks();
-            System.out.println("Removed all stored chunks");
         }
         else if(fm.getUsed_mem() < spaceReclaim){
             // Only need to reduce free mem available for peer file manager
             fm.updateFreeMem(spaceReclaim);
-            System.out.println("Only updated storage size");
         }
         else{
-            // Choosing best chunks to be removed in order to reduce peer memory
+            // Choosing best chunks to be removed in order to limit peer memory
             removeNecessaryChunks();
         }
     }

@@ -1,7 +1,6 @@
 package peer;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -68,6 +67,10 @@ public class Chunk implements Serializable {
     public void setPerceivedRepDegree(Set<Integer> perceivedRepDegree) {
         perceivedRepDegree.add(Peer.getInstance().getId());
         this.perceivedRepDegree = perceivedRepDegree;
+    }
+
+    public void removePerceivedRepDegreePeer(int peerId){
+        perceivedRepDegree.remove(peerId);
     }
 }
 
