@@ -44,14 +44,12 @@ public class ProtocolInfo implements Serializable {
         }
 
         else {
-            if(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)) {
-                chunksRepDegree.putIfAbsent(fileId, new ConcurrentHashMap<>());
-                chunksRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
-                chunksRepDegree.get(fileId).get(chunkNo).add(peerId);
-            }
-        }
+            chunksRepDegree.putIfAbsent(fileId, new ConcurrentHashMap<>());
+            chunksRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+            chunksRepDegree.get(fileId).get(chunkNo).add(peerId);
 
-        Peer.getInstance().getFileManager().updateChunkPerceivedRepDegree(fileId, chunkNo, peerId);
+            Peer.getInstance().getFileManager().updateStoredChunks(fileId, chunksRepDegree.get(fileId));
+        }
     }
 
     public int getChunkRepDegree(String fileId, int chunkNo) {
@@ -67,13 +65,5 @@ public class ProtocolInfo implements Serializable {
         }
 
         return 0;
-    }
-
-    public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer>>> getBackupRepDegree() {
-        return backupRepDegree;
-    }
-
-    public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer>>> getChunksRepDegree() {
-        return chunksRepDegree;
     }
 }

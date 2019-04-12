@@ -64,4 +64,8 @@ public class Chunk implements Serializable {
         this.perceivedRepDegree.add(peerId);
     }
 
+    public void setPerceivedRepDegree(Set<Integer> perceivedRepDegree) {
+        perceivedRepDegree.add(Peer.getInstance().getId());
+        this.perceivedRepDegree = perceivedRepDegree;
+    }
 }

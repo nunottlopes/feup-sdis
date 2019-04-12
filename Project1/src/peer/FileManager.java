@@ -91,12 +91,6 @@ public class FileManager implements Serializable {
         return true;
     }
 
-    public void updateChunkPerceivedRepDegree(String fileId, int chunkNo, int peerId){
-        Chunk chunk = chunksStored.get(fileId).get(chunkNo);
-        if (chunk != null)
-            chunk.addPerceivedRepDegreePeerId(peerId);
-    }
-
     public void addBackedupChunk(String fileId, ConcurrentHashMap<Integer,Set<Integer>> perceivedRepDegreeList, int repDegree, String path) {
         int chunkNo;
         Chunk chunk;
@@ -107,6 +101,29 @@ public class FileManager implements Serializable {
             chunks.putIfAbsent(chunkNo, chunk);
         }
         backedupFiles.putIfAbsent(path, chunks);
+    }
+
+    public void removeStoredChunks(String fileId) {
+        chunksStored.remove(fileId);
+        backedupFiles.remove(fileId);
+    }
+
+    public void removeBackedupChunks(String fileId) {
+        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry : backedupFiles.entrySet()){
+            if(entry.getValue().entrySet().iterator().next().getValue().getFileId().equals(fileId)){
+                backedupFiles.remove(entry.getKey());
+                break;
+            }
+        }
+    }
+
+    public void updateStoredChunks(String fileId, ConcurrentHashMap<Integer,Set<Integer>> chunkPerceivedRepDegree) {
+        ConcurrentHashMap<Integer, Chunk> chunks = chunksStored.get(fileId);
+        for(ConcurrentHashMap.Entry<Integer, Chunk> entry : chunks.entrySet()){
+            Set<Integer> item = chunkPerceivedRepDegree.get(entry.getKey());
+            if(item != null)
+                entry.getValue().setPerceivedRepDegree(item);
+        }
     }
 
     public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> getBackedupFiles() {
@@ -127,20 +144,5 @@ public class FileManager implements Serializable {
 
     public boolean hasStoredChunks(String fileId) {
         return chunksStored.containsKey(fileId);
-    }
-
-    public void removeStoredChunks(String fileId) {
-        chunksStored.remove(fileId);
-        backedupFiles.remove(fileId);
-    }
-
-    public void removeBackedupChunks(String fileId) {
-        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry : backedupFiles.entrySet()){
-            System.out.println(entry.getValue().entrySet().iterator().next().getValue().getFileId());
-            if(entry.getValue().entrySet().iterator().next().getValue().getFileId().equals(fileId)){
-                backedupFiles.remove(entry.getKey());
-                break;
-            }
-        }
     }
 }

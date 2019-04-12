@@ -120,7 +120,7 @@ public class Peer implements RemoteInterface {
             System.out.println(e);
         }
         writePeerToFile();
-        System.out.println("---- FINISHED BACKUP SERVICE ----");
+        System.out.println("\n---- FINISHED BACKUP SERVICE ----");
     }
 
     public void restore(String filepath) {
