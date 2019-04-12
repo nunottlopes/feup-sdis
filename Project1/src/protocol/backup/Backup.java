@@ -34,7 +34,7 @@ public class Backup {
 
         if (!this.fm.hasChunk(msg.getFileId(), msg.getChunkNo())) {
             path = Peer.getInstance().getBackupPath(msg.getFileId());
-            this.fm.createFolder(path);
+            this.fm.createFolders(path);
             start();
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
@@ -61,7 +61,7 @@ public class Backup {
     private boolean saveChunk() {
         boolean success;
         try {
-            success = this.fm.saveFile(Integer.toString(chunk.getChunkNo()), path, chunk.getData());
+            success = this.fm.saveChunkFile(Integer.toString(chunk.getChunkNo()), path, chunk.getData());
         } catch (IOException e) {
             System.out.println("Error storing chunk");
             return false;

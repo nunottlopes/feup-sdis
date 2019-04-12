@@ -25,7 +25,7 @@ public class FileManager implements Serializable {
         backedupFiles = new ConcurrentHashMap<>();
     }
 
-    public void createFolder(String path) {
+    public void createFolders(String path) {
         try {
             Files.createDirectories(Paths.get(path));
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class FileManager implements Serializable {
         return chunksStored.get(fileId).get(chunkNo);
     }
 
-    public boolean saveFile(String fileName, String path, byte[] data) throws IOException {
+    public boolean saveChunkFile(String fileName, String path, byte[] data) throws IOException {
         long file_size = data.length;
 
         if (free_mem < file_size) {
@@ -74,6 +74,13 @@ public class FileManager implements Serializable {
         return true;
     }
 
+    public void removeChunkFile(String path, String fileName){
+        File chunkFile = new File(path, fileName);
+        free_mem += chunkFile.length();
+        used_mem -= chunkFile.length();
+        chunkFile.delete();
+    }
+
     public boolean removeFileFolder(String path){
         File file = new File(path);
 
@@ -88,13 +95,6 @@ public class FileManager implements Serializable {
         return true;
     }
 
-    public void removeChunkFile(String path, String fileName){
-        File chunkFile = new File(path, fileName);
-        free_mem += chunkFile.length();
-        used_mem -= chunkFile.length();
-        chunkFile.delete();
-    }
-
     public void addBackedupChunk(String fileId, ConcurrentHashMap<Integer,Set<Integer>> perceivedRepDegreeList, int repDegree, String path) {
         int chunkNo;
         Chunk chunk;
@@ -107,11 +107,6 @@ public class FileManager implements Serializable {
         backedupFiles.putIfAbsent(path, chunks);
     }
 
-    public void removeStoredChunks(String fileId) {
-        chunksStored.remove(fileId);
-        backedupFiles.remove(fileId);
-    }
-
     public void removeBackedupChunks(String fileId) {
         for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry : backedupFiles.entrySet()){
             if(entry.getValue().entrySet().iterator().next().getValue().getFileId().equals(fileId)){
@@ -121,6 +116,11 @@ public class FileManager implements Serializable {
         }
     }
 
+    public void removeStoredChunks(String fileId) {
+        chunksStored.remove(fileId);
+        backedupFiles.remove(fileId);
+    }
+
     public void updateStoredChunks(String fileId, ConcurrentHashMap<Integer,Set<Integer>> chunkPerceivedRepDegree) {
         ConcurrentHashMap<Integer, Chunk> chunks = chunksStored.get(fileId);
         for(ConcurrentHashMap.Entry<Integer, Chunk> entry : chunks.entrySet()){
@@ -128,6 +128,10 @@ public class FileManager implements Serializable {
             if(item != null)
                 entry.getValue().setPerceivedRepDegree(item);
         }
+    }
+
+    public boolean hasStoredChunks(String fileId) {
+        return chunksStored.containsKey(fileId);
     }
 
     public ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> getBackedupFiles() {
@@ -144,10 +148,6 @@ public class FileManager implements Serializable {
 
     public long getMaxMemory(){
         return free_mem+used_mem;
-    }
-
-    public boolean hasStoredChunks(String fileId) {
-        return chunksStored.containsKey(fileId);
     }
 
     public void updateFreeMem(long spaceReclaim) {

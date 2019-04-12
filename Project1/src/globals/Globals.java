@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 public class Globals {
 
     public static String generateFileId(File f) {
-        String file_id = f.getName() + f.lastModified() + Peer.getInstance().getId();
+        String file_id = f.getName() + f.lastModified() + f.length() + f.hashCode();
         return sha256(file_id);
     }
 
