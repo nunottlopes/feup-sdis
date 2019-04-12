@@ -32,6 +32,12 @@ public class ProtocolInfo implements Serializable {
     }
 
     public void incRepDegree(String fileId, int chunkNo, int peerId) {
+
+        System.out.println("\n> STORED received");
+        System.out.println("- Sender Id = " + peerId);
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
+
         if(backingUp) {
             backupRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
             backupRepDegree.get(fileId).get(chunkNo).add(peerId);

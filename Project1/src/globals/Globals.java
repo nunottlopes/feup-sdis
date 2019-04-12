@@ -22,7 +22,6 @@ public class Globals {
             e.printStackTrace();
         }
         byte[] hash = digest.digest(s.getBytes(StandardCharsets.UTF_8));
-        //return new HexBinaryAdapter().marshal(hash);
         StringBuffer hexString = new StringBuffer();
         for (int i = 0; i < hash.length; i++) {
             String hex = Integer.toHexString(0xff & hash[i]);

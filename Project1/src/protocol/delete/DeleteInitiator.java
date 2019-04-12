@@ -41,6 +41,6 @@ public class DeleteInitiator {
             Peer.getInstance().getExecutor().schedule(()->Peer.getInstance().send(Channel.Type.MC, msg), TIME_INTERVAL*i, TimeUnit.MILLISECONDS);
         }
 
-        // TODO: testar
+        // TODO: só terminar esta função (run()) quando o executor chegar ao fim
     }
 }

@@ -5,6 +5,7 @@ import message.Message;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
+import protocol.delete.DeleteInitiator;
 import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
 
@@ -130,16 +131,21 @@ public class Peer implements RemoteInterface {
         } catch (InvalidProtocolExecution e) {
             System.out.println(e);
         }
-        System.out.println("---- FINISHED BACKUP SERVICE ----");
-
         writePeerToFile();
+        System.out.println("---- FINISHED BACKUP SERVICE ----");
     }
 
     public void delete(String filepath) {
-        System.out.println("DELETE SERVICE -> FILE PATH = " + filepath);
+        System.out.println("----- DELETE SERVICE ----- FILE PATH = " + filepath);
         // TODO:
-
+        DeleteInitiator deleteInitiator = new DeleteInitiator(filepath);
+        try {
+            deleteInitiator.run();
+        } catch (InvalidProtocolExecution e) {
+            System.out.println(e);
+        }
         writePeerToFile();
+        System.out.println("---- FINISHED DELETE SERVICE ----");
     }
 
     public void reclaim(long spaceReclaim) {
@@ -151,37 +157,38 @@ public class Peer implements RemoteInterface {
 
     public String state() {
         System.out.println("\n---- STATE SERVICE ----");
-        String ret = "INITIATED BACKUP FILES";
+        String ret = "\nINITIATED BACKUP FILES";
         if(fileManager.getBackedupFiles().entrySet().size() == 0)
             ret += "\nNo files backup initialized here\n";
         for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : fileManager.getBackedupFiles().entrySet()){
             String path_name = item.getKey();
             ConcurrentHashMap<Integer, Chunk> chunkMap = item.getValue();
-            String fileId = chunkMap.get(0).getFileId();
-            int desiredRepDegree = chunkMap.get(0).getRepDegree();
+            ConcurrentHashMap.Entry<Integer, Chunk> firstEntry = chunkMap.entrySet().iterator().next();
+            String fileId = chunkMap.get(firstEntry.getKey()).getFileId();
+            int desiredRepDegree = chunkMap.get(firstEntry.getKey()).getRepDegree();
 
-            ret += "\n> File Pathname = " + path_name + "\n> File ID = " + fileId + "\n> Desired Replication Degree= " + desiredRepDegree + "\n";
+            ret += "\n> File Pathname = " + path_name + "\n> File Id = " + fileId + "\n> Desired Replication Degree= " + desiredRepDegree + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
-                ret += "\t- Chunk ID = "+ chunkno + "\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+                ret += "\t- Chunk Id = "+ chunkno + "\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
             }
 
         }
-        ret += "\n\nSTORED CHUNKS";
+        ret += "\nSTORED CHUNKS";
         if(fileManager.getChunksStored().entrySet().size() == 0)
-            ret += "\nNo chunks stored here";
+            ret += "\nNo chunks stored here\n";
         for (Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> item : fileManager.getChunksStored().entrySet()){
             String fileId = item.getKey();
             ConcurrentHashMap<Integer, Chunk> chunkMap = item.getValue();
 
-            ret += "\n> File ID = " + fileId + "\n";
+            ret += "\n> File Id = " + fileId + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
-                ret += "\t- Chunk ID = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + " Bytes\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+                ret += "\t- Chunk Id = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + " Bytes\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
             }
 
         }
-        ret += "\n\nPEER STORAGE\n> Peer Max Memory = " + (fileManager.getMaxMemory()/1000) + " KBytes\n> Used Memory = " + (fileManager.getUsed_mem()/1000) + " KBytes\n";
+        ret += "\nPEER STORAGE\n> Peer Max Memory = " + (fileManager.getMaxMemory()/1000) + " KBytes\n> Used Memory = " + (fileManager.getUsed_mem()/1000) + " KBytes\n";
         System.out.println("---- FINISHED STATE SERVICE ----");
         return ret;
     }

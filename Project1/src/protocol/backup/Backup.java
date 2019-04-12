@@ -20,6 +20,7 @@ public class Backup {
     public Backup(Message msg) {
 
         System.out.println("\n> PUTCHUNK received");
+        System.out.println("- Sender Id = " + msg.getSenderId());
         System.out.println("- File Id = " + msg.getFileId());
         System.out.println("- Chunk No = " + msg.getChunkNo());
 

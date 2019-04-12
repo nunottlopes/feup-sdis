@@ -1,5 +1,6 @@
 package peer;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -73,6 +74,23 @@ public class FileManager implements Serializable {
         return true;
     }
 
+    public boolean removeFile(String path){
+        File file = new File(path);
+
+        if(!file.exists())
+            return true;
+
+        for(String path_item : file.list()){
+            File chunkFile = new File(file.getPath(), path_item);
+            free_mem += chunkFile.length();
+            used_mem -= chunkFile.length();
+            chunkFile.delete();
+        }
+
+        file.delete();
+        return true;
+    }
+
     public void updateChunkPerceivedRepDegree(String fileId, int chunkNo, int peerId){
         Chunk chunk = chunksStored.get(fileId).get(chunkNo);
         if (chunk != null)
@@ -105,5 +123,24 @@ public class FileManager implements Serializable {
 
     public long getMaxMemory(){
         return free_mem+used_mem;
+    }
+
+    public boolean hasStoredChunks(String fileId) {
+        return chunksStored.containsKey(fileId);
+    }
+
+    public void removeStoredChunks(String fileId) {
+        chunksStored.remove(fileId);
+        backedupFiles.remove(fileId);
+    }
+
+    public void removeBackedupChunks(String fileId) {
+        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry : backedupFiles.entrySet()){
+            System.out.println(entry.getValue().entrySet().iterator().next().getValue().getFileId());
+            if(entry.getValue().entrySet().iterator().next().getValue().getFileId().equals(fileId)){
+                backedupFiles.remove(entry.getKey());
+                break;
+            }
+        }
     }
 }

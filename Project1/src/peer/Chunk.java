@@ -13,7 +13,7 @@ public class Chunk implements Serializable {
     private int repDegree;
     private byte[] data;
     private Set<Integer> perceivedRepDegree;
-    private int size;
+    private long size;
 
     public Chunk(String fileId, int chunkNo, int repDegree, byte[] data) {
         this.fileId = fileId;
@@ -52,7 +52,7 @@ public class Chunk implements Serializable {
         return data;
     }
 
-    public int getSize(){
+    public long getSize(){
         return size;
     }
 

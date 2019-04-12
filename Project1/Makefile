@@ -21,11 +21,14 @@ peer3:
 peer4:
 	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 4 Peer4 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
+peer5:
+	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 5 Peer5 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+
 rmi:
 	rmiregistry -J-Djava.class.path=$(OUT_DIR)
 
 backup:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 BACKUP $(TEST_FILE) 3
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 BACKUP $(TEST_FILE) 2
 
 restore:
 	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 RESTORE $(TEST_FILE)
@@ -36,8 +39,20 @@ delete:
 reclaim:
 	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 RECLAIM 12345
 
-state:
+state1:
 	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer1 STATE
+
+state2:
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer2 STATE
+
+state3:
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer3 STATE
+
+state4:
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer4 STATE
+
+state5:
+	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer5 STATE
 
 snooper:
 	java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003
