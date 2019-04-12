@@ -10,25 +10,34 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProtocolInfo implements Serializable {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
-    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > backupRepDegree;
+    private ConcurrentHashMap<String, Set<Integer> > chunksSent;
 
-    private boolean backingUp;
+    //Initiator
+    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > backupRepDegree_init;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, byte[] > > restoredChunks_init;
 
     public ProtocolInfo() {
         chunksRepDegree = new ConcurrentHashMap<>();
-        backupRepDegree = new ConcurrentHashMap<>();
-        backingUp = false;
+        backupRepDegree_init = new ConcurrentHashMap<>();
+        restoredChunks_init = new ConcurrentHashMap<>();
+        chunksSent = new ConcurrentHashMap<>();
     }
 
     public void startBackup(String fileId) {
-        backingUp = true;
-        backupRepDegree.putIfAbsent(fileId, new ConcurrentHashMap<>());
+        backupRepDegree_init.put(fileId, new ConcurrentHashMap<>());
     }
 
     public void endBackup(String fileId, int repDegree, String path) {
-        backingUp = false;
-        Peer.getInstance().getFileManager().addBackedupChunk(fileId, backupRepDegree.get(fileId), repDegree, path);
-        backupRepDegree.remove(fileId);
+        Peer.getInstance().getFileManager().addBackedupChunk(fileId, backupRepDegree_init.get(fileId), repDegree, path);
+        backupRepDegree_init.remove(fileId);
+    }
+
+    public void startRestore(String fileId) {
+        restoredChunks_init.put(fileId, new ConcurrentHashMap<>());
+    }
+
+    public void endRestore(String fileId) {
+        restoredChunks_init.remove(fileId);
     }
 
     public void incRepDegree(String fileId, int chunkNo, int peerId) {
@@ -38,9 +47,9 @@ public class ProtocolInfo implements Serializable {
         System.out.println("- File Id = " + fileId);
         System.out.println("- Chunk No = " + chunkNo);
 
-        if(backingUp) {
-            backupRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
-            backupRepDegree.get(fileId).get(chunkNo).add(peerId);
+        if(backupRepDegree_init.containsKey(fileId)) {
+            backupRepDegree_init.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+            backupRepDegree_init.get(fileId).get(chunkNo).add(peerId);
         }
 
         else {
@@ -53,9 +62,9 @@ public class ProtocolInfo implements Serializable {
     }
 
     public int getChunkRepDegree(String fileId, int chunkNo) {
-        if(backingUp) {
-            backupRepDegree.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
-            return backupRepDegree.get(fileId).get(chunkNo).size();
+        if(backupRepDegree_init.containsKey(fileId)) {
+            backupRepDegree_init.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+            return backupRepDegree_init.get(fileId).get(chunkNo).size();
         } else {
             if(chunksRepDegree.containsKey(fileId)) {
                 if(chunksRepDegree.get(fileId).containsKey(chunkNo)) {
@@ -65,5 +74,32 @@ public class ProtocolInfo implements Serializable {
         }
 
         return 0;
+    }
+
+    public void chunkSent(String fileId, int chunkNo, byte[] body) {
+        if(restoredChunks_init.containsKey(fileId)) {
+            restoredChunks_init.get(fileId).putIfAbsent(chunkNo, body);
+        }
+        else {
+            chunksSent.putIfAbsent(fileId, new HashSet<>());
+            chunksSent.get(fileId).add(chunkNo);
+        }
+    }
+
+    public int getChunksRecieved(String fileId) { return restoredChunks_init.get(fileId).size(); }
+
+    public boolean isChunkAlreadySent(String fileId, int chunkNo) {
+        if(chunksSent.contains(fileId)) {
+            return chunksSent.get(fileId).contains(chunkNo);
+        }
+        return false;
+    }
+
+    public void removeChunkFromSent(String fileId, int chunkNo) {
+        chunksSent.get(fileId).remove(chunkNo);
+    }
+
+    public byte[] getChunkData(String fileId, int chunkNo) {
+        return restoredChunks_init.get(fileId).get(chunkNo);
     }
 }

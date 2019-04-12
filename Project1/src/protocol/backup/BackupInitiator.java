@@ -9,15 +9,15 @@ import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static globals.Globals.getFileData;
 
 public class BackupInitiator {
 
@@ -34,12 +34,21 @@ public class BackupInitiator {
     public BackupInitiator(String path, int repDegree) {
         this.path = path;
         this.repDegree = repDegree;
-        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(500);
+        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(200);
     }
 
     public void run() throws InvalidProtocolExecution {
 
-        byte[] data = getFileData();
+        file = new File(path);
+
+        byte[] data;
+
+        try {
+            data = getFileData(file);
+        } catch (FileNotFoundException e) {
+            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "File not found!");
+        }
+
         fileId = Globals.generateFileId(file);
 
         ArrayList<Chunk> chunks = splitIntoChunks(data);
@@ -91,30 +100,6 @@ public class BackupInitiator {
 
 
         Peer.getInstance().getProtocolInfo().endBackup(fileId, this.repDegree, this.path);
-
-    }
-
-    private byte[] getFileData() throws InvalidProtocolExecution {
-        file = new File(path);
-
-
-        FileInputStream in_stream;
-        try {
-            in_stream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "File not found!");
-        }
-
-        byte[] data = new byte[(int) file.length()];
-
-        try {
-            in_stream.read(data);
-            in_stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return data;
 
     }
 

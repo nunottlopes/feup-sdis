@@ -1,8 +1,9 @@
 package globals;
 
-import peer.Peer;
-
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,5 +30,21 @@ public class Globals {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    public static byte[] getFileData(File file) throws FileNotFoundException {
+        FileInputStream in_stream;
+        in_stream = new FileInputStream(file);
+
+        byte[] data = new byte[(int) file.length()];
+
+        try {
+            in_stream.read(data);
+            in_stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return data;
     }
 }

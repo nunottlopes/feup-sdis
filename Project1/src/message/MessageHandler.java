@@ -4,6 +4,7 @@ import peer.Peer;
 import protocol.backup.Backup;
 import protocol.delete.Delete;
 import protocol.reclaim.Reclaim;
+import protocol.restore.Restore;
 
 import java.net.DatagramPacket;
 
@@ -29,6 +30,12 @@ public class MessageHandler implements Runnable {
         }
         if(this.msg.getType() == Message.MessageType.REMOVED){
             new Reclaim(this.msg);
+        }
+        if(this.msg.getType() == Message.MessageType.GETCHUNK && msg.getSenderId() != Peer.getInstance().getId()){
+            new Restore(this.msg);
+        }
+        if(this.msg.getType() == Message.MessageType.CHUNK && msg.getSenderId() != Peer.getInstance().getId()){
+            Peer.getInstance().getProtocolInfo().chunkSent(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getBody());
         }
         Peer.getInstance().writePeerToFile();
     }
