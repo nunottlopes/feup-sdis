@@ -19,8 +19,6 @@ public class DeleteInitiator {
     private String path;
     private String fileId;
 
-    private CountDownLatch latch;
-
     public DeleteInitiator(String path){
         this.path = path;
     }
@@ -40,10 +38,13 @@ public class DeleteInitiator {
 
         Message msg = new Message(Message.MessageType.DELETE, args);
 
-        latch = new CountDownLatch(MAX_DELETE_MESSAGES);
+        CountDownLatch latch = new CountDownLatch(MAX_DELETE_MESSAGES);
 
         for (int i = 0 ; i < MAX_DELETE_MESSAGES; i++){
-            Peer.getInstance().getExecutor().schedule(()->sendDELETE(msg), TIME_INTERVAL*i, TimeUnit.MILLISECONDS);
+            Peer.getInstance().getExecutor().schedule(()->{
+                Peer.getInstance().send(Channel.Type.MC, msg);
+                latch.countDown();
+                }, TIME_INTERVAL*i, TimeUnit.MILLISECONDS);
         }
 
         try {
@@ -51,10 +52,5 @@ public class DeleteInitiator {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sendDELETE(Message msg){
-        Peer.getInstance().send(Channel.Type.MC, msg);
-        latch.countDown();
     }
 }

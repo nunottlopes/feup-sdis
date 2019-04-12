@@ -18,16 +18,16 @@ public class Delete {
         this.fm = Peer.getInstance().getFileManager();
 
         if(this.fm.hasStoredChunks(msg.getFileId())){
-            removeFile();
+            removeFiles();
         }
         else{
             this.fm.removeBackedupChunks(msg.getFileId());
         }
     }
 
-    private void removeFile(){
+    private void removeFiles(){
         String path = Peer.getInstance().getBackupPath(msg.getFileId());
-        if(this.fm.removeFile(path))
+        if(this.fm.removeFileFolder(path))
             this.fm.removeStoredChunks(msg.getFileId());
     }
 }

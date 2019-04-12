@@ -6,6 +6,8 @@ import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
+import protocol.reclaim.Reclaim;
+import protocol.reclaim.ReclaimInitiator;
 import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
 
@@ -148,10 +150,15 @@ public class Peer implements RemoteInterface {
     }
 
     public void reclaim(long spaceReclaim) {
-        System.out.println("RECLAIM SERVICE -> DISK SPACE RECLAIM = " + spaceReclaim);
-        // TODO:
-
+        System.out.println("\n----- RECLAIM SERVICE ----- DISK SPACE RECLAIM = " + spaceReclaim);
+        ReclaimInitiator reclaimInitiator = new ReclaimInitiator(spaceReclaim);
+        try {
+            reclaimInitiator.run();
+        } catch (InvalidProtocolExecution e) {
+            System.out.println(e);
+        }
         writePeerToFile();
+        System.out.println("\n---- FINISHED RECLAIM SERVICE ----");
     }
 
     public String state() {

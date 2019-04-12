@@ -3,6 +3,7 @@ package message;
 import peer.Peer;
 import protocol.backup.Backup;
 import protocol.delete.Delete;
+import protocol.reclaim.Reclaim;
 
 import java.net.DatagramPacket;
 
@@ -25,6 +26,9 @@ public class MessageHandler implements Runnable {
         }
         if(this.msg.getType() == Message.MessageType.DELETE){
             new Delete(this.msg);
+        }
+        if(this.msg.getType() == Message.MessageType.REMOVED){
+            new Reclaim(this.msg);
         }
         Peer.getInstance().writePeerToFile();
     }

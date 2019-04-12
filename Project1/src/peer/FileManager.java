@@ -74,21 +74,25 @@ public class FileManager implements Serializable {
         return true;
     }
 
-    public boolean removeFile(String path){
+    public boolean removeFileFolder(String path){
         File file = new File(path);
 
         if(!file.exists())
             return true;
 
-        for(String path_item : file.list()){
-            File chunkFile = new File(file.getPath(), path_item);
-            free_mem += chunkFile.length();
-            used_mem -= chunkFile.length();
-            chunkFile.delete();
+        for(String fileName : file.list()){
+            removeChunkFile(file.getPath(), fileName);
         }
 
         file.delete();
         return true;
+    }
+
+    public void removeChunkFile(String path, String fileName){
+        File chunkFile = new File(path, fileName);
+        free_mem += chunkFile.length();
+        used_mem -= chunkFile.length();
+        chunkFile.delete();
     }
 
     public void addBackedupChunk(String fileId, ConcurrentHashMap<Integer,Set<Integer>> perceivedRepDegreeList, int repDegree, String path) {
@@ -144,5 +148,9 @@ public class FileManager implements Serializable {
 
     public boolean hasStoredChunks(String fileId) {
         return chunksStored.containsKey(fileId);
+    }
+
+    public void updateFreeMem(long spaceReclaim) {
+        this.free_mem = spaceReclaim - this.used_mem;
     }
 }
