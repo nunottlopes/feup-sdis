@@ -83,6 +83,7 @@ public class ProtocolInfo implements Serializable {
     public void chunkSent(String fileId, int chunkNo, byte[] body) {
         if(restoredChunks_init.containsKey(fileId)) {
             restoredChunks_init.get(fileId).putIfAbsent(chunkNo, body);
+            System.out.println("saved: " + chunkNo);
         }
         else {
             chunksSent.putIfAbsent(fileId, new HashSet<>());

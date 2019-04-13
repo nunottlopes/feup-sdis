@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class RestoreInitiator {
 
-    private static final int AWAIT_TIME = 500;
+    private static final int AWAIT_TIME = 2000;
     private static final int MAX_TRIES  = 3;
 
     private String path;
@@ -39,6 +39,9 @@ public class RestoreInitiator {
         Peer.getInstance().getProtocolInfo().startRestore(fileId);
 
         int n = (int)this.file.length() / (Chunk.MAX_SIZE) + 1;
+
+
+        System.out.println("esperado: " + n);
 
         CountDownLatch latch = new CountDownLatch(n);
 
