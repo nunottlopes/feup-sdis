@@ -136,4 +136,12 @@ public class ProtocolInfo implements Serializable {
     public void clearChunksReceivedWhileReclaim(){
         chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
     }
+
+    public void updateChunkRepDegree(String fileId, int chunkNo) {
+        chunksRepDegree.get(fileId).get(chunkNo).remove(Peer.getInstance().getId());
+    }
+
+    public void removeChunksRepDegree(String fileId) {
+        chunksRepDegree.remove(fileId);
+    }
 }

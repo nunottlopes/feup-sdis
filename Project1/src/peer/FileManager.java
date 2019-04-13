@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static globals.Globals.getFileData;
+
 public class FileManager implements Serializable {
     public static final long MAX_CAPACITY = 8*1000000;
     private long free_mem;
@@ -51,17 +53,17 @@ public class FileManager implements Serializable {
         chunksStored.get(fileId).remove(chunkNo);
     }
 
-    public Chunk getChunkFromFile(String fileId, int chunkNo) throws IOException {
+    public Chunk getChunkFromFile(String fileId, int chunkNo) {
         Chunk chunk = chunksStored.get(fileId).get(chunkNo);
-        String filePath = Peer.getInstance().getBackupPath(fileId) + chunkNo;
-        if(!Files.exists(Paths.get(filePath)) && !chunksStored.containsKey(fileId) && !chunksStored.get(fileId).containsKey(chunkNo)){
+        File file = new File(Peer.getInstance().getBackupPath(fileId) + chunkNo);
+
+        byte[] data;
+        try {
+            data = getFileData(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
             return null;
         }
-
-        InputStream in = new FileInputStream(filePath);
-        byte[] data = new byte[in.available()];
-        in.read(data);
-        in.close();
 
         chunk.setData(data);
 

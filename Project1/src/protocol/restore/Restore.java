@@ -54,6 +54,7 @@ public class Restore {
             } else {
                 Peer.getInstance().getProtocolInfo().removeChunkFromSent(fileId, chunkNo);
             }
+            //Peer.getInstance().writePeerToFile();
         }, delay, TimeUnit.MILLISECONDS);
     }
 }

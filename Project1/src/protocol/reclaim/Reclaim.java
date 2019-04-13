@@ -1,26 +1,14 @@
 package protocol.reclaim;
 
-import channel.Channel;
 import message.Message;
 import peer.Chunk;
 import peer.Peer;
 import protocol.InvalidProtocolExecution;
 import protocol.backup.BackupInitiator;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
-import static globals.Globals.getFileData;
-
-
-//Upon receiving this message, a peer that has a local copy of the chunk shall update its local count of this chunk. If this
-//count drops below the desired replication degree of that chunk, it shall initiate the chunk backup subprotocol after a random
-//delay uniformly distributed between 0 and 400 ms. If during this delay, a peer receives a PUTCHUNK message for the same file
-//chunk, it should back off and restrain from starting yet another backup subprotocol for that file chunk.
 
 public class Reclaim {
 
@@ -51,11 +39,8 @@ public class Reclaim {
             //System.out.println("Does not have chunk asked");
             return;
         }
-        try {
-            chunk = Peer.getInstance().getFileManager().getChunkFromFile(fileId, chunkNo);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+        chunk = Peer.getInstance().getFileManager().getChunkFromFile(fileId, chunkNo);
+
         chunk.removePerceivedRepDegreePeer(senderId);
         if(chunk.getPerceivedRepDegree() >= chunk.getRepDegree()){
             //System.out.println("SAME PERCEIVED AND DESIRED REP DEGREE");
@@ -71,7 +56,6 @@ public class Reclaim {
         Random r = new Random();
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
-            //System.out.println("STARTING EXECUTOR");
             if(!Peer.getInstance().getProtocolInfo().isChunkAlreadyReceivedWhileReclaim(fileId, chunkNo)) {
                 System.out.println("\n> PUTCHUNK Sent");
                 System.out.println("- Sender Id = " + senderId);
@@ -84,9 +68,6 @@ public class Reclaim {
                     System.out.println(e);
                 }
                 Peer.getInstance().writePeerToFile();
-            }
-            else{
-                //System.out.println("---- DENIED ----");
             }
             Peer.getInstance().getProtocolInfo().setReclaimProtocol(false);
             Peer.getInstance().getProtocolInfo().clearChunksReceivedWhileReclaim();

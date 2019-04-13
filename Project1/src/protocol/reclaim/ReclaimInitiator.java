@@ -1,6 +1,7 @@
 package protocol.reclaim;
 
 import channel.Channel;
+import javafx.util.Pair;
 import message.Message;
 import peer.Chunk;
 import peer.ChunkComparator;
@@ -9,6 +10,7 @@ import peer.Peer;
 import protocol.InvalidProtocolExecution;
 
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,6 +76,7 @@ public class ReclaimInitiator {
             for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
                 int chunkNo = entry_chunk.getValue().getChunkNo();
                 fm.removeChunkFile(path, Integer.toString(chunkNo));
+                Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo);
                 sendREMOVED(fileId, chunkNo);
             }
             fm.getChunksStored().remove(fileId);

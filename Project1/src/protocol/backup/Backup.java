@@ -27,11 +27,6 @@ public class Backup {
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
 
-
-        if(msg.getSenderId() == Peer.getInstance().getId()) {
-            return;
-        }
-
         if (!this.fm.hasChunk(msg.getFileId(), msg.getChunkNo())) {
             path = Peer.getInstance().getBackupPath(msg.getFileId());
             //this.fm.createFolders(path);
