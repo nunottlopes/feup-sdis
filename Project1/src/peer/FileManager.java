@@ -1,10 +1,8 @@
 package peer;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +52,24 @@ public class FileManager implements Serializable {
         chunksStored.get(fileId).remove(chunkNo);
     }
 
-    public Chunk getChunk(String fileId, int chunkNo) {
+    public Chunk getChunkFromFile(String fileId, int chunkNo) throws IOException {
+        Chunk chunk = chunksStored.get(fileId).get(chunkNo);
+        String filePath = Peer.getInstance().getBackupPath(fileId) + chunkNo;
+        if(!Files.exists(Paths.get(filePath)) && !chunksStored.containsKey(fileId) && !chunksStored.get(fileId).containsKey(chunkNo)){
+            return null;
+        }
+
+        InputStream in = new FileInputStream(filePath);
+        byte[] data = new byte[in.available()];
+        in.read(data);
+        in.close();
+
+        chunk.setData(data);
+
+        return chunk;
+    }
+
+    public Chunk getChunk(String fileId, int chunkNo){
         return chunksStored.get(fileId).get(chunkNo);
     }
 

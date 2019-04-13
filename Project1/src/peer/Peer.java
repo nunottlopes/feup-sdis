@@ -4,6 +4,7 @@ import channel.Channel;
 import message.Message;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
+import protocol.backup.Backup;
 import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
 import protocol.reclaim.Reclaim;
@@ -261,6 +262,10 @@ public class Peer implements RemoteInterface {
     }
 
     public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
+
+    public String getBackupFolder(){
+        return ROOT + peerID + "/" + BACKUP_FOLDER;
+    }
 
     public String getRestorePath() {
         return ROOT + peerID + "/" + RESTORE_FOLDER;

@@ -20,6 +20,8 @@ public class MessageHandler implements Runnable {
     @Override
     public void run() {
         if(this.msg.getType() == Message.MessageType.PUTCHUNK && msg.getSenderId() != Peer.getInstance().getId()) {
+            if(Peer.getInstance().getProtocolInfo().isReclaimProtocol())
+                Peer.getInstance().getProtocolInfo().addChunksReceivedWhileReclaim(msg.getFileId(), msg.getChunkNo());
             new Backup(this.msg);
         }
         if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
@@ -28,7 +30,7 @@ public class MessageHandler implements Runnable {
         if(this.msg.getType() == Message.MessageType.DELETE){
             new Delete(this.msg);
         }
-        if(this.msg.getType() == Message.MessageType.REMOVED){
+        if(this.msg.getType() == Message.MessageType.REMOVED && msg.getSenderId() != Peer.getInstance().getId()){
             new Reclaim(this.msg);
         }
         if(this.msg.getType() == Message.MessageType.GETCHUNK && msg.getSenderId() != Peer.getInstance().getId()){

@@ -34,7 +34,7 @@ public class Backup {
 
         if (!this.fm.hasChunk(msg.getFileId(), msg.getChunkNo())) {
             path = Peer.getInstance().getBackupPath(msg.getFileId());
-            this.fm.createFolders(path);
+            //this.fm.createFolders(path);
             start();
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
@@ -50,6 +50,7 @@ public class Backup {
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
             if(Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
+                this.fm.createFolders(path);
                 if(saveChunk()) {
                     sendSTORED();
                 }
@@ -87,8 +88,8 @@ public class Backup {
 
         Peer.getInstance().send(Channel.Type.MC, msg);
 
-        System.out.println("\n> STORED sent");
-        System.out.println("- File Id = " + chunk.getFileId());
-        System.out.println("- Chunk No = " + chunk.getChunkNo());
+//        System.out.println("\n> STORED sent");
+//        System.out.println("- File Id = " + chunk.getFileId());
+//        System.out.println("- Chunk No = " + chunk.getChunkNo());
     }
 }

@@ -79,6 +79,7 @@ public class ReclaimInitiator {
             fm.getChunksStored().remove(fileId);
             fm.removeFileFolder(path);
         }
+        fm.removeFolderIfEmpty(Peer.getInstance().getBackupFolder());
     }
 
     private void sendREMOVED(String fileId, int chunkNo) {

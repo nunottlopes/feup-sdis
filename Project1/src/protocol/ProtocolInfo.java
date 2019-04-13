@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ProtocolInfo implements Serializable {
 
+    private boolean reclaimProtocol = false;
+    private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
+
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
     private ConcurrentHashMap<String, Set<Integer> > chunksSent;
 
@@ -21,6 +24,7 @@ public class ProtocolInfo implements Serializable {
         backupRepDegree_init = new ConcurrentHashMap<>();
         restoredChunks_init = new ConcurrentHashMap<>();
         chunksSent = new ConcurrentHashMap<>();
+        chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
     }
 
     public void startBackup(String fileId) {
@@ -42,10 +46,10 @@ public class ProtocolInfo implements Serializable {
 
     public void incRepDegree(String fileId, int chunkNo, int peerId) {
 
-        System.out.println("\n> STORED received");
-        System.out.println("- Sender Id = " + peerId);
-        System.out.println("- File Id = " + fileId);
-        System.out.println("- Chunk No = " + chunkNo);
+//        System.out.println("\n> STORED received");
+//        System.out.println("- Sender Id = " + peerId);
+//        System.out.println("- File Id = " + fileId);
+//        System.out.println("- Chunk No = " + chunkNo);
 
         if(backupRepDegree_init.containsKey(fileId)) {
             backupRepDegree_init.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
@@ -101,5 +105,35 @@ public class ProtocolInfo implements Serializable {
 
     public byte[] getChunkData(String fileId, int chunkNo) {
         return restoredChunks_init.get(fileId).get(chunkNo);
+    }
+
+    public boolean isReclaimProtocol() {
+        return reclaimProtocol;
+    }
+
+    public void setReclaimProtocol(boolean reclaimProtocol) {
+        this.reclaimProtocol = reclaimProtocol;
+    }
+
+    public void addChunksReceivedWhileReclaim(String fileId, int chunkNo){
+        if (chunksReceivedWhileReclaim.containsKey(fileId)){
+            chunksReceivedWhileReclaim.get(fileId).add(chunkNo);
+        }
+        else{
+            Set<Integer> chunks = new HashSet<>();
+            chunks.add(chunkNo);
+            chunksReceivedWhileReclaim.put(fileId, chunks);
+        }
+    }
+
+    public boolean isChunkAlreadyReceivedWhileReclaim(String fileId, int chunkNo){
+        if(chunksReceivedWhileReclaim.containsKey(fileId)){
+            return chunksReceivedWhileReclaim.get(fileId).contains(chunkNo);
+        }
+        return false;
+    }
+
+    public void clearChunksReceivedWhileReclaim(){
+        chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
     }
 }

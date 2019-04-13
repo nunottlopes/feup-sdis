@@ -60,6 +60,10 @@ public class Chunk implements Serializable {
         data = null;
     }
 
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
     public void addPerceivedRepDegreePeerId(int peerId){
         this.perceivedRepDegree.add(peerId);
     }

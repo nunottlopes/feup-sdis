@@ -30,28 +30,95 @@ public class BackupInitiator {
     private int repDegree;
     private String fileId;
     private File file;
+    private ArrayList<Chunk> chunks;
 
     public BackupInitiator(String path, int repDegree) {
         this.path = path;
         this.repDegree = repDegree;
+        this.chunks = new ArrayList<>();
+        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(200);
+    }
+
+    public BackupInitiator(String path, int repDegree, ArrayList<Chunk> chunks){
+        // Chunks only have one chunk
+        this.path = path;
+        this.repDegree = repDegree;
+        this.chunks = chunks;
+        this.fileId = chunks.get(0).getFileId();
         this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(200);
     }
 
     public void run() throws InvalidProtocolExecution {
 
-        file = new File(path);
+        if(chunks.isEmpty()){
+            file = new File(path);
 
-        byte[] data;
+            byte[] data;
 
-        try {
-            data = getFileData(file);
-        } catch (FileNotFoundException e) {
-            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "File not found!");
+            try {
+                data = getFileData(file);
+            } catch (FileNotFoundException e) {
+                throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "File not found!");
+            }
+
+            fileId = Globals.generateFileId(file);
+
+            chunks = splitIntoChunks(data);
         }
 
-        fileId = Globals.generateFileId(file);
+        sendPUTCHUNKS();
 
-        ArrayList<Chunk> chunks = splitIntoChunks(data);
+//        if(!validBackup(repDegree, chunks.size())) return;
+//
+//        Peer.getInstance().getProtocolInfo().startBackup(fileId);
+//
+//        CountDownLatch latch = new CountDownLatch(chunks.size());
+//
+//        for(Chunk c : chunks) {
+//            pool.execute(() -> {
+//                int delay = 1;
+//
+//                String[] args = {
+//                        Peer.getInstance().getVersion(),
+//                        Integer.toString(Peer.getInstance().getId()),
+//                        fileId,
+//                        Integer.toString(c.getChunkNo()),
+//                        Integer.toString(c.getRepDegree())
+//                };
+//                Message msg = new Message(Message.MessageType.PUTCHUNK, args, c.getData());
+//
+//
+//                ProtocolInfo status = Peer.getInstance().getProtocolInfo();
+//
+//                for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
+//                    Peer.getInstance().send(Channel.Type.MDB, msg);
+//
+//                    try {
+//                        TimeUnit.SECONDS.sleep(delay);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    delay *= 2;
+//                    int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
+//                    if(currentRepDegree >= c.getRepDegree()) break;
+//                }
+//
+//                latch.countDown();
+//            });
+//        }
+//
+//        try {
+//            latch.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//        Peer.getInstance().getProtocolInfo().endBackup(fileId, this.repDegree, this.path);
+
+    }
+
+    public void sendPUTCHUNKS() throws InvalidProtocolExecution{
 
         if(!validBackup(repDegree, chunks.size())) return;
 
@@ -78,14 +145,32 @@ public class BackupInitiator {
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
                     Peer.getInstance().send(Channel.Type.MDB, msg);
 
-                    try {
-                        TimeUnit.SECONDS.sleep(delay);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if(i != MAX_RETRANSMISSIONS-1){
+                        try {
+                            TimeUnit.SECONDS.sleep(delay);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        delay *= 2;
+                        int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
+                        if(currentRepDegree >= c.getRepDegree()) break;
                     }
-                    delay *= 2;
-                    int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
-                    if(currentRepDegree >= c.getRepDegree()) break;
+                    else{
+                        //TODO: PQ NÃO ENTRA AQUI
+                        System.out.println(status.getChunkRepDegree(c.getFileId(), c.getChunkNo()));
+                        System.out.println(c.getRepDegree());
+                    }
+
+                    // TODO: Impedir que um chunk que fez RECLAIM 0 volte a guardar os chunks que eliminou
+                    // TODO: É suposto guardar no STATE os chunks que ele faz backup através do space reclaim
+//                    try {
+//                        TimeUnit.SECONDS.sleep(delay);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    delay *= 2;
+//                    int currentRepDegree = status.getChunkRepDegree(c.getFileId(), c.getChunkNo());
+//                    if(currentRepDegree >= c.getRepDegree()) break;
                 }
 
                 latch.countDown();
@@ -100,7 +185,6 @@ public class BackupInitiator {
 
 
         Peer.getInstance().getProtocolInfo().endBackup(fileId, this.repDegree, this.path);
-
     }
 
     private boolean validBackup(int repDegree, int n_chunks) throws InvalidProtocolExecution {
