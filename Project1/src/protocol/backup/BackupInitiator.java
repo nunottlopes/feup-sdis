@@ -112,7 +112,7 @@ public class BackupInitiator {
         Peer.getInstance().getProtocolInfo().endBackup(fileId, repDegree, path);
     }
 
-    public void run_one_chunk() throws InvalidProtocolExecution{
+    public void run_one_chunk() {
 
         CountDownLatch latch = new CountDownLatch(1);
 

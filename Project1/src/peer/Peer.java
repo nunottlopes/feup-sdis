@@ -38,6 +38,7 @@ public class Peer implements RemoteInterface {
     private ProtocolInfo protocolInfo;
 
     private String protocolVersion;
+    private boolean enhanced;
     private int peerID;
     private static String accessPoint;
 
@@ -85,6 +86,10 @@ public class Peer implements RemoteInterface {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         this.protocolVersion = args[0];
+
+        if(this.protocolVersion.equals("1.0")) this.enhanced = false;
+        else this.enhanced = true;
+
         this.peerID = Integer.parseInt(args[1]);
         this.accessPoint = args[2];
 
@@ -114,7 +119,16 @@ public class Peer implements RemoteInterface {
     }
 
 
-    public void backup(String filepath, int replicationDegree) {
+    public void backup(String filepath, int replicationDegree, boolean enhanced) {
+        if(enhanced && !this.enhanced) {
+            System.out.println("-- Incompatible peer version with backup enhancement --");
+            return;
+        }
+        if(!enhanced && this.enhanced) {
+            System.out.println("-- Incompatible peer version with vanilla backup --");
+            return;
+        }
+
         System.out.println("\n---- BACKUP SERVICE ---- FILE PATH = " + filepath + " | REPLICATION DEGREEE = " + replicationDegree);
         BackupInitiator backupInitiator = new BackupInitiator(filepath, replicationDegree);
         try {
@@ -279,6 +293,10 @@ public class Peer implements RemoteInterface {
 
     public ScheduledExecutorService getExecutor() {
         return executor;
+    }
+
+    public boolean isEnhanced() {
+        return this.enhanced;
     }
 
     public synchronized void send(Channel.Type channel, Message msg) {

@@ -29,7 +29,14 @@ public class TestApp {
                     }
                     filePath = args[2];
                     int replicationDegree = Integer.parseInt(args[3]);
-                    stub.backup(filePath, replicationDegree);
+                    stub.backup(filePath, replicationDegree, false);
+                    break;
+                case "backupenh":
+                    if(args.length != 4){
+                        System.out.println("Usage: java TestApp <peer_ap> BACKUPENH <file_path> <replication_degree>");
+                        return;
+                    }
+                    stub.backup(args[2], Integer.parseInt(args[3]), true);
                     break;
                 case "restore":
                     if(args.length != 3){

@@ -41,16 +41,29 @@ public class Backup {
     private void start() {
         chunk = new Chunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getReplicationDeg(), this.msg.getBody());
 
-        Random r = new Random();
-        int delay = r.nextInt(400);
-        Peer.getInstance().getExecutor().schedule(() -> {
-            if(Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
-                this.fm.createFolders(path);
-                if(saveChunk()) {
-                    sendSTORED();
+        if(Peer.getInstance().isEnhanced()) {
+
+            Random r = new Random();
+            int delay = r.nextInt(400);
+            Peer.getInstance().getExecutor().schedule(() -> {
+                if (Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
+                    this.fm.createFolders(path);
+                    if (saveChunk()) {
+                        sendSTORED();
+                    }
                 }
+            }, delay, TimeUnit.MILLISECONDS);
+
+        } else {
+
+            this.fm.createFolders(path);
+            if (saveChunk()) {
+                Random r = new Random();
+                int delay = r.nextInt(400);
+                Peer.getInstance().getExecutor().schedule(() -> sendSTORED(), delay, TimeUnit.MILLISECONDS);
             }
-        }, delay, TimeUnit.MILLISECONDS);
+
+        }
 
     }
 

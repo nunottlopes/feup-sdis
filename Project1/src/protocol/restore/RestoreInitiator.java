@@ -67,7 +67,6 @@ public class RestoreInitiator {
 
         boolean restored = false;
         for(int i = 0; i < MAX_TRIES; i++) {
-            System.out.println("stop");
             try {
                 Thread.sleep(AWAIT_TIME);
             } catch (InterruptedException e) {
@@ -80,14 +79,10 @@ public class RestoreInitiator {
             }
         }
 
-        System.out.println("antes");
-
         if(!restored) {
             System.out.println("Couldn't restore " + this.file.getName());
             return;
         }
-
-        System.out.println("passei");
 
         Peer.getInstance().getFileManager().createFolders(Peer.getInstance().getRestorePath());
         FileOutputStream out = null;
