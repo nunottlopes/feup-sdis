@@ -19,10 +19,10 @@ public class Reclaim {
     Chunk chunk;
 
     public Reclaim(Message msg) {
-        System.out.println("\n> REMOVED received");
-        System.out.println("- Sender Id = " + msg.getSenderId());
-        System.out.println("- File Id = " + msg.getFileId());
-        System.out.println("- Chunk No = " + msg.getChunkNo());
+//        System.out.println("\n> REMOVED received");
+//        System.out.println("- Sender Id = " + msg.getSenderId());
+//        System.out.println("- File Id = " + msg.getFileId());
+//        System.out.println("- Chunk No = " + msg.getChunkNo());
 
         this.fileId = msg.getFileId();
         this.chunkNo = msg.getChunkNo();
@@ -56,10 +56,10 @@ public class Reclaim {
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
             if(!Peer.getInstance().getProtocolInfo().isChunkAlreadyReceivedWhileReclaim(fileId, chunkNo)) {
-                System.out.println("\n> PUTCHUNK Sent");
-                System.out.println("- Sender Id = " + senderId);
-                System.out.println("- File Id = " + fileId);
-                System.out.println("- Chunk No = " + chunkNo);
+//                System.out.println("\n> PUTCHUNK Sent");
+//                System.out.println("- Sender Id = " + senderId);
+//                System.out.println("- File Id = " + fileId);
+//                System.out.println("- Chunk No = " + chunkNo);
                 BackupInitiator backupInitiator = new BackupInitiator(filepath, repDegree, chunk);
                 backupInitiator.run_one_chunk();
                 Peer.getInstance().writePeerToFile();

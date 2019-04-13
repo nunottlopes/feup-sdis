@@ -95,8 +95,8 @@ public class ReclaimInitiator {
 
         Peer.getInstance().send(Channel.Type.MC, msg);
 
-        System.out.println("\n> REMOVED sent");
-        System.out.println("- File Id = " + fileId);
-        System.out.println("- Chunk No = " + chunkNo);
+//        System.out.println("\n> REMOVED sent");
+//        System.out.println("- File Id = " + fileId);
+//        System.out.println("- Chunk No = " + chunkNo);
     }
 }

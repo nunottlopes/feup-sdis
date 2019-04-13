@@ -304,7 +304,6 @@ public class Peer implements RemoteInterface {
 
         try {
             this.socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
-            //       System.out.print("Sent: " + msg.getHeaderString());
         } catch (IOException e) {
             System.out.println("Error sending message to " + c.getAddress());
         }

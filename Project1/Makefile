@@ -10,19 +10,16 @@ mkdir:
 	@mkdir -p $(OUT_DIR)
 
 peer1:
-	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 1 Peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+	java -cp $(OUT_DIR) $(PEER_CLASS) 1.0 1 Peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
 peer2:
-	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 2 Peer2 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+	java -cp $(OUT_DIR) $(PEER_CLASS) 1.0 2 Peer2 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
 peer3:
-	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 3 Peer3 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+	java -cp $(OUT_DIR) $(PEER_CLASS) 1.0 3 Peer3 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
 peer4:
-	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 4 Peer4 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
-
-peer5:
-	java -cp $(OUT_DIR) $(PEER_CLASS) 2.0 5 Peer5 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+	java -cp $(OUT_DIR) $(PEER_CLASS) 1.0 4 Peer4 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 
 rmi:
 	rmiregistry -J-Djava.class.path=$(OUT_DIR)
@@ -50,9 +47,6 @@ state3:
 
 state4:
 	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer4 STATE
-
-state5:
-	java -cp $(OUT_DIR) $(TEST_APP_CLASS) Peer5 STATE
 
 snooper:
 	java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003

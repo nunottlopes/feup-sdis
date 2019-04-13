@@ -19,10 +19,10 @@ public class Backup {
 
     public Backup(Message msg) {
 
-        System.out.println("\n> PUTCHUNK received");
-        System.out.println("- Sender Id = " + msg.getSenderId());
-        System.out.println("- File Id = " + msg.getFileId());
-        System.out.println("- Chunk No = " + msg.getChunkNo());
+//        System.out.println("\n> PUTCHUNK received");
+//        System.out.println("- Sender Id = " + msg.getSenderId());
+//        System.out.println("- File Id = " + msg.getFileId());
+//        System.out.println("- Chunk No = " + msg.getChunkNo());
 
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
@@ -96,8 +96,8 @@ public class Backup {
 
         Peer.getInstance().send(Channel.Type.MC, msg);
 
-        System.out.println("\n> STORED sent");
-        System.out.println("- File Id = " + chunk.getFileId());
-        System.out.println("- Chunk No = " + chunk.getChunkNo());
+//        System.out.println("\n> STORED sent");
+//        System.out.println("- File Id = " + chunk.getFileId());
+//        System.out.println("- Chunk No = " + chunk.getChunkNo());
     }
 }

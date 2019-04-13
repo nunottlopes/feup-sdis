@@ -10,9 +10,9 @@ public class Delete {
     private FileManager fm;
 
     public Delete(Message msg) {
-        System.out.println("\n> DELETE received");
-        System.out.println("- Sender Id = " + msg.getSenderId());
-        System.out.println("- File Id = " + msg.getFileId());
+//        System.out.println("\n> DELETE received");
+//        System.out.println("- Sender Id = " + msg.getSenderId());
+//        System.out.println("- File Id = " + msg.getFileId());
 
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
@@ -31,5 +31,6 @@ public class Delete {
             this.fm.removeStoredChunks(msg.getFileId());
             Peer.getInstance().getProtocolInfo().removeChunksRepDegree(msg.getFileId());
         }
+        fm.removeFolderIfEmpty(Peer.getInstance().getBackupFolder());
     }
 }
