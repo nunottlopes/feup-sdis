@@ -88,8 +88,8 @@ public class Backup {
 
         Peer.getInstance().send(Channel.Type.MC, msg);
 
-//        System.out.println("\n> STORED sent");
-//        System.out.println("- File Id = " + chunk.getFileId());
-//        System.out.println("- Chunk No = " + chunk.getChunkNo());
+        System.out.println("\n> STORED sent");
+        System.out.println("- File Id = " + chunk.getFileId());
+        System.out.println("- Chunk No = " + chunk.getChunkNo());
     }
 }

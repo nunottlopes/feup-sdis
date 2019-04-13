@@ -29,6 +29,7 @@ public class Reclaim {
     int repDegree;
     int senderId;
     String filepath;
+    Chunk chunk;
 
     public Reclaim(Message msg) {
         System.out.println("\n> REMOVED received");
@@ -40,24 +41,28 @@ public class Reclaim {
         this.chunkNo = msg.getChunkNo();
         this.senderId = msg.getSenderId();
         this.filepath = Peer.getInstance().getBackupPath(fileId) + "/" + chunkNo;
+        this.chunk = null;
 
         start();
     }
 
     private void start() {
-        if(!Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo))
+        if(!Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)){
+            //System.out.println("Does not have chunk asked");
             return;
-
-        Chunk chunk = null;
+        }
         try {
             chunk = Peer.getInstance().getFileManager().getChunkFromFile(fileId, chunkNo);
         } catch (IOException e) {
             System.out.println(e);
         }
         chunk.removePerceivedRepDegreePeer(senderId);
-        if(chunk.getPerceivedRepDegree() >= chunk.getRepDegree())
+        if(chunk.getPerceivedRepDegree() >= chunk.getRepDegree()){
+            //System.out.println("SAME PERCEIVED AND DESIRED REP DEGREE");
+            //System.out.println(chunk.getPerceivedRepDegree());
+            //System.out.println(chunk.getRepDegree());
             return;
-
+        }
         this.repDegree = chunk.getRepDegree();
 
         Peer.getInstance().getProtocolInfo().setReclaimProtocol(true);
@@ -65,27 +70,24 @@ public class Reclaim {
 
         Random r = new Random();
         int delay = r.nextInt(400);
-        Chunk finalChunk = chunk;
         Peer.getInstance().getExecutor().schedule(() -> {
+            //System.out.println("STARTING EXECUTOR");
             if(!Peer.getInstance().getProtocolInfo().isChunkAlreadyReceivedWhileReclaim(fileId, chunkNo)) {
-                ArrayList<Chunk> chunks = new ArrayList<>();
-                chunks.add(finalChunk);
                 System.out.println("\n> PUTCHUNK Sent");
                 System.out.println("- Sender Id = " + senderId);
                 System.out.println("- File Id = " + fileId);
                 System.out.println("- Chunk No = " + chunkNo);
-                BackupInitiator backupInitiator = new BackupInitiator(filepath, repDegree, chunks);
+                BackupInitiator backupInitiator = new BackupInitiator(filepath, repDegree, chunk);
                 try {
-                    backupInitiator.run();
+                    backupInitiator.run_one_chunk();
                 } catch (InvalidProtocolExecution e) {
                     System.out.println(e);
                 }
                 Peer.getInstance().writePeerToFile();
             }
             else{
-                System.out.println("DENIED");
+                //System.out.println("---- DENIED ----");
             }
-            System.out.println("AQUI");
             Peer.getInstance().getProtocolInfo().setReclaimProtocol(false);
             Peer.getInstance().getProtocolInfo().clearChunksReceivedWhileReclaim();
         }, delay, TimeUnit.MILLISECONDS);

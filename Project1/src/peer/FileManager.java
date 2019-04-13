@@ -2,7 +2,6 @@ package peer;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -195,7 +194,4 @@ public class FileManager implements Serializable {
         this.free_mem = spaceReclaim - this.used_mem;
     }
 
-    public long getFree_mem() {
-        return free_mem;
-    }
 }
