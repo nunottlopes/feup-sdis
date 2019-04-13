@@ -61,11 +61,7 @@ public class Reclaim {
                 System.out.println("- File Id = " + fileId);
                 System.out.println("- Chunk No = " + chunkNo);
                 BackupInitiator backupInitiator = new BackupInitiator(filepath, repDegree, chunk);
-                try {
-                    backupInitiator.run_one_chunk();
-                } catch (InvalidProtocolExecution e) {
-                    System.out.println(e);
-                }
+                backupInitiator.run_one_chunk();
                 Peer.getInstance().writePeerToFile();
             }
             Peer.getInstance().getProtocolInfo().setReclaimProtocol(false);
