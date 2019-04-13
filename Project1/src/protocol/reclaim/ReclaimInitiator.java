@@ -1,7 +1,6 @@
 package protocol.reclaim;
 
 import channel.Channel;
-import javafx.util.Pair;
 import message.Message;
 import peer.Chunk;
 import peer.ChunkComparator;
@@ -10,7 +9,6 @@ import peer.Peer;
 import protocol.InvalidProtocolExecution;
 
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

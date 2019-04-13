@@ -6,7 +6,6 @@ import peer.Peer;
 import protocol.InvalidProtocolExecution;
 import protocol.backup.BackupInitiator;
 
-import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
