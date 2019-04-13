@@ -26,7 +26,7 @@ public class RestoreInitiator {
 
     public RestoreInitiator(String filepath) {
         this.path = filepath;
-        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(200);
+        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     }
 
     public void run() throws InvalidProtocolExecution {
@@ -39,9 +39,6 @@ public class RestoreInitiator {
         Peer.getInstance().getProtocolInfo().startRestore(fileId);
 
         int n = (int)this.file.length() / (Chunk.MAX_SIZE) + 1;
-
-
-        System.out.println("esperado: " + n);
 
         CountDownLatch latch = new CountDownLatch(n);
 

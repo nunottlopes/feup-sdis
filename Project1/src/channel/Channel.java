@@ -1,7 +1,6 @@
 package channel;
 
 import message.InvalidPacketException;
-import message.Message;
 import message.MessageHandler;
 import peer.Chunk;
 import peer.Peer;

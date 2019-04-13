@@ -55,7 +55,6 @@ public class Backup {
             }, delay, TimeUnit.MILLISECONDS);
 
         } else {
-
             this.fm.createFolders(path);
             if (saveChunk()) {
                 Random r = new Random();

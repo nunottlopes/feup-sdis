@@ -35,15 +35,13 @@ public class BackupInitiator {
     public BackupInitiator(String path, int repDegree) {
         this.path = path;
         this.repDegree = repDegree;
-        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(200);
+        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     }
 
     public BackupInitiator(String path, int repDegree, Chunk chunk){
-        this.path = path;
-        this.repDegree = repDegree;
+        this(path, repDegree);
         this.chunk = chunk;
         this.fileId = chunk.getFileId();
-        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(200);
     }
 
     public void run() throws InvalidProtocolExecution {
