@@ -138,7 +138,8 @@ public class ProtocolInfo implements Serializable {
     }
 
     public void updateChunkRepDegree(String fileId, int chunkNo) {
-        chunksRepDegree.get(fileId).get(chunkNo).remove(Peer.getInstance().getId());
+        if(chunksRepDegree.containsKey(fileId) && chunksRepDegree.get(fileId).containsKey(chunkNo))
+            chunksRepDegree.get(fileId).get(chunkNo).remove(Peer.getInstance().getId());
     }
 
     public void removeChunksRepDegree(String fileId) {
