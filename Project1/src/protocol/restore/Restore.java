@@ -96,6 +96,11 @@ public class Restore {
             System.out.println("a");
         }
         try {
+            out.reset();
+        } catch (IOException e) {
+            System.out.println("b---");
+        }
+        try {
             out.writeObject(msg);
         } catch (IOException e) {
             System.out.println("b");
