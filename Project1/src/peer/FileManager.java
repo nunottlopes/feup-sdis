@@ -28,7 +28,9 @@ public class FileManager implements Serializable {
 
     public void createFolders(String path) {
         try {
-            Files.createDirectories(Paths.get(path));
+            if(!Files.exists(Paths.get(path))){
+                Files.createDirectories(Paths.get(path));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,6 +85,8 @@ public class FileManager implements Serializable {
         }
         String filePath = path + "/" + fileName;
 
+        createFolders(path);
+
         if (Files.exists(Paths.get(filePath))) {
             return true;
         }
@@ -97,24 +101,27 @@ public class FileManager implements Serializable {
         return true;
     }
 
-    public void removeChunkFile(String path, String fileName){
+    public void removeChunkFile(String path, String fileName, boolean updateFreeMem){
         File chunkFile = new File(path, fileName);
-        free_mem += chunkFile.length();
+        if(updateFreeMem)
+            free_mem += chunkFile.length();
         used_mem -= chunkFile.length();
         chunkFile.delete();
     }
 
-    public boolean removeFileFolder(String path){
+    public boolean removeFileFolder(String path, boolean updateFreeMem){
         File file = new File(path);
 
         if(!file.exists())
             return true;
 
         for(String fileName : file.list()){
-            removeChunkFile(file.getPath(), fileName);
+            removeChunkFile(file.getPath(), fileName, updateFreeMem);
         }
 
         file.delete();
+        if(file.exists())
+            return false;
         return true;
     }
 

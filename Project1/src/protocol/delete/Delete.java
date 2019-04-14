@@ -27,7 +27,7 @@ public class Delete {
 
     private void removeFiles(){
         String path = Peer.getInstance().getBackupPath(msg.getFileId());
-        if(this.fm.removeFileFolder(path)){
+        if(this.fm.removeFileFolder(path, true)){
             this.fm.removeStoredChunks(msg.getFileId());
             Peer.getInstance().getProtocolInfo().removeChunksRepDegree(msg.getFileId());
         }

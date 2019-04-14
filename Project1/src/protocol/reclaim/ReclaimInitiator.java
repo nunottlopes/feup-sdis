@@ -57,7 +57,7 @@ public class ReclaimInitiator {
             chunkNo = chunk.getChunkNo();
             fileId = chunk.getFileId();
             path = Peer.getInstance().getBackupPath(fileId);
-            fm.removeChunkFile(path, Integer.toString(chunkNo));
+            fm.removeChunkFile(path, Integer.toString(chunkNo), true);
             fm.removeChunk(chunk.getFileId(), chunkNo);
             fm.removeFolderIfEmpty(path);
             fm.updateFreeMem(spaceReclaim); //To avoid doing backup of delete filed
@@ -68,20 +68,18 @@ public class ReclaimInitiator {
 
     private void deleteAllChunks() {
         String fileId, path;
+        fm.setFree_mem(0);
         for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry_file : fm.getChunksStored().entrySet()){
             fileId = entry_file.getKey();
             path = Peer.getInstance().getBackupPath(fileId);
             for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
                 int chunkNo = entry_chunk.getValue().getChunkNo();
-                fm.removeChunkFile(path, Integer.toString(chunkNo));
-                //fm.setFree_mem(0);
                 Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo);
                 sendREMOVED(fileId, chunkNo);
             }
             fm.getChunksStored().remove(fileId);
-            fm.removeFileFolder(path);
+            fm.removeFileFolder(path, false);
         }
-        fm.setFree_mem(0);
         fm.removeFolderIfEmpty(Peer.getInstance().getBackupFolder());
     }
 

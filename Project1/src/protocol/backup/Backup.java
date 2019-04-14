@@ -47,7 +47,6 @@ public class Backup {
             int delay = r.nextInt(400);
             Peer.getInstance().getExecutor().schedule(() -> {
                 if (Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
-                    this.fm.createFolders(path);
                     if (saveChunk()) {
                         sendSTORED();
                     }
@@ -55,7 +54,6 @@ public class Backup {
             }, delay, TimeUnit.MILLISECONDS);
 
         } else {
-            this.fm.createFolders(path);
             if (saveChunk()) {
                 Random r = new Random();
                 int delay = r.nextInt(400);
