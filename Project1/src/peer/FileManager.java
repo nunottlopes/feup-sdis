@@ -3,13 +3,11 @@ package peer;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static globals.Globals.getFileData;
+import static message.SendMessages.sendREMOVED;
 
 public class FileManager implements Serializable {
     public static final long MAX_CAPACITY = 8*100000000;
@@ -80,8 +78,31 @@ public class FileManager implements Serializable {
         long file_size = data.length;
 
         if (free_mem < file_size) {
-            System.out.println("No more available memory!");
-            return false;
+            List<Chunk> chunks = getAllStoredChunks();
+            Collections.sort(chunks, new ChunkComparator());
+            int i = 0;
+            Chunk chunk;
+            String chunk_path, fileId;
+            int chunkNo;
+            while (free_mem < file_size){
+                chunk = chunks.get(i);
+                chunkNo = chunk.getChunkNo();
+                fileId = chunk.getFileId();
+                chunk_path = Peer.getInstance().getBackupPath(fileId);
+                if(chunk.getPerceivedRepDegree() > chunk.getRepDegree()){
+                    removeChunkFile(chunk_path, Integer.toString(chunkNo), true);
+                    removeChunk(fileId, chunkNo);
+                    removeFolderIfEmpty(chunk_path);
+                    //TODO: CHECK IF WE CAN USE THIS
+                    sendREMOVED(fileId, chunkNo);
+                    System.out.println("REMOVED: chunkno: "+ chunkNo + " fileid: " +fileId);
+                }
+                else{
+                    System.out.println("No more available memory!");
+                    return false;
+                }
+                i++;
+            }
         }
         String filePath = path + "/" + fileName;
 

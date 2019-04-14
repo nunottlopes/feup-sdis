@@ -1,17 +1,14 @@
 package protocol.reclaim;
 
-import channel.Channel;
-import message.Message;
 import peer.Chunk;
 import peer.ChunkComparator;
 import peer.FileManager;
 import peer.Peer;
 import protocol.InvalidProtocolExecution;
-
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import static message.SendMessages.sendREMOVED;
 
 public class ReclaimInitiator {
 
@@ -58,7 +55,7 @@ public class ReclaimInitiator {
             fileId = chunk.getFileId();
             path = Peer.getInstance().getBackupPath(fileId);
             fm.removeChunkFile(path, Integer.toString(chunkNo), true);
-            fm.removeChunk(chunk.getFileId(), chunkNo);
+            fm.removeChunk(fileId, chunkNo);
             fm.removeFolderIfEmpty(path);
             fm.updateFreeMem(spaceReclaim); //To avoid doing backup of delete filed
             sendREMOVED(fileId, chunkNo);
@@ -81,22 +78,5 @@ public class ReclaimInitiator {
             fm.removeFileFolder(path, false);
         }
         fm.removeFolderIfEmpty(Peer.getInstance().getBackupFolder());
-    }
-
-    private void sendREMOVED(String fileId, int chunkNo) {
-        String[] args = {
-                Peer.getInstance().getVersion(),
-                Integer.toString(Peer.getInstance().getId()),
-                fileId,
-                Integer.toString(chunkNo)
-        };
-
-        Message msg = new Message(Message.MessageType.REMOVED, args);
-
-        Peer.getInstance().send(Channel.Type.MC, msg);
-
-//        System.out.println("\n> REMOVED sent");
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
     }
 }

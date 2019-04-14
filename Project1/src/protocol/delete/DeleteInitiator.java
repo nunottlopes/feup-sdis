@@ -11,6 +11,8 @@ import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static message.SendMessages.sendDELETE;
+
 public class DeleteInitiator {
 
     public static final int MAX_DELETE_MESSAGES = 5;
@@ -30,19 +32,11 @@ public class DeleteInitiator {
 
         fileId = Globals.generateFileId(file);
 
-        String[] args = {
-                Peer.getInstance().getVersion(),
-                Integer.toString(Peer.getInstance().getId()),
-                fileId
-        };
-
-        Message msg = new Message(Message.MessageType.DELETE, args);
-
         CountDownLatch latch = new CountDownLatch(MAX_DELETE_MESSAGES);
 
         for (int i = 0 ; i < MAX_DELETE_MESSAGES; i++){
             Peer.getInstance().getExecutor().schedule(()->{
-                Peer.getInstance().send(Channel.Type.MC, msg);
+                sendDELETE(fileId);
                 latch.countDown();
                 }, TIME_INTERVAL*i, TimeUnit.MILLISECONDS);
         }

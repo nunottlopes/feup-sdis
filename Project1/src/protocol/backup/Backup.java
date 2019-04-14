@@ -1,14 +1,16 @@
 package protocol.backup;
 
-import channel.Channel;
 import message.Message;
 import peer.Chunk;
 import peer.FileManager;
 import peer.Peer;
 
+
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
+import static message.SendMessages.sendSTORED;
 
 public class Backup {
 
@@ -33,35 +35,30 @@ public class Backup {
             start();
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
-            sendSTORED();
+            sendSTORED(chunk.getFileId(), chunk.getChunkNo());
         }
-
     }
 
     private void start() {
         chunk = new Chunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getReplicationDeg(), this.msg.getBody());
 
         if(Peer.getInstance().isEnhanced()) {
-
             Random r = new Random();
             int delay = r.nextInt(400);
             Peer.getInstance().getExecutor().schedule(() -> {
                 if (Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
                     if (saveChunk()) {
-                        sendSTORED();
+                        sendSTORED(chunk.getFileId(), chunk.getChunkNo());
                     }
                 }
             }, delay, TimeUnit.MILLISECONDS);
-
         } else {
             if (saveChunk()) {
                 Random r = new Random();
                 int delay = r.nextInt(400);
-                Peer.getInstance().getExecutor().schedule(() -> sendSTORED(), delay, TimeUnit.MILLISECONDS);
+                Peer.getInstance().getExecutor().schedule(() -> sendSTORED(chunk.getFileId(), chunk.getChunkNo()), delay, TimeUnit.MILLISECONDS);
             }
-
         }
-
     }
 
     private boolean saveChunk() {
@@ -79,22 +76,5 @@ public class Backup {
             return false;
         }
         return true;
-    }
-
-    private void sendSTORED() {
-        String[] args = {
-                Peer.getInstance().getVersion(),
-                Integer.toString(Peer.getInstance().getId()),
-                chunk.getFileId(),
-                Integer.toString(chunk.getChunkNo())
-        };
-
-        Message msg = new Message(Message.MessageType.STORED, args);
-
-        Peer.getInstance().send(Channel.Type.MC, msg);
-
-//        System.out.println("\n> STORED sent");
-//        System.out.println("- File Id = " + chunk.getFileId());
-//        System.out.println("- Chunk No = " + chunk.getChunkNo());
     }
 }

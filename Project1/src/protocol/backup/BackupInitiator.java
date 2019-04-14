@@ -18,6 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static globals.Globals.getFileData;
+import static message.SendMessages.sendPUTCHUNK;
 
 public class BackupInitiator {
 
@@ -70,20 +71,10 @@ public class BackupInitiator {
             pool.execute(() -> {
                 int delay = 1;
 
-                String[] args = {
-                        Peer.getInstance().getVersion(),
-                        Integer.toString(Peer.getInstance().getId()),
-                        fileId,
-                        Integer.toString(c.getChunkNo()),
-                        Integer.toString(repDegree)
-                };
-                Message msg = new Message(Message.MessageType.PUTCHUNK, args, c.getData());
-
-
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    Peer.getInstance().send(Channel.Type.MDB, msg);
+                    sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData());
 
                     if(i != MAX_RETRANSMISSIONS-1){
                         try {
@@ -117,20 +108,10 @@ public class BackupInitiator {
         pool.execute(() -> {
             int delay = 1;
 
-            String[] args = {
-                    Peer.getInstance().getVersion(),
-                    Integer.toString(Peer.getInstance().getId()),
-                    fileId,
-                    Integer.toString(chunk.getChunkNo()),
-                    Integer.toString(chunk.getRepDegree())
-            };
-            Message msg = new Message(Message.MessageType.PUTCHUNK, args, chunk.getData());
-
-
             ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
             for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                Peer.getInstance().send(Channel.Type.MDB, msg);
+                sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData());
 
                 if(i != MAX_RETRANSMISSIONS-1){
                     try {
@@ -184,12 +165,9 @@ public class BackupInitiator {
             } else {
                 chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + Chunk.MAX_SIZE);
             }
-
             Chunk chunk=new Chunk(fileId, i, repDegree, chunk_data);
             ret.add(chunk);
         }
-
         return ret;
     }
-
 }

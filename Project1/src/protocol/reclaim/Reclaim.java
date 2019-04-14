@@ -35,16 +35,12 @@ public class Reclaim {
 
     private void start() {
         if(!Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)){
-            //System.out.println("Does not have chunk asked");
             return;
         }
         chunk = Peer.getInstance().getFileManager().getChunkFromFile(fileId, chunkNo);
 
         chunk.removePerceivedRepDegreePeer(senderId);
         if(chunk.getPerceivedRepDegree() >= chunk.getRepDegree()){
-            //System.out.println("SAME PERCEIVED AND DESIRED REP DEGREE");
-            //System.out.println(chunk.getPerceivedRepDegree());
-            //System.out.println(chunk.getRepDegree());
             return;
         }
         this.repDegree = chunk.getRepDegree();
@@ -56,10 +52,6 @@ public class Reclaim {
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
             if(!Peer.getInstance().getProtocolInfo().isChunkAlreadyReceivedWhileReclaim(fileId, chunkNo)) {
-//                System.out.println("\n> PUTCHUNK Sent");
-//                System.out.println("- Sender Id = " + senderId);
-//                System.out.println("- File Id = " + fileId);
-//                System.out.println("- Chunk No = " + chunkNo);
                 BackupInitiator backupInitiator = new BackupInitiator(filepath, repDegree, chunk);
                 backupInitiator.run_one_chunk();
                 Peer.getInstance().writePeerToFile();
