@@ -37,7 +37,7 @@ public class Message implements Serializable {
 
         if (type == MessageType.PUTCHUNK || (type == MessageType.CHUNK && !Peer.getInstance().isEnhanced())) {
             if(!parseBody(packet.getData(), packet.getLength())) {
-                throw new InvalidPacketException("Invalid Message Body");
+                throw new InvalidPacketException("Invalid Message Body (" + type + ")");
             }
         }
     }
