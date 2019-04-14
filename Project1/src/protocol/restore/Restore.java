@@ -81,16 +81,34 @@ public class Restore {
     }
 
     private void sendTCP(Message msg) {
-        Socket socket;
+        Socket socket = null;
 
         try {
             socket = new Socket(addressTCP, portTCP);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(msg);
-            out.close();
-            socket.close();
         } catch (IOException e) {
             System.out.println("Error sending chunk " + chunkNo + " via TCP");
+        }
+
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            System.out.println("a");
+        }
+        try {
+            out.writeObject(msg);
+        } catch (IOException e) {
+            System.out.println("b");
+        }
+        try {
+            out.close();
+        } catch (IOException e) {
+            System.out.println("c");
+        }
+        try {
+            socket.close();
+        } catch (IOException e) {
+            System.out.println("d");
         }
     }
 }

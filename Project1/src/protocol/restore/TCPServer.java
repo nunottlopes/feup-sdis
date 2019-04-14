@@ -26,7 +26,7 @@ public class TCPServer implements Runnable {
                 System.out.println("recebi");
                 handleMessage(client);
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
