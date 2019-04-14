@@ -21,12 +21,29 @@ import static message.SendMessage.sendGETCHUNKENH;
  */
 public class RestoreInitiator {
 
+    /**
+     * Max number of retransmissions for GETCHUNK/GETCHUNKENH messages
+     */
     private static final int MAX_RETRANSMISSIONS = 3;
 
+    /**
+     * Path for the file to be restored
+     */
     private String path;
+
+    /**
+     * File to be restored
+     */
     private File file;
 
+    /**
+     * Restore protocol pool
+     */
     private ThreadPoolExecutor pool;
+
+    /**
+     * Restore protocol tcp for enhanced version
+     */
     private TCPServer tcp;
 
     /**

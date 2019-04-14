@@ -14,7 +14,14 @@ import java.net.InetAddress;
  */
 public class MessageHandler implements Runnable {
 
+    /**
+     * Message
+     */
     private Message msg;
+
+    /**
+     * Inet Address from datagram packet
+     */
     InetAddress address;
 
     /**

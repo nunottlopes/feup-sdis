@@ -15,8 +15,16 @@ import static message.SendMessage.sendREMOVED;
  */
 public class ReclaimInitiator {
 
+    /**
+     * Peer file manager
+     */
     private final FileManager fm;
-    private long spaceReclaim; //in Bytes -> maximum disk space that can be used for storing chunks
+
+    /**
+     * Peer max disk space that can be used for storing chunks
+     * In Bytes
+     */
+    private long spaceReclaim;
 
     /**
      * ReclaimInitiator constructor

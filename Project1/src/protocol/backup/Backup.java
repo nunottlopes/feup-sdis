@@ -17,9 +17,24 @@ import static message.SendMessage.sendSTORED;
  */
 public class Backup {
 
+    /**
+     * Message that has information for backup protocol
+     */
     private Message msg;
+
+    /**
+     * Peer file manager
+     */
     private FileManager fm;
+
+    /**
+     * File path
+     */
     private String path;
+
+    /**
+     * Chunk to be saved
+     */
     private Chunk chunk;
 
     /**

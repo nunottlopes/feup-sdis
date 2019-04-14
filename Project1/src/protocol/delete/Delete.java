@@ -9,7 +9,14 @@ import peer.Peer;
  */
 public class Delete {
 
+    /**
+     * Message that has information for delete protocol
+     */
     private Message msg;
+
+    /**
+     * Peer file manager
+     */
     private FileManager fm;
 
     /**

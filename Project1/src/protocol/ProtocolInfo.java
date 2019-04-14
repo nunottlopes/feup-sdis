@@ -12,15 +12,35 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ProtocolInfo implements Serializable {
 
-    private boolean reclaimProtocol = false;
-    private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
-
+    /**
+     * Saving chunks perceived replication degree
+     */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
+
+    /**
+     * Chunks sent in restore protocol
+     */
     private ConcurrentHashMap<String, Set<Integer> > chunksSent;
 
-    //Initiator
+    /**
+     * Backup Initiator perceived replication degree
+     */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > backupRepDegree_init;
+
+    /**
+     * Restore Initiator file data to be saved
+     */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, byte[] > > restoredChunks_init;
+
+    /**
+     * Running Reclaim protocol state
+     */
+    private boolean reclaimProtocol = false;
+
+    /**
+     * Chunks number received while on protocol reclaim
+     */
+    private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
 
     /**
      * ProtocolInfo constructor

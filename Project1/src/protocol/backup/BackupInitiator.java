@@ -23,15 +23,45 @@ import static message.SendMessage.sendPUTCHUNK;
  */
 public class BackupInitiator {
 
+    /**
+     * Max number of chunks that a file can be split to
+     */
     public static final int MAX_NUM_CHUNKS = 1000000;
+
+    /**
+     * Max number of retransmissions of PUTCHUNK message
+     */
     public static final int MAX_RETRANSMISSIONS = 5;
 
+    /**
+     * Backup protocol pool
+     */
     private ThreadPoolExecutor pool;
 
+    /**
+     * Path for the file that is going to be backed up
+     */
     private String path;
+
+    /**
+     * File desired replication degree
+     */
     private int repDegree;
+
+    /**
+     * File id
+     */
     private String fileId;
+
+    /**
+     * File to be backed up
+     */
     private File file;
+
+    /**
+     * Chunk to be sent in PUTCHUNK message
+     * Only used by reclaim protocol
+     */
     private Chunk chunk;
 
     /**
@@ -46,7 +76,7 @@ public class BackupInitiator {
     }
 
     /**
-     * BackupInitiator constructor
+     * BackupInitiator constructor used by reclaim protocol
      * @param path
      * @param repDegree
      * @param chunk

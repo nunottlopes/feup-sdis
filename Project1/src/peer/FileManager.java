@@ -13,11 +13,30 @@ import static message.SendMessage.sendREMOVED;
  * Chunk FileManager class
  */
 public class FileManager implements Serializable {
+
+    /**
+     * Peer max disk space reserved for backup service
+     */
     public static final long MAX_CAPACITY = 8*100000000;
+
+    /**
+     * Peer available disk space
+     */
     private long free_mem;
+
+    /**
+     * Peer used disk space
+     */
     private long used_mem;
 
+    /**
+     * Chunks information stored from backup protocol
+     */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk> > chunksStored;
+
+    /**
+     * Information from chunks that have been used to initiate backup protocol
+     */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk> > backedupFiles;
 
     /**

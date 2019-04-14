@@ -12,8 +12,19 @@ import java.util.Arrays;
  */
 public class Message implements Serializable {
 
+    /**
+     * CR
+     */
     public static byte CR = 0xD;
+
+    /**
+     * LF
+     */
     public static byte LF = 0xA;
+
+    /**
+     * CRLF - Header terminator
+     */
     public static String CRLF = "" + (char) CR + (char) LF;
 
     /**
@@ -23,14 +34,49 @@ public class Message implements Serializable {
         PUTCHUNK, STORED, GETCHUNK, CHUNK, DELETE, REMOVED, GETCHUNKENH
     }
 
+    /**
+     * Message type
+     */
     private MessageType type;
+
+    /**
+     * Protocol version
+     */
     private String version;
+
+    /**
+     * Sender id
+     */
     private int senderId;
+
+    /**
+     * File id
+     */
     private String fileId;
+
+    /**
+     * Chunk number
+     */
     private int chunkNo;
+
+    /**
+     * Desired replication degree
+     */
     private int replicationDeg;
+
+    /**
+     * Message header length
+     */
     private int header_length;
+
+    /**
+     * TCP port
+     */
     private int port;
+
+    /**
+     * Message body
+     */
     private byte[] body;
 
     /**

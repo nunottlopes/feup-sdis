@@ -13,8 +13,19 @@ import java.net.Socket;
  */
 public class TCPServer implements Runnable {
 
+    /**
+     * Server socket
+     */
     private ServerSocket ssocket;
+
+    /**
+     * TCP server running state
+     */
     private boolean run;
+
+    /**
+     * TCP port
+     */
     private int port = 0;
 
     /**

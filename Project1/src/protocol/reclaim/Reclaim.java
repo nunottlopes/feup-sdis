@@ -13,12 +13,35 @@ import java.util.concurrent.TimeUnit;
  */
 public class Reclaim {
 
-    String fileId;
-    int chunkNo;
-    int repDegree;
-    int senderId;
-    String filepath;
-    Chunk chunk;
+    /**
+     * File id
+     */
+    private String fileId;
+
+    /**
+     * Chunk number
+     */
+    private int chunkNo;
+
+    /**
+     * Desired replication degree
+     */
+    private int repDegree;
+
+    /**
+     * Sender id
+     */
+    private int senderId;
+
+    /**
+     * Path to the file that has been removed
+     */
+    private String filepath;
+
+    /**
+     * Chunk to be sent
+     */
+    private Chunk chunk;
 
     /**
      * Reclaim constructor

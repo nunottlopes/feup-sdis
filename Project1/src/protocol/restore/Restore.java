@@ -16,9 +16,25 @@ import static message.SendMessage.sendCHUNK;
  * Restore class
  */
 public class Restore {
+
+    /**
+     * File id
+     */
     String fileId;
+
+    /**
+     * Chunk number
+     */
     int chunkNo;
+
+    /**
+     * TCP port
+     */
     int portTCP;
+
+    /**
+     * TCP Inet Address
+     */
     InetAddress addressTCP;
 
     /**

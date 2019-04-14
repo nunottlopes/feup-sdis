@@ -16,10 +16,24 @@ import static message.SendMessage.sendDELETE;
  */
 public class DeleteInitiator {
 
+    /**
+     * Max number of times a DELETE message should be sent
+     */
     public static final int MAX_DELETE_MESSAGES = 5;
+
+    /**
+     * Time interval between each DELETE message
+     */
     private static final int TIME_INTERVAL = 500;
 
+    /**
+     * File path to be deleted
+     */
     private String path;
+
+    /**
+     * File id
+     */
     private String fileId;
 
     /**

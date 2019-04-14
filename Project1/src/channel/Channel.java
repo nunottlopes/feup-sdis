@@ -23,13 +23,34 @@ public class Channel implements Runnable{
         MC, MDB, MDR
     }
 
+    /**
+     * Channel offset
+     */
     private static final int CHANNEL_OFFSET = 265;
 
+    /**
+     * Channel max buf size to read from socket
+     */
     private int MAX_BUF_SIZE;
+
+    /**
+     * Channel type
+     */
     private Type type;
 
+    /**
+     * Channel Inet Address
+     */
     private InetAddress address;
+
+    /**
+     * Channel port
+     */
     private int port;
+
+    /**
+     * Channel socket
+     */
     private MulticastSocket socket;
 
     /**

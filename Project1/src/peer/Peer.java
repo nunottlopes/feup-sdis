@@ -26,25 +26,84 @@ import java.util.concurrent.*;
  */
 public class Peer implements RemoteInterface {
 
+    /**
+     * Pool max threads
+     */
     private static final int MAX_THREADS = 200;
+
+    /**
+     * Peer storage root path
+     */
     private static final String ROOT = "database/peer";
+
+    /**
+     * Backup folder, to save backed up chunks
+     */
     private static final String BACKUP_FOLDER = "backup/";
+
+    /**
+     * Restore folder, to save restored files
+     */
     private static final String RESTORE_FOLDER = "restore/";
+
+    /**
+     * State folder, to save Peer information
+     */
     private static final String STATE_FOLDER = "state/";
 
+    /**
+     * Peer singleton instance
+     */
     private static Peer instance;
+
+    /**
+     * Peer file manager
+     */
     private FileManager fileManager;
+
+    /**
+     * Peer protocol info
+     */
     private ProtocolInfo protocolInfo;
 
+    /**
+     * Protocol version
+     */
     private String protocolVersion;
+
+    /**
+     * Peer version (enhanced or not)
+     */
     private boolean enhanced;
+
+    /**
+     * Peer id
+     */
     private int peerID;
+
+    /**
+     * Peer access point
+     */
     private static String accessPoint;
 
+    /**
+     * Peer channels
+     */
     private HashMap<Channel.Type, Channel> channels;
+
+    /**
+     * Peer socket
+     */
     private DatagramSocket socket;
 
+    /**
+     * Peer pool
+     */
     private ScheduledThreadPoolExecutor pool;
+
+    /**
+     * Peer executor
+     */
     private ScheduledExecutorService executor;
 
     /**

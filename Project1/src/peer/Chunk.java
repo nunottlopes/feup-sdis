@@ -9,13 +9,39 @@ import java.util.Set;
  */
 public class Chunk implements Serializable {
 
+    /**
+     * Chunk max data size
+     */
     public final static int MAX_SIZE = 64*1000;
 
+    /**
+     * Chunk file id
+     */
     private String fileId;
+
+    /**
+     * Chunk number
+     */
     private int chunkNo;
+
+    /**
+     * Chunk desired replication degree
+     */
     private int repDegree;
+
+    /**
+     * Chunk data
+     */
     private byte[] data;
+
+    /**
+     * Set of peers id that backedup this chunk. The length of this set is the chunks perceived replication degree
+     */
     private Set<Integer> perceivedRepDegree;
+
+    /**
+     * Chunk data size
+     */
     private long size;
 
     /**
