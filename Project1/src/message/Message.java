@@ -7,7 +7,7 @@ import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Message {
+public class Message implements Serializable {
 
     public static byte CR = 0xD;
     public static byte LF = 0xA;
