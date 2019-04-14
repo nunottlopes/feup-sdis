@@ -25,7 +25,7 @@ public class TCPServer implements Runnable {
                 Socket client = ssocket.accept();
                 handleMessage(client);
             } catch (IOException e) {
-                //e.printStackTrace();
+                System.out.println(e);
             }
         }
     }

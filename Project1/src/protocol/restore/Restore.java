@@ -1,19 +1,16 @@
 package protocol.restore;
 
-import channel.Channel;
 import message.Message;
 import peer.Peer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static globals.Globals.getFileData;
+import static message.SendMessage.sendCHUNK;
 
 public class Restore {
     String fileId;
@@ -51,12 +48,6 @@ public class Restore {
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
             if(!Peer.getInstance().getProtocolInfo().isChunkAlreadySent(fileId, chunkNo) && send) {
-                String[] args = {
-                        Peer.getInstance().getVersion(),
-                        Integer.toString(Peer.getInstance().getId()),
-                        fileId,
-                        Integer.toString(chunkNo)
-                };
 
                 File file = new File(Peer.getInstance().getBackupPath(fileId) + chunkNo);
                 byte[] body;
@@ -68,10 +59,9 @@ public class Restore {
                 }
 
                 if(Peer.getInstance().isEnhanced()) {
-                    sendTCP(new Message(Message.MessageType.CHUNK, args, body));
-                    Peer.getInstance().send(Channel.Type.MDR, new Message(Message.MessageType.CHUNK, args));
+                    sendCHUNK(fileId, chunkNo, body, addressTCP, portTCP);
                 } else {
-                    Peer.getInstance().send(Channel.Type.MDR, new Message(Message.MessageType.CHUNK, args, body));
+                    sendCHUNK(fileId, chunkNo, body);
                 }
 
             } else {
@@ -80,18 +70,4 @@ public class Restore {
         }, delay, TimeUnit.MILLISECONDS);
     }
 
-    private void sendTCP(Message msg) {
-        Socket socket;
-
-        try {
-            socket = new Socket(addressTCP, portTCP);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(msg);
-            out.close();
-            socket.close();
-        } catch (IOException e) {
-//            e.printStackTrace();
-            System.out.println("Error sending chunk " + chunkNo + " via TCP");
-        }
-    }
 }

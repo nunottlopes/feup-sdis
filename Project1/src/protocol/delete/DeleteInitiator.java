@@ -1,9 +1,7 @@
 package protocol.delete;
 
 
-import channel.Channel;
 import globals.Globals;
-import message.Message;
 import peer.Peer;
 import protocol.InvalidProtocolExecution;
 
@@ -11,7 +9,7 @@ import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static message.SendMessages.sendDELETE;
+import static message.SendMessage.sendDELETE;
 
 public class DeleteInitiator {
 

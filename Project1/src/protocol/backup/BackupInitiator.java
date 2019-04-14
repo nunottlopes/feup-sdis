@@ -1,8 +1,6 @@
 package protocol.backup;
 
-import channel.Channel;
 import globals.Globals;
-import message.Message;
 import peer.Chunk;
 import peer.Peer;
 import protocol.InvalidProtocolExecution;
@@ -18,7 +16,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static globals.Globals.getFileData;
-import static message.SendMessages.sendPUTCHUNK;
+import static message.SendMessage.sendPUTCHUNK;
 
 public class BackupInitiator {
 
@@ -74,7 +72,7 @@ public class BackupInitiator {
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData());
+                    sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData());
 
                     if(i != MAX_RETRANSMISSIONS-1){
                         try {

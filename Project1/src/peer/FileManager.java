@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static globals.Globals.getFileData;
-import static message.SendMessages.sendREMOVED;
+import static message.SendMessage.sendREMOVED;
 
 public class FileManager implements Serializable {
     public static final long MAX_CAPACITY = 8*100000000;
@@ -51,6 +51,8 @@ public class FileManager implements Serializable {
 
     public void removeChunk(String fileId, int chunkNo) {
         chunksStored.get(fileId).remove(chunkNo);
+        if(chunksStored.get(fileId).size() == 0)
+            chunksStored.remove(fileId);
     }
 
     public Chunk getChunkFromFile(String fileId, int chunkNo) {

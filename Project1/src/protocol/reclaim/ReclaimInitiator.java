@@ -8,7 +8,7 @@ import protocol.InvalidProtocolExecution;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import static message.SendMessages.sendREMOVED;
+import static message.SendMessage.sendREMOVED;
 
 public class ReclaimInitiator {
 

@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static message.SendMessages.sendSTORED;
+import static message.SendMessage.sendSTORED;
 
 public class Backup {
 
@@ -39,7 +39,6 @@ public class Backup {
 
         if (!this.fm.hasChunk(msg.getFileId(), msg.getChunkNo())) {
             path = Peer.getInstance().getBackupPath(msg.getFileId());
-            //this.fm.createFolders(path);
             start();
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());

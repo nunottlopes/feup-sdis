@@ -1,8 +1,6 @@
 package protocol.restore;
 
-import channel.Channel;
 import globals.Globals;
-import message.Message;
 import peer.Chunk;
 import peer.Peer;
 import protocol.InvalidProtocolExecution;
@@ -14,6 +12,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static message.SendMessage.sendGETCHUNK;
+import static message.SendMessage.sendGETCHUNKENH;
 
 public class RestoreInitiator {
 
@@ -51,29 +52,13 @@ public class RestoreInitiator {
 
             pool.execute(() -> {
 
-                Message msg;
-                if(!Peer.getInstance().isEnhanced()) {
-                    String[] args = {
-                            Peer.getInstance().getVersion(),
-                            Integer.toString(Peer.getInstance().getId()),
-                            fileId,
-                            Integer.toString(chunkNo)
-                    };
-                    msg = new Message(Message.MessageType.GETCHUNK, args);
-                } else {
-                    String[] args = {
-                            Peer.getInstance().getVersion(),
-                            Integer.toString(Peer.getInstance().getId()),
-                            fileId,
-                            Integer.toString(chunkNo),
-                            Integer.toString(tcp.getPort())
-                    };
-                    msg = new Message(Message.MessageType.GETCHUNKENH, args);
-                }
-
                 int delay = 1;
                 for(int j = 0; j < MAX_RETRANSMISSIONS; j++) {
-                    Peer.getInstance().send(Channel.Type.MC, msg);
+                    if(!Peer.getInstance().isEnhanced()) {
+                        sendGETCHUNK(fileId, chunkNo);
+                    } else {
+                        sendGETCHUNKENH(fileId, chunkNo, tcp.getPort());
+                    }
 
                     try {
                         TimeUnit.SECONDS.sleep(delay);
