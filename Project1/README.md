@@ -1,4 +1,4 @@
-### Run using predefined Peer and TestApp
+### Run using scripts and makefile
 
 On project folder:
 
@@ -16,52 +16,80 @@ rmiregistry -J-Djava.class.path=out/production/Project1
 
 Run Peer:
 ```
-> make peer
+> sh peer.sh <version> <peer_num> <peer_access_point>
+E.g: sh peer.sh 2.0 1 Peer1
 java -cp out/production/Project1 peer.Peer 2.0 1 Peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
 ```
 
 Run TestApp:
 
 ```
-> make backup
-java -cp out/production/Project1 test.TestApp Peer1 BACKUP random.pdf 3
+> sh backup.sh <peer_ap> <file_path> <replication_degree>
+E.g: sh backup.sh Peer1 files/test.txt 3
+java -cp out/production/Project1 test.TestApp Peer1 BACKUP files/test.txt 3
 ```
 
 ```
-> make restore
-java -cp out/production/Project1 test.TestApp Peer1 RESTORE random.pdf
+> sh backupenh.sh <peer_ap> <file_path> <replication_degree>
+E.g: sh backupenh.sh Peer1 files/test.txt 3
+java -cp out/production/Project1 test.TestApp Peer1 BACKUPENH files/test.txt 3
 ```
 
 ```
-> make delete
-java -cp out/production/Project1 test.TestApp Peer1 DELETE random.pdf
+> sh restore.sh <peer_ap> <file_path>
+E.g: sh restore.sh Peer1 files/test.txt
+java -cp out/production/Project1 test.TestApp Peer1 RESTORE files/test.txt
 ```
 
 ```
-> make reclaim
-java -cp out/production/Project1 test.TestApp Peer1 RECLAIM 12345
+> sh restoreenh.sh <peer_ap> <file_path>
+E.g: sh restoreenh.sh Peer1 files/test.txt
+java -cp out/production/Project1 test.TestApp Peer1 RESTOREENH files/test.txt
 ```
 
 ```
-> make state
+> sh delete.sh <peer_ap> <file_path>
+E.g: sh delete.sh Peer1 files/test.txt
+java -cp out/production/Project1 test.TestApp Peer1 DELETE files/test.txt
+```
+
+```
+> sh reclaim.sh <peer_ap> <disk_space_to_reclaim>
+E.g: sh reclaim.sh Peer1 1000
+java -cp out/production/Project1 test.TestApp Peer1 RECLAIM 1000
+```
+
+```
+> sh state.sh <peer_ap>
+E.g: sh state.sh Peer1
 java -cp out/production/Project1 test.TestApp Peer1 STATE
 ```
 
+Run Snooper:
+```
+> make snooper
+java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003
+```
 
-### Run
+Remove all files:
+```
+> make clean
+@rm -rf out/ database/
+```
+
+
+### Run without scripts and makefile 
 
 On project folder:
 
 Compile:
 ```
-> make
-javac -d out/production/Project1 src/*/*.java
+> javac -d out/production/Project1 src/*/*.java
 ```
 
 Run RMI:
 ```
-> make rmi
-rmiregistry -J-Djava.class.path=out/production/Project1
+> rmiregistry -J-Djava.class.path=out/production/Project1
 ```
 
 Run Peer:
@@ -76,7 +104,15 @@ Run TestApp:
 ```
 
 ```
+> java -cp out/production/Project1 test.TestApp <peer_access_point> BACKUPENH <file_path> <desired_replication_degree>
+```
+
+```
 > java -cp out/production/Project1 test.TestApp <peer_access_point> RESTORE <file_path>
+```
+
+```
+> java -cp out/production/Project1 test.TestApp <peer_access_point> RESTOREENH <file_path>
 ```
 
 ```
@@ -89,4 +125,14 @@ Run TestApp:
 
 ```
 > java -cp out/production/Project1 test.TestApp <peer_access_point> STATE
+```
+
+Run Snooper:
+```
+> java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar <MC_IP_address> <MC_port> <MDB_IP_address> <MDB_port> <MDR_IP_address> <MDR_port>
+```
+
+Remove all files:
+```
+> rm -rf out/ database/
 ```
