@@ -23,7 +23,6 @@ public class TCPServer implements Runnable {
         while (run) {
             try {
                 Socket client = ssocket.accept();
-                System.out.println("recebi");
                 handleMessage(client);
             } catch (IOException e) {
                 //e.printStackTrace();
