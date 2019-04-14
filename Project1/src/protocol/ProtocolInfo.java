@@ -267,6 +267,18 @@ public class ProtocolInfo implements Serializable {
     }
 
     /**
+     * Updates chunks perceived replication degree
+     * @param fileId
+     * @param chunkNo
+     * @param senderId
+     */
+    public void updateChunkRepDegree(String fileId, int chunkNo, int senderId) {
+        if(chunksRepDegree.containsKey(fileId) && chunksRepDegree.get(fileId).containsKey(chunkNo))
+            chunksRepDegree.get(fileId).get(chunkNo).remove(senderId);
+
+    }
+
+    /**
      * Removes file from chunksRepDegree
      * @param fileId
      */

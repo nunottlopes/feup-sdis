@@ -79,6 +79,7 @@ public class ReclaimInitiator {
             fm.removeChunk(fileId, chunkNo);
             fm.removeFolderIfEmpty(path);
             fm.updateFreeMem(spaceReclaim); //To avoid doing backup of delete filed
+            Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo);
             sendREMOVED(fileId, chunkNo);
             i++;
         }

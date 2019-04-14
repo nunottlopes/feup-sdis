@@ -66,12 +66,15 @@ public class Reclaim {
      * Starts Reclaim protocol
      */
     private void start() {
+        Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo, senderId);
+
         if(!Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)){
             return;
         }
-        chunk = Peer.getInstance().getFileManager().getChunkFromFile(fileId, chunkNo);
 
+        chunk = Peer.getInstance().getFileManager().getChunkFromFile(fileId, chunkNo);
         chunk.removePerceivedRepDegreePeer(senderId);
+
         if(chunk.getPerceivedRepDegree() >= chunk.getRepDegree()){
             return;
         }
