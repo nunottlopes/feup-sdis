@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static globals.Globals.getFileData;
 
 public class FileManager implements Serializable {
-    public static final long MAX_CAPACITY = 8*1000000;
+    public static final long MAX_CAPACITY = 8*1000000000;
     private long free_mem;
     private long used_mem;
 
@@ -78,6 +78,7 @@ public class FileManager implements Serializable {
         long file_size = data.length;
 
         if (free_mem < file_size) {
+            System.out.println("No more available memory!");
             return false;
         }
         String filePath = path + "/" + fileName;

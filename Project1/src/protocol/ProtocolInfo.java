@@ -92,6 +92,13 @@ public class ProtocolInfo implements Serializable {
 
     public int getChunksRecieved(String fileId) { return restoredChunks_init.get(fileId).size(); }
 
+    public boolean hasReceivedChunk(String fileId, int chunkNo) {
+        if(restoredChunks_init.containsKey(fileId)) {
+            return restoredChunks_init.get(fileId).containsKey(chunkNo);
+        }
+        return false;
+    }
+
     public boolean isChunkAlreadySent(String fileId, int chunkNo) {
         if(chunksSent.containsKey(fileId)) {
             return chunksSent.get(fileId).contains(chunkNo);

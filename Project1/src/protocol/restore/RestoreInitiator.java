@@ -13,11 +13,11 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class RestoreInitiator {
 
-    private static final int AWAIT_TIME = 2000;
-    private static final int MAX_TRIES  = 3;
+    private static final int MAX_RETRANSMISSION  = 2;
 
     private String path;
     private File file;
@@ -52,7 +52,21 @@ public class RestoreInitiator {
                         Integer.toString(chunkNo)
                 };
                 Message msg = new Message(Message.MessageType.GETCHUNK, args);
-                Peer.getInstance().send(Channel.Type.MC, msg);
+
+                int delay = 1;
+                for(int j = 0; j < MAX_RETRANSMISSION; j++) {
+                    Peer.getInstance().send(Channel.Type.MC, msg);
+
+                    try {
+                        TimeUnit.SECONDS.sleep(delay);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    delay *= 2;
+                    if(Peer.getInstance().getProtocolInfo().hasReceivedChunk(fileId, chunkNo)) {
+                        break;
+                    }
+                }
 
                 latch.countDown();
             });
@@ -65,21 +79,7 @@ public class RestoreInitiator {
         }
 
 
-        boolean restored = false;
-        for(int i = 0; i < MAX_TRIES; i++) {
-            try {
-                Thread.sleep(AWAIT_TIME);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if(Peer.getInstance().getProtocolInfo().getChunksRecieved(fileId) >= n) {
-                restored = true;
-                break;
-            }
-        }
-
-        if(!restored) {
+        if(Peer.getInstance().getProtocolInfo().getChunksRecieved(fileId) < n) {
             System.out.println("Couldn't restore " + this.file.getName());
             return;
         }
