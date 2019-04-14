@@ -77,6 +77,8 @@ Remove all files:
 @rm -rf out/ database/
 ```
 
+<br>
+<br>
 
 ### Run without scripts and makefile 
 
