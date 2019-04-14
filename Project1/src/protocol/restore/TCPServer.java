@@ -23,6 +23,7 @@ public class TCPServer implements Runnable {
         while (run) {
             try {
                 Socket client = ssocket.accept();
+                System.out.println("recebi");
                 handleMessage(client);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -31,8 +32,7 @@ public class TCPServer implements Runnable {
     }
 
     private void handleMessage(Socket socket) {
-        Message msg = null;
-
+        Message msg;
 
         ObjectInputStream in;
         try {
@@ -40,12 +40,11 @@ public class TCPServer implements Runnable {
             msg = (Message) in.readObject();
             in.close();
             socket.close();
+            Peer.getInstance().getProtocolInfo().chunkSent(msg.getFileId(), msg.getChunkNo(), msg.getBody());
         } catch (IOException e) {
             System.out.println("Error retrieving TCP message");
         } catch (ClassNotFoundException e) { }
 
-
-        Peer.getInstance().getProtocolInfo().chunkSent(msg.getFileId(), msg.getChunkNo(), msg.getBody());
     }
 
     public void open() {
