@@ -75,7 +75,6 @@ public class Peer implements RemoteInterface {
             return true;
     }
 
-
     public static Peer getInstance() {
         if(instance != null)
             return instance;
