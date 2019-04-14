@@ -1,18 +1,20 @@
 package message;
 
+import peer.Peer;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Message {
+public class Message implements Serializable {
 
     public static byte CR = 0xD;
     public static byte LF = 0xA;
     public static String CRLF = "" + (char) CR + (char) LF;
 
     public enum MessageType {
-        PUTCHUNK, STORED, GETCHUNK, CHUNK, DELETE, REMOVED
+        PUTCHUNK, STORED, GETCHUNK, CHUNK, DELETE, REMOVED, GETCHUNKENH
     }
 
     private MessageType type;
@@ -23,6 +25,9 @@ public class Message {
     private int replicationDeg;
     private int header_length;
 
+    //getchunkenh
+    private int port;
+
     private byte[] body;
 
     public Message(DatagramPacket packet) throws InvalidPacketException {
@@ -30,9 +35,9 @@ public class Message {
             throw new InvalidPacketException("Invalid Message Header");
         }
 
-        if (type == MessageType.PUTCHUNK || type == MessageType.CHUNK) {
+        if (type == MessageType.PUTCHUNK || (type == MessageType.CHUNK && !Peer.getInstance().isEnhanced())) {
             if(!parseBody(packet.getData(), packet.getLength())) {
-                throw new InvalidPacketException("Invalid Message Body");
+                throw new InvalidPacketException("Invalid Message Body (" + type + ")");
             }
         }
     }
@@ -57,6 +62,8 @@ public class Message {
                 parseDELETE(args);
             case REMOVED:
                 parseREMOVED(args);
+            case GETCHUNKENH:
+                parseGETCHUNKENH(args);
             default:
 
         }
@@ -104,6 +111,9 @@ public class Message {
             case "REMOVED":
                 this.type = MessageType.REMOVED;
                 return parseREMOVED(fields);
+            case "GETCHUNKENH":
+                this.type = MessageType.GETCHUNKENH;
+                return parseGETCHUNKENH(fields);
             default:
                 return false;
 
@@ -210,6 +220,22 @@ public class Message {
         return true;
     }
 
+    private boolean parseGETCHUNKENH(String[] fields) {
+        if(fields.length != 6) return false;
+
+        try {
+            version = fields[1];
+            senderId = Integer.parseInt(fields[2]);
+            fileId = fields[3];
+            chunkNo = Integer.parseInt(fields[4]);
+            port = Integer.parseInt(fields[5]);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        return true;
+    }
+
     public MessageType getType() {
         return type;
     }
@@ -228,6 +254,10 @@ public class Message {
 
     public int getChunkNo() {
         return chunkNo;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     public int getReplicationDeg() {
@@ -255,10 +285,13 @@ public class Message {
                 str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
                 break;
             case DELETE:
-                str = type + " " + version + " " + senderId + " " + fileId + CRLF + CRLF;
+                str = type + " " + version + " " + senderId + " " + fileId + " " + CRLF + CRLF;
                 break;
             case REMOVED:
                 str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
+                break;
+            case GETCHUNKENH:
+                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + port + " " + CRLF + CRLF;
                 break;
             default:
                 str = "";

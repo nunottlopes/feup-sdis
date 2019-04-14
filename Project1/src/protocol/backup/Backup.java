@@ -20,6 +20,14 @@ public class Backup {
     private Chunk chunk;
 
     public Backup(Message msg) {
+        if(!msg.getVersion().equals("1.0") && !Peer.getInstance().isEnhanced()) {
+            System.out.println("-- Incompatible peer version with backup enhancement --");
+            return;
+        }
+        if(msg.getVersion().equals("1.0") && Peer.getInstance().isEnhanced()) {
+            System.out.println("-- Incompatible peer version with backup restore --");
+            return;
+        }
 
 //        System.out.println("\n> PUTCHUNK received");
 //        System.out.println("- Sender Id = " + msg.getSenderId());

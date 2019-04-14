@@ -1,6 +1,7 @@
 package channel;
 
 import message.InvalidPacketException;
+import message.Message;
 import message.MessageHandler;
 import peer.Chunk;
 import peer.Peer;
@@ -68,7 +69,8 @@ public class Channel implements Runnable{
         while(true) {
             try {
                 this.socket.receive(packet);
-                Peer.getInstance().getPool().execute(new MessageHandler(packet));
+                MessageHandler handler = new MessageHandler(packet);
+                Peer.getInstance().getPool().execute(handler);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InvalidPacketException e) {

@@ -10,10 +10,9 @@ import java.net.Socket;
 
 public class TCPServer implements Runnable {
 
-    public static int TCP_PORT = 6565;
-
     private ServerSocket ssocket;
     private boolean run;
+    private int port = 0;
 
     public TCPServer() {
         open();
@@ -26,14 +25,13 @@ public class TCPServer implements Runnable {
                 Socket client = ssocket.accept();
                 handleMessage(client);
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
 
     private void handleMessage(Socket socket) {
-        Message msg = null;
-
+        Message msg;
 
         ObjectInputStream in;
         try {
@@ -41,21 +39,23 @@ public class TCPServer implements Runnable {
             msg = (Message) in.readObject();
             in.close();
             socket.close();
+            Peer.getInstance().getProtocolInfo().chunkSent(msg.getFileId(), msg.getChunkNo(), msg.getBody());
         } catch (IOException e) {
             System.out.println("Error retrieving TCP message");
         } catch (ClassNotFoundException e) { }
 
-
-        Peer.getInstance().getProtocolInfo().chunkSent(msg.getFileId(), msg.getChunkNo(), msg.getBody());
     }
 
     public void open() {
         try {
-            ssocket = new ServerSocket(TCP_PORT + Peer.getInstance().getId());
+            ssocket = new ServerSocket(0);
+            port = ssocket.getLocalPort();
             run = true;
         } catch (IOException e) {
             System.out.println("Error initializing TCPServer!");
         }
+
+        System.out.println("--- Started TCP Server ---");
     }
 
     public void close() {
@@ -65,5 +65,10 @@ public class TCPServer implements Runnable {
         } catch (IOException e) {
             System.out.println("Error closing TCPServer!");
         }
+        System.out.println("--- Closed TCP Server ---");
+    }
+
+    public int getPort() {
+        return port;
     }
 }

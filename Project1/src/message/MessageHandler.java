@@ -7,13 +7,16 @@ import protocol.reclaim.Reclaim;
 import protocol.restore.Restore;
 
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 
 public class MessageHandler implements Runnable {
 
     private Message msg;
+    InetAddress address;
 
     public MessageHandler(DatagramPacket packet) throws InvalidPacketException {
         this.msg = new Message(packet);
+        this.address = packet.getAddress();
     }
 
     @Override
@@ -33,7 +36,10 @@ public class MessageHandler implements Runnable {
             new Reclaim(this.msg);
         }
         if(this.msg.getType() == Message.MessageType.GETCHUNK && msg.getSenderId() != Peer.getInstance().getId()){
-            new Restore(this.msg);
+            new Restore(this.msg, address);
+        }
+        if(this.msg.getType() == Message.MessageType.GETCHUNKENH && msg.getSenderId() != Peer.getInstance().getId()){
+            new Restore(this.msg, address);
         }
         if(this.msg.getType() == Message.MessageType.CHUNK && msg.getSenderId() != Peer.getInstance().getId()){
             Peer.getInstance().getProtocolInfo().chunkSent(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getBody());
