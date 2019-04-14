@@ -25,7 +25,7 @@ public class ReclaimInitiator {
 
     public void run() throws InvalidProtocolExecution{
         if(spaceReclaim == 0){
-            // Reclaim all the disk space being used by the service / Delete all chunks
+            // Remove all chunks. Faster than removeNecessaryChunks
             deleteAllChunks();
         }
         else if(fm.getUsed_mem() < spaceReclaim){
@@ -74,12 +74,14 @@ public class ReclaimInitiator {
             for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
                 int chunkNo = entry_chunk.getValue().getChunkNo();
                 fm.removeChunkFile(path, Integer.toString(chunkNo));
+                //fm.setFree_mem(0);
                 Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo);
                 sendREMOVED(fileId, chunkNo);
             }
             fm.getChunksStored().remove(fileId);
             fm.removeFileFolder(path);
         }
+        fm.setFree_mem(0);
         fm.removeFolderIfEmpty(Peer.getInstance().getBackupFolder());
     }
 

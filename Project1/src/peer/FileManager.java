@@ -197,4 +197,7 @@ public class FileManager implements Serializable {
         this.free_mem = spaceReclaim - this.used_mem;
     }
 
+    public void setFree_mem(long free_mem) {
+        this.free_mem = free_mem;
+    }
 }
