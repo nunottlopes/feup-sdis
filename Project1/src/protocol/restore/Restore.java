@@ -90,8 +90,8 @@ public class Restore {
             out.close();
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
-//            System.out.println("Error sending chunk " + chunkNo + " via TCP");
+//            e.printStackTrace();
+            System.out.println("Error sending chunk " + chunkNo + " via TCP");
         }
     }
 }

@@ -56,7 +56,7 @@ public class TCPServer implements Runnable {
             System.out.println("Error initializing TCPServer!");
         }
 
-        System.out.println("--- Started TCP Server at " + ssocket.getInetAddress() + ":" + port + " ---");
+        System.out.println("--- Started TCP Server ---");
     }
 
     public void close() {
