@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static globals.Globals.getFileData;
 
 public class FileManager implements Serializable {
-    public static final long MAX_CAPACITY = 8*1000000000;
+    public static final long MAX_CAPACITY = 8*100000000;
     private long free_mem;
     private long used_mem;
 

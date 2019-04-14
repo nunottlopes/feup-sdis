@@ -14,7 +14,6 @@ public class MessageHandler implements Runnable {
 
     public MessageHandler(DatagramPacket packet) throws InvalidPacketException {
         this.msg = new Message(packet);
-
     }
 
     @Override

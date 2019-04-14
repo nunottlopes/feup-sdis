@@ -15,6 +15,7 @@ import rmi.RemoteInterface;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -140,7 +141,16 @@ public class Peer implements RemoteInterface {
         System.out.println("\n---- FINISHED BACKUP SERVICE ----");
     }
 
-    public void restore(String filepath) {
+    public void restore(String filepath, boolean enhanced) {
+        if(enhanced && !this.enhanced) {
+            System.out.println("-- Incompatible peer version with restore enhancement --");
+            return;
+        }
+        if(!enhanced && this.enhanced) {
+            System.out.println("-- Incompatible peer version with vanilla restore --");
+            return;
+        }
+
         System.out.println("\n----- RESTORE SERVICE ----- FILE PATH = " + filepath);
         RestoreInitiator restoreInitiator = new RestoreInitiator(filepath);
         try {

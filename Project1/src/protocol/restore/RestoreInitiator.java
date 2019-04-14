@@ -17,12 +17,13 @@ import java.util.concurrent.TimeUnit;
 
 public class RestoreInitiator {
 
-    private static final int MAX_RETRANSMISSION  = 2;
+    private static final int MAX_RETRANSMISSIONS = 3;
 
     private String path;
     private File file;
 
     private ThreadPoolExecutor pool;
+    private TCPServer tcp;
 
     public RestoreInitiator(String filepath) {
         this.path = filepath;
@@ -36,6 +37,9 @@ public class RestoreInitiator {
 
         String fileId = Globals.generateFileId(file);
 
+        if(Peer.getInstance().isEnhanced())
+            startTCPServer();
+
         Peer.getInstance().getProtocolInfo().startRestore(fileId);
 
         int n = (int)this.file.length() / (Chunk.MAX_SIZE) + 1;
@@ -44,6 +48,7 @@ public class RestoreInitiator {
 
         for(int i = 0; i < n; i++) {
             int chunkNo = i;
+
             pool.execute(() -> {
                 String[] args = {
                         Peer.getInstance().getVersion(),
@@ -54,7 +59,7 @@ public class RestoreInitiator {
                 Message msg = new Message(Message.MessageType.GETCHUNK, args);
 
                 int delay = 1;
-                for(int j = 0; j < MAX_RETRANSMISSION; j++) {
+                for(int j = 0; j < MAX_RETRANSMISSIONS; j++) {
                     Peer.getInstance().send(Channel.Type.MC, msg);
 
                     try {
@@ -78,6 +83,9 @@ public class RestoreInitiator {
             e.printStackTrace();
         }
 
+        if(Peer.getInstance().isEnhanced())
+            closeTCPServer();
+
 
         if(Peer.getInstance().getProtocolInfo().getChunksRecieved(fileId) < n) {
             System.out.println("Couldn't restore " + this.file.getName());
@@ -85,7 +93,7 @@ public class RestoreInitiator {
         }
 
         Peer.getInstance().getFileManager().createFolders(Peer.getInstance().getRestorePath());
-        FileOutputStream out = null;
+        FileOutputStream out;
         try {
             out = new FileOutputStream(Peer.getInstance().getRestorePath() + this.file.getName());
             for(int i = 0; i < n; i++) {
@@ -99,5 +107,14 @@ public class RestoreInitiator {
 
 
         Peer.getInstance().getProtocolInfo().endRestore(fileId);
+    }
+
+    private void startTCPServer() {
+        this.tcp = new TCPServer();
+        new Thread(this.tcp).start();
+    }
+
+    private void closeTCPServer() {
+        this.tcp.close();
     }
 }

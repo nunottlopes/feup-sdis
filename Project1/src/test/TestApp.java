@@ -44,7 +44,15 @@ public class TestApp {
                         return;
                     }
                     filePath = args[2];
-                    stub.restore(filePath);
+                    stub.restore(filePath, false);
+                    break;
+                case "restoreenh":
+                    if(args.length != 3){
+                        System.out.println("Usage: java TestApp <peer_ap> RESTOREENH <file_path>");
+                        return;
+                    }
+                    filePath = args[2];
+                    stub.restore(filePath, true);
                     break;
                 case "delete":
                     if(args.length != 3){

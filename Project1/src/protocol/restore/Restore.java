@@ -3,7 +3,6 @@ package protocol.restore;
 import channel.Channel;
 import message.Message;
 import peer.Peer;
-import protocol.InvalidProtocolExecution;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,11 +48,36 @@ public class Restore {
                     return;
                 }
                 Message msg = new Message(Message.MessageType.CHUNK, args, body);
-                Peer.getInstance().send(Channel.Type.MDR, msg);
+
+                if(Peer.getInstance().isEnhanced()) {
+                    sendTCP(msg);
+                } else {
+                    Peer.getInstance().send(Channel.Type.MDR, msg);
+                }
 
             } else {
                 Peer.getInstance().getProtocolInfo().removeChunkFromSent(fileId, chunkNo);
             }
         }, delay, TimeUnit.MILLISECONDS);
+    }
+
+    private void sendTCP(Message msg) {
+//        String hostName = request.getTCPHost();
+//        int portNumber = request.getTCPPort();
+//
+//        Socket serverSocket;
+//
+//        try {
+//            serverSocket = new Socket(hostName, portNumber);
+//            Log.log("Connected to TCPServer");
+//            ObjectOutputStream oos = new ObjectOutputStream(serverSocket.getOutputStream());
+//            oos.writeObject(msgToSend);
+//            oos.close();
+//            serverSocket.close();
+//        } catch (IOException e) {
+//            Log.logError("Couldn't send CHUNK via TCP");
+//        }
+//
+//        Log.logWarning("S TCP: " + request.toString());
     }
 }
