@@ -1,5 +1,5 @@
 OUT_DIR := out/production/Project1
-TEST_FILE := files/test
+TEST_FILE := files/test.txt
 TEST_APP_CLASS := test.TestApp
 PEER_CLASS := peer.Peer
 
