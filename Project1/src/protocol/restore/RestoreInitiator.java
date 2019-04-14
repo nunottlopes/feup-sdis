@@ -50,13 +50,26 @@ public class RestoreInitiator {
             int chunkNo = i;
 
             pool.execute(() -> {
-                String[] args = {
-                        Peer.getInstance().getVersion(),
-                        Integer.toString(Peer.getInstance().getId()),
-                        fileId,
-                        Integer.toString(chunkNo)
-                };
-                Message msg = new Message(Message.MessageType.GETCHUNK, args);
+
+                Message msg;
+                if(!Peer.getInstance().isEnhanced()) {
+                    String[] args = {
+                            Peer.getInstance().getVersion(),
+                            Integer.toString(Peer.getInstance().getId()),
+                            fileId,
+                            Integer.toString(chunkNo)
+                    };
+                    msg = new Message(Message.MessageType.GETCHUNK, args);
+                } else {
+                    String[] args = {
+                            Peer.getInstance().getVersion(),
+                            Integer.toString(Peer.getInstance().getId()),
+                            fileId,
+                            Integer.toString(chunkNo),
+                            Integer.toString(tcp.getPort())
+                    };
+                    msg = new Message(Message.MessageType.GETCHUNKENH, args);
+                }
 
                 int delay = 1;
                 for(int j = 0; j < MAX_RETRANSMISSIONS; j++) {

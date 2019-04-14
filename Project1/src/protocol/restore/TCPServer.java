@@ -10,10 +10,9 @@ import java.net.Socket;
 
 public class TCPServer implements Runnable {
 
-    public static int TCP_PORT = 6565;
-
     private ServerSocket ssocket;
     private boolean run;
+    private int port = 0;
 
     public TCPServer() {
         open();
@@ -51,11 +50,14 @@ public class TCPServer implements Runnable {
 
     public void open() {
         try {
-            ssocket = new ServerSocket(TCP_PORT + Peer.getInstance().getId());
+            ssocket = new ServerSocket(0);
+            port = ssocket.getLocalPort();
             run = true;
         } catch (IOException e) {
             System.out.println("Error initializing TCPServer!");
         }
+
+        System.out.println("--- Started TCP Server at " + ssocket.getInetAddress() + ":" + port + " ---");
     }
 
     public void close() {
@@ -65,5 +67,10 @@ public class TCPServer implements Runnable {
         } catch (IOException e) {
             System.out.println("Error closing TCPServer!");
         }
+        System.out.println("--- Closed TCP Server ---");
+    }
+
+    public int getPort() {
+        return port;
     }
 }

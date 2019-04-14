@@ -6,6 +6,10 @@ import peer.Peer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -14,15 +18,30 @@ import static globals.Globals.getFileData;
 public class Restore {
     String fileId;
     int chunkNo;
+    int portTCP;
+    InetAddress addressTCP;
 
-    public Restore(Message msg) {
-//        System.out.println("\n> GETCHUNK received");
+    public Restore(Message msg, InetAddress address) {
+        if(msg.getType() == Message.MessageType.GETCHUNKENH && !Peer.getInstance().isEnhanced()) {
+            System.out.println("-- Incompatible peer version with restore enhancement --");
+            return;
+        }
+        if(msg.getType() == Message.MessageType.GETCHUNK && Peer.getInstance().isEnhanced()) {
+            System.out.println("-- Incompatible peer version with vanilla restore --");
+            return;
+        }
+
+//        System.out.println("\n> " + msg.getType() + " received");
 //        System.out.println("- Sender Id = " + msg.getSenderId());
 //        System.out.println("- File Id = " + msg.getFileId());
 //        System.out.println("- Chunk No = " + msg.getChunkNo());
 
         this.fileId = msg.getFileId();
         this.chunkNo = msg.getChunkNo();
+        if(Peer.getInstance().isEnhanced()) {
+            this.portTCP = msg.getPort();
+            this.addressTCP = address;
+        }
 
         start(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo));
     }
@@ -47,12 +66,12 @@ public class Restore {
                     e.printStackTrace();
                     return;
                 }
-                Message msg = new Message(Message.MessageType.CHUNK, args, body);
 
                 if(Peer.getInstance().isEnhanced()) {
-                    sendTCP(msg);
+                    sendTCP(new Message(Message.MessageType.CHUNK, args, body));
+                    Peer.getInstance().send(Channel.Type.MDR, new Message(Message.MessageType.CHUNK, args));
                 } else {
-                    Peer.getInstance().send(Channel.Type.MDR, msg);
+                    Peer.getInstance().send(Channel.Type.MDR, new Message(Message.MessageType.CHUNK, args, body));
                 }
 
             } else {
@@ -62,22 +81,16 @@ public class Restore {
     }
 
     private void sendTCP(Message msg) {
-//        String hostName = request.getTCPHost();
-//        int portNumber = request.getTCPPort();
-//
-//        Socket serverSocket;
-//
-//        try {
-//            serverSocket = new Socket(hostName, portNumber);
-//            Log.log("Connected to TCPServer");
-//            ObjectOutputStream oos = new ObjectOutputStream(serverSocket.getOutputStream());
-//            oos.writeObject(msgToSend);
-//            oos.close();
-//            serverSocket.close();
-//        } catch (IOException e) {
-//            Log.logError("Couldn't send CHUNK via TCP");
-//        }
-//
-//        Log.logWarning("S TCP: " + request.toString());
+        Socket socket;
+
+        try {
+            socket = new Socket(addressTCP, portTCP);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            System.out.println("Error sending chunk " + chunkNo + " via TCP");
+        }
     }
 }
