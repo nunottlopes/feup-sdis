@@ -12,12 +12,20 @@ import java.util.concurrent.TimeUnit;
 import static globals.Globals.getFileData;
 import static message.SendMessage.sendCHUNK;
 
+/**
+ * Restore class
+ */
 public class Restore {
     String fileId;
     int chunkNo;
     int portTCP;
     InetAddress addressTCP;
 
+    /**
+     * Restore constructor
+     * @param msg
+     * @param address
+     */
     public Restore(Message msg, InetAddress address) {
         if(msg.getType() == Message.MessageType.GETCHUNKENH && !Peer.getInstance().isEnhanced()) {
             System.out.println("-- Incompatible peer version with restore enhancement --");
@@ -43,6 +51,9 @@ public class Restore {
         start(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo));
     }
 
+    /**
+     * Starts Restore protocol
+     */
     private void start(boolean send) {
         Random r = new Random();
         int delay = r.nextInt(400);

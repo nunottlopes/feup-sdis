@@ -3,12 +3,14 @@ package protocol.reclaim;
 import message.Message;
 import peer.Chunk;
 import peer.Peer;
-import protocol.InvalidProtocolExecution;
 import protocol.backup.BackupInitiator;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Reclaim class
+ */
 public class Reclaim {
 
     String fileId;
@@ -18,6 +20,10 @@ public class Reclaim {
     String filepath;
     Chunk chunk;
 
+    /**
+     * Reclaim constructor
+     * @param msg
+     */
     public Reclaim(Message msg) {
 //        System.out.println("\n> REMOVED received");
 //        System.out.println("- Sender Id = " + msg.getSenderId());
@@ -33,6 +39,9 @@ public class Reclaim {
         start();
     }
 
+    /**
+     * Starts Reclaim protocol
+     */
     private void start() {
         if(!Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)){
             return;

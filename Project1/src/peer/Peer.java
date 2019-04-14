@@ -4,10 +4,8 @@ import channel.Channel;
 import message.Message;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
-import protocol.backup.Backup;
 import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
-import protocol.reclaim.Reclaim;
 import protocol.reclaim.ReclaimInitiator;
 import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
@@ -15,21 +13,21 @@ import rmi.RemoteInterface;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.*;
 
+/**
+ * Peer class
+ */
 public class Peer implements RemoteInterface {
 
     private static final int MAX_THREADS = 200;
-    private static final String ROOT = "database/peer"; // Final root should be ROOT + PeerID
+    private static final String ROOT = "database/peer";
     private static final String BACKUP_FOLDER = "backup/";
     private static final String RESTORE_FOLDER = "restore/";
     private static final String STATE_FOLDER = "state/";
@@ -49,6 +47,15 @@ public class Peer implements RemoteInterface {
     private ScheduledThreadPoolExecutor pool;
     private ScheduledExecutorService executor;
 
+    /**
+     * Peer main function
+     * Creates Peer singleton object
+     * Starts RMI connection
+     *
+     * @param args
+     * @throws IOException
+     * @throws AlreadyBoundException
+     */
     public static void main(String args[]) throws IOException, AlreadyBoundException {
         if(!checkArgs(args)) {
             System.out.println("Usage: Java Peer <protocol version> <peer id> " +
@@ -68,20 +75,11 @@ public class Peer implements RemoteInterface {
         System.out.println("--- Peer ready ---");
     }
 
-    private static boolean checkArgs(String args[]) {
-        if(args.length != 9)
-            return false;
-        else
-            return true;
-    }
-
-    public static Peer getInstance() {
-        if(instance != null)
-            return instance;
-        else
-            return null;
-    }
-
+    /**
+     * Peer singleton constructor
+     * @param args
+     * @throws IOException
+     */
     public Peer(String args[]) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
@@ -118,7 +116,35 @@ public class Peer implements RemoteInterface {
         channels.put(Channel.Type.MDR, MDR);
     }
 
+    /**
+     * Checks if main args are valid
+     * @param args
+     * @return true if valid, false otherwise
+     */
+    private static boolean checkArgs(String args[]) {
+        if(args.length != 9)
+            return false;
+        else
+            return true;
+    }
 
+    /**
+     * Return Peer instance
+     * @return instance
+     */
+    public static Peer getInstance() {
+        if(instance != null)
+            return instance;
+        else
+            return null;
+    }
+
+    /**
+     * Initializes backup protocol
+     * @param filepath
+     * @param replicationDegree
+     * @param enhanced
+     */
     public void backup(String filepath, int replicationDegree, boolean enhanced) {
         if(enhanced && !this.enhanced) {
             System.out.println("-- Incompatible peer version with backup enhancement --");
@@ -140,6 +166,11 @@ public class Peer implements RemoteInterface {
         System.out.println("\n---- FINISHED BACKUP SERVICE ----");
     }
 
+    /**
+     * Initializes restore protocol
+     * @param filepath
+     * @param enhanced
+     */
     public void restore(String filepath, boolean enhanced) {
         if(enhanced && !this.enhanced) {
             System.out.println("-- Incompatible peer version with restore enhancement --");
@@ -161,6 +192,10 @@ public class Peer implements RemoteInterface {
         System.out.println("---- FINISHED RESTORE SERVICE ----");
     }
 
+    /**
+     * Initializes delete protocol
+     * @param filepath
+     */
     public void delete(String filepath) {
         System.out.println("\n----- DELETE SERVICE ----- FILE PATH = " + filepath);
         DeleteInitiator deleteInitiator = new DeleteInitiator(filepath);
@@ -173,6 +208,10 @@ public class Peer implements RemoteInterface {
         System.out.println("\n---- FINISHED DELETE SERVICE ----");
     }
 
+    /**
+     * Initializes reclaim protocol
+     * @param spaceReclaim
+     */
     public void reclaim(long spaceReclaim) {
         System.out.println("\n----- RECLAIM SERVICE ----- DISK SPACE RECLAIM = " + spaceReclaim);
         ReclaimInitiator reclaimInitiator = new ReclaimInitiator(spaceReclaim);
@@ -185,6 +224,10 @@ public class Peer implements RemoteInterface {
         System.out.println("\n---- FINISHED RECLAIM SERVICE ----");
     }
 
+    /**
+     * Gets Peer state
+     * @return peer state to TestApp
+     */
     public String state() {
         System.out.println("\n---- STATE SERVICE ----");
         String ret = "\nINITIATED BACKUP FILES";
@@ -223,6 +266,10 @@ public class Peer implements RemoteInterface {
         return ret;
     }
 
+    /**
+     * Loads Peer previous state from file
+     * @return
+     */
     public boolean loadPeerFromFile(){
         try {
             FileInputStream fis_filemanager = new FileInputStream(new File(getStoredFileManagerFilePath()));
@@ -244,6 +291,9 @@ public class Peer implements RemoteInterface {
         return true;
     }
 
+    /**
+     * Writes Peer state to file
+     */
     public void writePeerToFile(){
         File directory = new File(ROOT + peerID + "/" + STATE_FOLDER);
         if(!directory.exists())
@@ -264,50 +314,11 @@ public class Peer implements RemoteInterface {
         }
     }
 
-    public ScheduledThreadPoolExecutor getPool() {
-        return pool;
-    }
-
-    public int getId() {
-        return peerID;
-    }
-
-    public String getVersion() {
-        return protocolVersion;
-    }
-
-    public String getStoredFileManagerFilePath(){
-        return ROOT + peerID + "/" + STATE_FOLDER + "file_manager";
-    }
-
-    public String getStoredProtocolInfoFilePath(){
-        return ROOT + peerID + "/" + STATE_FOLDER + "protocol_info";
-    }
-
-    public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
-
-    public String getBackupFolder(){
-        return ROOT + peerID + "/" + BACKUP_FOLDER;
-    }
-
-    public String getRestorePath() {
-        return ROOT + peerID + "/" + RESTORE_FOLDER;
-    }
-
-    public FileManager getFileManager() { return fileManager; }
-
-    public ProtocolInfo getProtocolInfo() {
-        return protocolInfo;
-    }
-
-    public ScheduledExecutorService getExecutor() {
-        return executor;
-    }
-
-    public boolean isEnhanced() {
-        return this.enhanced;
-    }
-
+    /**
+     * Send message in the channel
+     * @param channel
+     * @param msg
+     */
     public synchronized void send(Channel.Type channel, Message msg) {
         Channel c = channels.get(channel);
 
@@ -316,5 +327,98 @@ public class Peer implements RemoteInterface {
         } catch (IOException e) {
             System.out.println("Error sending message to " + c.getAddress());
         }
+    }
+
+    /**
+     * Returns ScheduledThreadPoolExecutor
+     * @return pool
+     */
+    public ScheduledThreadPoolExecutor getPool() {
+        return pool;
+    }
+
+    /**
+     * Gets Peer id
+     * @return id
+     */
+    public int getId() {
+        return peerID;
+    }
+
+    /**
+     * Gets Peer protocol version
+     * @return version
+     */
+    public String getVersion() {
+        return protocolVersion;
+    }
+
+    /**
+     * Gets Peer File Manager state file path
+     * @return file manager state file path
+     */
+    public String getStoredFileManagerFilePath(){
+        return ROOT + peerID + "/" + STATE_FOLDER + "file_manager";
+    }
+
+    /**
+     * Gets Peer Protocol Info state file path
+     * @return protocol info state file path
+     */
+    public String getStoredProtocolInfoFilePath(){
+        return ROOT + peerID + "/" + STATE_FOLDER + "protocol_info";
+    }
+
+    /**
+     * Gets backup path for file
+     * @param fileid
+     * @return backup path
+     */
+    public String getBackupPath(String fileid) { return ROOT + peerID + "/" + BACKUP_FOLDER + fileid + "/"; }
+
+    /**
+     * Gets backup folder path
+     * @return backup folder path
+     */
+    public String getBackupFolder(){
+        return ROOT + peerID + "/" + BACKUP_FOLDER;
+    }
+
+    /**
+     * Gets restore folder path
+     * @return restore folder path
+     */
+    public String getRestoreFolder() {
+        return ROOT + peerID + "/" + RESTORE_FOLDER;
+    }
+
+    /**
+     * Returns Peer File Manager
+     * @return file manager
+     */
+    public FileManager getFileManager() { return fileManager; }
+
+    /**
+     * Returns Peer Protocol Info
+     * @return protocol info
+     */
+    public ProtocolInfo getProtocolInfo() {
+        return protocolInfo;
+    }
+
+    /**
+     * Returns Peer ScheduledExecutorService
+     * @return executor
+     */
+    public ScheduledExecutorService getExecutor() {
+        return executor;
+    }
+
+    /**
+     * Returns Peer version
+     * @return true if version is enhanced, false otherwise
+     */
+    public boolean isEnhanced() {
+        return this.enhanced;
     }
 }

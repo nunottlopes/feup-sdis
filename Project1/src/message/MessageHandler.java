@@ -9,16 +9,27 @@ import protocol.restore.Restore;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
+/**
+ * MessageHandler class
+ */
 public class MessageHandler implements Runnable {
 
     private Message msg;
     InetAddress address;
 
+    /**
+     * MessageHandler constructor
+     * @param packet
+     * @throws InvalidPacketException
+     */
     public MessageHandler(DatagramPacket packet) throws InvalidPacketException {
         this.msg = new Message(packet);
         this.address = packet.getAddress();
     }
 
+    /**
+     * Handles type of message received
+     */
     @Override
     public void run() {
         if(this.msg.getType() == Message.MessageType.PUTCHUNK && msg.getSenderId() != Peer.getInstance().getId()) {

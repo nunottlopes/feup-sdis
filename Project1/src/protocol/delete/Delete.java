@@ -4,11 +4,18 @@ import message.Message;
 import peer.FileManager;
 import peer.Peer;
 
+/**
+ * Delete class
+ */
 public class Delete {
 
     private Message msg;
     private FileManager fm;
 
+    /**
+     * Delete constructor
+     * @param msg
+     */
     public Delete(Message msg) {
 //        System.out.println("\n> DELETE received");
 //        System.out.println("- Sender Id = " + msg.getSenderId());
@@ -25,6 +32,9 @@ public class Delete {
         }
     }
 
+    /**
+     * Removes backedup files
+     */
     private void removeFiles(){
         String path = Peer.getInstance().getBackupPath(msg.getFileId());
         if(this.fm.removeFileFolder(path, true)){

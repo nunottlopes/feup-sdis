@@ -7,12 +7,18 @@ import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Message class
+ */
 public class Message implements Serializable {
 
     public static byte CR = 0xD;
     public static byte LF = 0xA;
     public static String CRLF = "" + (char) CR + (char) LF;
 
+    /**
+     * Messages Types
+     */
     public enum MessageType {
         PUTCHUNK, STORED, GETCHUNK, CHUNK, DELETE, REMOVED, GETCHUNKENH
     }
@@ -24,12 +30,14 @@ public class Message implements Serializable {
     private int chunkNo;
     private int replicationDeg;
     private int header_length;
-
-    //getchunkenh
     private int port;
-
     private byte[] body;
 
+    /**
+     * Message constructor
+     * @param packet
+     * @throws InvalidPacketException
+     */
     public Message(DatagramPacket packet) throws InvalidPacketException {
         if(!parseHeader(packet.getData())) {
             throw new InvalidPacketException("Invalid Message Header");
@@ -42,6 +50,11 @@ public class Message implements Serializable {
         }
     }
 
+    /**
+     * Message constructor
+     * @param type
+     * @param args
+     */
     public Message(MessageType type, String[] args) {
         this.type = type;
         ArrayList<String> list = new ArrayList<>();
@@ -69,11 +82,22 @@ public class Message implements Serializable {
         }
     }
 
+    /**
+     * Message constructor
+     * @param type
+     * @param args
+     * @param body
+     */
     public Message(MessageType type, String[] args, byte[] body) {
         this(type, args);
         this.body = body;
     }
 
+    /**
+     * Parses message header
+     * @param data
+     * @return true if valid message header, false otherwise
+     */
     private boolean parseHeader(byte[] data) {
         ByteArrayInputStream stream = new ByteArrayInputStream(data);
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -120,6 +144,12 @@ public class Message implements Serializable {
         }
     }
 
+    /**
+     * Parses message body
+     * @param data
+     * @param data_length
+     * @return true if valid body, false otherwise
+     */
     private boolean parseBody(byte[] data, int data_length) {
         int from = header_length + 2 * CRLF.length();
         int to   = data_length;
@@ -130,6 +160,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses PUTCHUNK messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parsePUTCHUNK(String[] fields) {
         if(fields.length != 6) return false;
 
@@ -146,6 +181,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses STORED messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parseSTORED(String[] fields) {
         if(fields.length != 5) return false;
 
@@ -161,6 +201,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses GETCHUNK messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parseGETCHUNK(String[] fields) {
         if(fields.length != 5) return false;
 
@@ -176,6 +221,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses CHUNK messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parseCHUNK(String[] fields) {
         if(fields.length != 5) return false;
 
@@ -191,6 +241,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses DELETE messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parseDELETE(String[] fields) {
         if(fields.length != 4) return false;
 
@@ -205,6 +260,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses REMOVED messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parseREMOVED(String[] fields) {
         if(fields.length != 5) return false;
 
@@ -220,6 +280,11 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Parses GETCHUNKENH messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
     private boolean parseGETCHUNKENH(String[] fields) {
         if(fields.length != 6) return false;
 
@@ -236,38 +301,74 @@ public class Message implements Serializable {
         return true;
     }
 
+    /**
+     * Return message type
+     * @return type
+     */
     public MessageType getType() {
         return type;
     }
 
+    /**
+     * Return message version
+     * @return version
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Return message sender id
+     * @return sender id
+     */
     public int getSenderId() {
         return senderId;
     }
 
+    /**
+     * Return message file id
+     * @return file id
+     */
     public String getFileId() {
         return fileId;
     }
 
+    /**
+     * Return message chunk number
+     * @return chunk number
+     */
     public int getChunkNo() {
         return chunkNo;
     }
 
+    /**
+     * Return message port
+     * @return port
+     */
     public int getPort() {
         return port;
     }
 
+    /**
+     * Return message replication degree
+     * @return replication degree
+     */
     public int getReplicationDeg() {
         return replicationDeg;
     }
 
+    /**
+     * Return message body
+     * @return body
+     */
     public byte[] getBody() {
         return body;
     }
 
+    /**
+     * Returns header string
+     * @return header string
+     */
     public String getHeaderString() {
         String str;
 
@@ -302,6 +403,10 @@ public class Message implements Serializable {
         return str;
     }
 
+    /**
+     * Returns message bytes
+     * @return bytes
+     */
     public byte[] getBytes() {
         byte[] header = getHeaderString().getBytes();
 

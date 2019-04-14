@@ -10,16 +10,27 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import static message.SendMessage.sendREMOVED;
 
+/**
+ * ReclaimInitiator class
+ */
 public class ReclaimInitiator {
 
     private final FileManager fm;
     private long spaceReclaim; //in Bytes -> maximum disk space that can be used for storing chunks
 
+    /**
+     * ReclaimInitiator constructor
+     * @param spaceReclaim
+     */
     public ReclaimInitiator(long spaceReclaim){
         this.spaceReclaim = spaceReclaim * 1000;
         this.fm = Peer.getInstance().getFileManager();
     }
 
+    /**
+     * Runs Reclaim protocol for initiator-peer
+     * @throws InvalidProtocolExecution
+     */
     public void run() throws InvalidProtocolExecution{
         if(spaceReclaim == 0){
             // Remove all chunks. Faster than removeNecessaryChunks
@@ -30,11 +41,13 @@ public class ReclaimInitiator {
             fm.updateFreeMem(spaceReclaim);
         }
         else{
-            // Choosing best chunks to be removed in order to limit peer memory
             removeNecessaryChunks();
         }
     }
 
+    /**
+     * Removes only the necessary best chunks in order to limit peer memory
+     */
     private void removeNecessaryChunks() {
         List<Chunk> chunks = fm.getAllStoredChunks();
 
@@ -63,6 +76,9 @@ public class ReclaimInitiator {
         }
     }
 
+    /**
+     * Removes all chunks when Space Reclaim value is 0
+     */
     private void deleteAllChunks() {
         String fileId, path;
         fm.setFree_mem(0);

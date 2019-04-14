@@ -5,8 +5,17 @@ import rmi.RemoteInterface;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * TestApp class
+ */
 public class TestApp {
 
+    /**
+     * TestApp main class
+     * Starts RMI connection
+     * Handles args and starts peers protocols
+     * @param args
+     */
     public static void main(String[] args) {
         if(args.length < 2 || args.length > 4) {
             System.out.println("Usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");

@@ -8,16 +8,25 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * TCPServer class
+ */
 public class TCPServer implements Runnable {
 
     private ServerSocket ssocket;
     private boolean run;
     private int port = 0;
 
+    /**
+     * TCPServer constructor
+     */
     public TCPServer() {
         open();
     }
 
+    /**
+     * Runs TCP server
+     */
     @Override
     public void run() {
         while (run) {
@@ -30,6 +39,10 @@ public class TCPServer implements Runnable {
         }
     }
 
+    /**
+     * Handles message received in TCP server
+     * @param socket
+     */
     private void handleMessage(Socket socket) {
         Message msg;
 
@@ -46,6 +59,9 @@ public class TCPServer implements Runnable {
 
     }
 
+    /**
+     * Opens TCP server
+     */
     public void open() {
         try {
             ssocket = new ServerSocket(0);
@@ -58,6 +74,9 @@ public class TCPServer implements Runnable {
         System.out.println("--- Started TCP Server ---");
     }
 
+    /**
+     * Closes TCP server
+     */
     public void close() {
         try {
             run = false;
@@ -68,6 +87,10 @@ public class TCPServer implements Runnable {
         System.out.println("--- Closed TCP Server ---");
     }
 
+    /**
+     * Return TCP server port
+     * @return port
+     */
     public int getPort() {
         return port;
     }

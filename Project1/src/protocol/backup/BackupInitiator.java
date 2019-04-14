@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 import static globals.Globals.getFileData;
 import static message.SendMessage.sendPUTCHUNK;
 
+/**
+ * BackupInitiator class
+ */
 public class BackupInitiator {
 
     public static final int MAX_NUM_CHUNKS = 1000000;
@@ -31,18 +34,33 @@ public class BackupInitiator {
     private File file;
     private Chunk chunk;
 
+    /**
+     * BackupInitiator constructor
+     * @param path
+     * @param repDegree
+     */
     public BackupInitiator(String path, int repDegree) {
         this.path = path;
         this.repDegree = repDegree;
         this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     }
 
+    /**
+     * BackupInitiator constructor
+     * @param path
+     * @param repDegree
+     * @param chunk
+     */
     public BackupInitiator(String path, int repDegree, Chunk chunk){
         this(path, repDegree);
         this.chunk = chunk;
         this.fileId = chunk.getFileId();
     }
 
+    /**
+     * Runs Backup protocol for initiator-peer
+     * @throws InvalidProtocolExecution
+     */
     public void run() throws InvalidProtocolExecution {
 
         file = new File(path);
@@ -99,6 +117,9 @@ public class BackupInitiator {
         Peer.getInstance().getProtocolInfo().endBackup(fileId, repDegree, path);
     }
 
+    /**
+     * Runs backup protocol for one chunk only
+     */
     public void run_one_chunk() {
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -135,6 +156,13 @@ public class BackupInitiator {
 
     }
 
+    /**
+     * Checks if backup is valid
+     * @param repDegree
+     * @param n_chunks
+     * @return true if valid, false otherwise
+     * @throws InvalidProtocolExecution
+     */
     private boolean validBackup(int repDegree, int n_chunks) throws InvalidProtocolExecution {
         if(repDegree > 9) {
             throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "Max number of replication degree is 9");
@@ -145,6 +173,11 @@ public class BackupInitiator {
         return true;
     }
 
+    /**
+     * Splits file to backup in chunks
+     * @param data
+     * @return
+     */
     private ArrayList<Chunk> splitIntoChunks(byte[] data) {
         ArrayList<Chunk> ret = new ArrayList<>();
 

@@ -11,6 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 import static message.SendMessage.sendDELETE;
 
+/**
+ * DeleteInitiator class
+ */
 public class DeleteInitiator {
 
     public static final int MAX_DELETE_MESSAGES = 5;
@@ -19,10 +22,18 @@ public class DeleteInitiator {
     private String path;
     private String fileId;
 
+    /**
+     * DeleteInitiator constructor
+     * @param path
+     */
     public DeleteInitiator(String path){
         this.path = path;
     }
 
+    /**
+     * Runs Delete protocol for initiator-peer
+     * @throws InvalidProtocolExecution
+     */
     public void run() throws InvalidProtocolExecution {
         File file = new File(path);
         if(!file.exists())

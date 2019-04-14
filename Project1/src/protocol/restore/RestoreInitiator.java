@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 import static message.SendMessage.sendGETCHUNK;
 import static message.SendMessage.sendGETCHUNKENH;
 
+/**
+ * RestoreInitiator class
+ */
 public class RestoreInitiator {
 
     private static final int MAX_RETRANSMISSIONS = 3;
@@ -26,11 +29,19 @@ public class RestoreInitiator {
     private ThreadPoolExecutor pool;
     private TCPServer tcp;
 
+    /**
+     * RestoreInitiator constructor
+     * @param filepath
+     */
     public RestoreInitiator(String filepath) {
         this.path = filepath;
         this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     }
 
+    /**
+     * Runs Restore protocol for initiator-peer
+     * @throws InvalidProtocolExecution
+     */
     public void run() throws InvalidProtocolExecution {
         this.file = new File(path);
         if(!this.file.exists())
@@ -90,10 +101,10 @@ public class RestoreInitiator {
             return;
         }
 
-        Peer.getInstance().getFileManager().createFolders(Peer.getInstance().getRestorePath());
+        Peer.getInstance().getFileManager().createFolders(Peer.getInstance().getRestoreFolder());
         FileOutputStream out;
         try {
-            out = new FileOutputStream(Peer.getInstance().getRestorePath() + this.file.getName());
+            out = new FileOutputStream(Peer.getInstance().getRestoreFolder() + this.file.getName());
             for(int i = 0; i < n; i++) {
                 out.write(Peer.getInstance().getProtocolInfo().getChunkData(fileId, i));
             }
@@ -107,11 +118,17 @@ public class RestoreInitiator {
         Peer.getInstance().getProtocolInfo().endRestore(fileId);
     }
 
+    /**
+     * Starts TCP Server
+     */
     private void startTCPServer() {
         this.tcp = new TCPServer();
         new Thread(this.tcp).start();
     }
 
+    /**
+     * Closes TCP Server
+     */
     private void closeTCPServer() {
         this.tcp.close();
     }

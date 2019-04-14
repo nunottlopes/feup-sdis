@@ -8,8 +8,16 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
+/**
+ * SendMessage class
+ */
 public class SendMessage {
 
+    /**
+     * Sends REMOVED message on the MC channel
+     * @param fileId
+     * @param chunkNo
+     */
     public static void sendREMOVED(String fileId, int chunkNo) {
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -27,6 +35,11 @@ public class SendMessage {
 //        System.out.println("- Chunk No = " + chunkNo);
     }
 
+    /**
+     * Sends STORED message on the MC channel
+     * @param fileId
+     * @param chunkNo
+     */
     public static void sendSTORED(String fileId, int chunkNo) {
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -44,6 +57,13 @@ public class SendMessage {
 //        System.out.println("- Chunk No = " + chunk.getChunkNo());
     }
 
+    /**
+     * Sends PUTCHUNK message on the MDB channel
+     * @param fileId
+     * @param chunkNo
+     * @param repDegree
+     * @param data
+     */
     public static void sendPUTCHUNK(String fileId, int chunkNo, int repDegree, byte[] data){
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -63,6 +83,10 @@ public class SendMessage {
 //        System.out.println("- Chunk No = " + chunkNo);
     }
 
+    /**
+     * Sends DELETE message on the MC channel
+     * @param fileId
+     */
     public static void sendDELETE(String fileId){
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -79,6 +103,12 @@ public class SendMessage {
 //        System.out.println("- File Id = " + fileId);
     }
 
+    /**
+     * Sends CHUNK message on the MDR channel
+     * @param fileId
+     * @param chunkNo
+     * @param body
+     */
     public static void sendCHUNK(String fileId, int chunkNo, byte[] body){
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -97,6 +127,14 @@ public class SendMessage {
 //        System.out.println("- Chunk No = " + chunkNo);
     }
 
+    /**
+     * Sends CHUNK message on the MDR channel and uses TCP for enhanced version of restore protocol
+     * @param fileId
+     * @param chunkNo
+     * @param body
+     * @param addressTCP
+     * @param portTCP
+     */
     public static void sendCHUNK(String fileId, int chunkNo, byte[] body, InetAddress addressTCP, int portTCP){
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -114,6 +152,13 @@ public class SendMessage {
 //        System.out.println("- Chunk No = " + chunkNo);
     }
 
+    /**
+     * Sends message using TCP
+     * @param msg
+     * @param addressTCP
+     * @param portTCP
+     * @param chunkNo
+     */
     public static void sendTCP(Message msg, InetAddress addressTCP, int portTCP, int chunkNo) {
         Socket socket;
 
@@ -128,6 +173,11 @@ public class SendMessage {
         }
     }
 
+    /**
+     * Sends GETCHUNK message on the MC channel
+     * @param fileId
+     * @param chunkNo
+     */
     public static void sendGETCHUNK(String fileId, int chunkNo){
         String[] args = {
                 Peer.getInstance().getVersion(),
@@ -141,6 +191,12 @@ public class SendMessage {
         Peer.getInstance().send(Channel.Type.MC, msg);
     }
 
+    /**
+     * Sends GETCHUNKENH message on the MC channel
+     * @param fileId
+     * @param chunkNo
+     * @param tcpPort
+     */
     public static void sendGETCHUNKENH(String fileId, int chunkNo, int tcpPort){
         String[] args = {
                 Peer.getInstance().getVersion(),

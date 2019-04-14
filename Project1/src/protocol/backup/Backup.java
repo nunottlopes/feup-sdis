@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 import static message.SendMessage.sendSTORED;
 
+/**
+ * Backup class
+ */
 public class Backup {
 
     private Message msg;
@@ -19,6 +22,10 @@ public class Backup {
     private String path;
     private Chunk chunk;
 
+    /**
+     * Backup constructor
+     * @param msg
+     */
     public Backup(Message msg) {
         if(!msg.getVersion().equals("1.0") && !Peer.getInstance().isEnhanced()) {
             System.out.println("-- Incompatible peer version with backup enhancement --");
@@ -46,6 +53,9 @@ public class Backup {
         }
     }
 
+    /**
+     * Starts Backup protocol
+     */
     private void start() {
         chunk = new Chunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getReplicationDeg(), this.msg.getBody());
 
@@ -68,6 +78,10 @@ public class Backup {
         }
     }
 
+    /**
+     * Saves chunk
+     * @return true if success, false otherwise
+     */
     private boolean saveChunk() {
         boolean success;
         try {

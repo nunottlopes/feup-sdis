@@ -8,13 +8,26 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Globals class
+ */
 public class Globals {
 
+    /**
+     * Generates fileid given its file
+     * @param f
+     * @return fileid
+     */
     public static String generateFileId(File f) {
         String file_id = f.getName() + f.lastModified() + f.length() + f.hashCode();
         return sha256(file_id);
     }
 
+    /**
+     * Hashes a string
+     * @param s
+     * @return Returns hashed string s
+     */
     public static String sha256(String s) {
         MessageDigest digest = null;
         try {
@@ -32,6 +45,12 @@ public class Globals {
         return hexString.toString();
     }
 
+    /**
+     * Reads file and returns its data
+     * @param file
+     * @return Returns data from a file
+     * @throws FileNotFoundException
+     */
     public static byte[] getFileData(File file) throws FileNotFoundException {
         FileInputStream in_stream;
         in_stream = new FileInputStream(file);
