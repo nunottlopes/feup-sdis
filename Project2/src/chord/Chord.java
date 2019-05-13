@@ -1,38 +1,58 @@
 package chord;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+
 public class Chord
 {
 	// private fingerTable
-
+	private static Chord singleton = null;
+	private int m;
+	private int maxPeers;
 	private int id;
 
-	private int m;
-
-	private MessageDigest digest = null;
+	public static void main(String[] args)
+	{
+		singleton = new Chord(0, 20);
+	}
 
 	public Chord(int id, int maxPeers)
 	{
-		int m = Math.ceil(Math.log(maxPeers)/Math.log(2));
+		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
+		this.maxPeers = (int)Math.pow(2, this.m);
 
-		digest = MessageDigest.getInstance("SHA-1");
+		this.id = Math.floorMod(sha1(new Integer(id).toString()), this.maxPeers);
+
+		run();
+	}
+
+	private void run()
+	{
+		System.out.println(this.m);
+		System.out.println(this.id);
+
 	}
 
 
-	public static String sha1(String s) {
+	public static int sha1(String s)
+	{
         MessageDigest digest = null;
+
         try {
             digest = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+
         byte[] hash = digest.digest(s.getBytes(StandardCharsets.UTF_8));
-        StringBuffer hexString = new StringBuffer();
-        for (int i = 0; i < hash.length; i++) {
-            String hex = Integer.toHexString(0xff & hash[i]);
-            if(hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
+        ByteBuffer wrapped = ByteBuffer.wrap(hash);
+
+		return wrapped.getInt();
     }
+
+
 }
 
