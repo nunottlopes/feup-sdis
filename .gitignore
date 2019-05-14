@@ -2,3 +2,6 @@
 *.iml
 out/
 database/
+*.class
+*.classpath
+*.project
