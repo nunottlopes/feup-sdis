@@ -20,7 +20,7 @@ public class ChordTest
 		
 		if (args.length == 2)
 		{
-			chord.channel.open(5001);
+			chord.channel.open();
 
 			byte[] data = new byte[2];
 			data[0] = 4;
