@@ -77,10 +77,10 @@ public class ChordChannel implements Runnable
 				
 				if (args[0].equals("CHORDLOOKUP")) // CHORDLOOKUP <request_IP> <request_port> <key>
 				{
-					parent.lookup(new InetSocketAddress(args[1], Integer.parseInt(args[2])), args[3]);
+					parent.lookup(new InetSocketAddress(args[1], Integer.parseInt(args[2])), Integer.parseInt(args[3]));
 				}
 				
-				else if (args[0].equals("CHORDRETURN")) // CHORDRETURN + Chunk
+				else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <target_IP> <target_port> <key>
 				{
 					Chunk chunk = null;
 					

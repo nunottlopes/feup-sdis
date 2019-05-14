@@ -56,7 +56,9 @@ public class Chord
 		{
 			int value = (this.id + (int)Math.pow(2, i)) % maxPeers;
 			
-			// Query successor(value)
+			lookup(address, value);
+			
+			Pair<InetSocketAddress, Chunk> pair = this.channel.waitChunk(5 * 1000);
 		}
 		
 		
@@ -74,18 +76,31 @@ public class Chord
 		channel = new ChordChannel(this);
 	}
 	
-	
-	public void lookup(InetSocketAddress origin, String key)
+	public boolean isInInterval(int target, int lowerBound, int upperBound)
 	{
-		Chunk chunk = storage.get(key);
-		if (chunk != null)
+		if (upperBound >= lowerBound)
 		{
-			channel.sendChunk(origin, "CHORDRETURN", chunk);
+			return (target < lowerBound && target > upperBound);
 		}
-		
-		int hash = Math.floorMod(sha1(key), this.maxPeers);
+		else
+		{
+			return !isInInterval(target, upperBound, lowerBound);
+		}
+	}
+	
+	
+	public void lookup(InetSocketAddress origin, int hash)
+	{
+		if (isInInterval(hash, this.id, fingerTable[0].first-1))
+		{
+			String message = "CHORDRETURN" + " " + fingerTable[0].second.getAddress() + " " + fingerTable[0].second.getPort() + " " + hash; // CHORDRETURN <target_IP> <target_port> <key>
+			
+			channel.sendMessage(origin, message);
+			return;
+		}
+
 		int i;
-		for (i = 0; i < fingerTable.length; i++)
+		for (i = fingerTable.length-1; i >= 0; i--)
 		{
 			if (fingerTable[i] == null)
 				continue;
@@ -93,67 +108,66 @@ public class Chord
 			if (fingerTable[i].first > hash) // If peer id is greater than the hash then we have exceeded the desired peer
 				break;
 		}
-		i--;
 		
-		if (i == -1 || fingerTable[i] == null) // Not found
-		{
-			channel.sendChunk(origin, "CHORDRETURN", null);
+		if (i == 0 || fingerTable[i] == null /* Only one peer*/)
+		{			
+			channel.sendMessage(origin, "CHORDRETURN");
 		}
 		else
 		{
 			// Pass query to node i
-			
-			String message = "CHORDLOOKUP" + " " + origin.getAddress() + " " + origin.getPort() + " " + key;
+			String message = "CHORDLOOKUP" + " " + origin.getAddress() + " " + origin.getPort() + " " + hash;
 			
 			channel.sendMessage(fingerTable[i].second, message);
 		}
 	}
 	
-	public boolean addChunk(String key, Chunk chunk)
-	{
-		lookup(address, key); // starts a lookup with its own address as the origin address
-		
-		Pair<InetSocketAddress, Chunk> pair = this.channel.waitChunk(5 * 1000);
-		
-		if (pair == null)
-		{
-			System.err.println("No CHORDRETURN message!");
-			return false;
-		}
-		
-		InetSocketAddress origin = pair.first;
-		Chunk receivedChunk = pair.second;
-		
-		if (receivedChunk == null) // Key not bound
-		{
-			String message = "CHORDSTORE" + " " + key;
-			
-			channel.sendChunk(origin, message, chunk);
-			
-			Pair<InetSocketAddress, String[]> storePair = this.channel.waitMessage(5 * 1000);
-			
-			if (storePair.second[1].equals("0"))
-			{
-				System.err.println("Failed adding chunk!");
-				return false;
-			}
-			else if (storePair.second[1].equals("1"))
-			{
-				System.err.println("Successfully added chunk!");
-				return true;
-			}
-			else
-			{
-				// Error
-			}
-		}
-		else // Key bound
-		{
-			System.err.println("Key already bound!");
-		}
-		
-		return false;
-	}
+	
+//	public boolean addChunk(String key, Chunk chunk)
+//	{
+//		lookup(address, key); // starts a lookup with its own address as the origin address
+//		
+//		Pair<InetSocketAddress, Chunk> pair = this.channel.waitChunk(5 * 1000);
+//		
+//		if (pair == null)
+//		{
+//			System.err.println("No CHORDRETURN message!");
+//			return false;
+//		}
+//		
+//		InetSocketAddress origin = pair.first;
+//		Chunk receivedChunk = pair.second;
+//		
+//		if (receivedChunk == null) // Key not bound
+//		{
+//			String message = "CHORDSTORE" + " " + key;
+//			
+//			channel.sendChunk(origin, message, chunk);
+//			
+//			Pair<InetSocketAddress, String[]> storePair = this.channel.waitMessage(5 * 1000);
+//			
+//			if (storePair.second[1].equals("0"))
+//			{
+//				System.err.println("Failed adding chunk!");
+//				return false;
+//			}
+//			else if (storePair.second[1].equals("1"))
+//			{
+//				System.err.println("Successfully added chunk!");
+//				return true;
+//			}
+//			else
+//			{
+//				// Error
+//			}
+//		}
+//		else // Key bound
+//		{
+//			System.err.println("Key already bound!");
+//		}
+//		
+//		return false;
+//	}
 
 	
 	public void notifyMessage(Pair<InetSocketAddress, String[]> value)

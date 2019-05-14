@@ -29,7 +29,7 @@ public class ChordTest
 			Chunk chunk = new Chunk("file1", 0, 2, data);
 			
 			System.out.println("Tried to store chunk");
-			System.out.println("Return: " + chord.addChunk(chunk.getFileId()+chunk.getChunkNo(), chunk));
+//			System.out.println("Return: " + chord.addChunk(chunk.getFileId()+chunk.getChunkNo(), chunk));
 			
 			
 			String key = "ola";
