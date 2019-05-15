@@ -211,7 +211,7 @@ public class Chord
 	{
 		if (upperBound >= lowerBound)
 		{
-			return (target < lowerBound && target > upperBound);
+			return (target > lowerBound && target < upperBound);
 		}
 		else
 		{
