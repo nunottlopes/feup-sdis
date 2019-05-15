@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import global.Pair;
-import peer.Chunk;
 
 public class ChordChannel implements Runnable
 {
@@ -20,7 +19,8 @@ public class ChordChannel implements Runnable
 	ServerSocket socket = null;
 
 	ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
-	ConcurrentLinkedQueue<Pair<InetSocketAddress, Chunk>> chunkQueue = null;
+	
+	long timeout = 1 * 1000;
 
 	public ChordChannel(Chord parent)
 	{
@@ -31,17 +31,7 @@ public class ChordChannel implements Runnable
 	
 	public void open()
 	{
-		try
-		{
-			socket = new ServerSocket(5000);
-//			this.parent.address = new InetSocketAddress(this.parent.address.getAddress(), socket.getLocalPort());
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		this.start();
+		this.open(5000);
 	}
 	
 	public void open(int port)
@@ -49,7 +39,6 @@ public class ChordChannel implements Runnable
 		try
 		{
 			socket = new ServerSocket(port);
-			this.parent.address = new InetSocketAddress(this.parent.address.getAddress(), socket.getLocalPort());
 		}
 		catch (IOException e)
 		{
@@ -72,51 +61,33 @@ public class ChordChannel implements Runnable
 				
 				String message = (String) ois.readObject();
 				
-				String[] args = message.split(" +");  
+				String[] args = message.split(" +");
 				
 				
-				if (args[0].equals("CHORDLOOKUP")) // CHORDLOOKUP <request_IP> <request_port> <key>
+				if (args[0].equals("CHORDLOOKUP")) // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
 				{
-					parent.lookup(new InetSocketAddress(args[1], Integer.parseInt(args[2])), Integer.parseInt(args[3]));
+					boolean successor = args[1].equals("SUCCESSOR");
+					
+					parent.lookup(new InetSocketAddress(args[2], Integer.parseInt(args[3])), Integer.parseInt(args[4]), successor);						
 				}
 				
-				else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <target_IP> <target_port> <key>
+				else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
 				{
-					Chunk chunk = null;
-					
-					chunk = (Chunk) ois.readObject();
-					
-					Pair<InetSocketAddress, Chunk> pair = new Pair<InetSocketAddress, Chunk>((InetSocketAddress)connection.getRemoteSocketAddress(), chunk);
-					
-//					chunkQueue.add(pair);
-					
-					parent.notifyChunk(pair);
-				}
-				
-				else if (args[0].equals("CHORDSTORE")) // CHORDSTORE <key> + Chunk
-				{
-					Chunk chunk = null;
-					
-					chunk = (Chunk) ois.readObject();
-					
-					if (chunk != null)
+					synchronized(this.parent)
 					{
-						parent.storage.put(args[1], chunk);
+						messageQueue.add(new Pair<InetSocketAddress, String[]>((InetSocketAddress) connection.getRemoteSocketAddress(), args));
+						
+						this.parent.notifyAll();
 					}
-					
-					String response = "CHORDSTORERETURN" + " " + "1";
-					
-					sendMessage((InetSocketAddress)connection.getRemoteSocketAddress(), response);
 				}
 				
-				else if (args[0].equals("CHORDSTORERETURN")) // CHORDSTORERETURN <added>
+				else if (args[0].equals("CHORDNOTIFY")) // CHORDNOTIFY <origin_id> <origin_IP> <origin_port>
 				{
-					Pair<InetSocketAddress, String[]> pair = new Pair<InetSocketAddress, String[]>((InetSocketAddress)connection.getRemoteSocketAddress(), args);
-					
-//					messageQueue.add(pair);
-					
-					parent.notifyMessage(pair);
+					parent.notify(Integer.parseInt(args[1]), new InetSocketAddress(args[2], Integer.parseInt(args[3])));						
 				}
+				
+				
+				connection.close();
 			}
 			catch (IOException e)
 			{
@@ -127,6 +98,111 @@ public class ChordChannel implements Runnable
 				e.printStackTrace();
 			}
 		}	
+	}
+	
+	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
+	{
+		if (connectionIP.equals(this.parent.address))
+		{
+			this.parent.lookup(requestIP, hash, successor);
+		}
+		else
+		{
+			String message = createLookupMessage(requestIP, hash, successor);		
+			sendMessage(connectionIP, message);
+		}
+			
+		synchronized(this.parent)
+		{
+			try
+			{
+				this.parent.wait(this.timeout);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+			
+			Pair<InetSocketAddress, String[]> pair = messageQueue.poll();
+			
+			if (pair == null)
+				return null;
+			
+			boolean messageSuccessor = pair.second[1].equals("SUCCESSOR");
+			
+			if (messageSuccessor != successor)
+				return null;
+			
+			return pair.second;
+		}
+	}
+	
+	protected void relayLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
+	{
+		String message =  createLookupMessage(requestIP, hash, successor);
+		
+		sendMessage(connectionIP, message);
+	}
+	
+	protected void sendReturn(int targetId, InetSocketAddress targetIP, InetSocketAddress destination, int hash, boolean successor)
+	{
+		String message = createReturnMessage(targetId, targetIP, hash, successor);
+		
+		sendMessage(destination, message);
+	}
+	
+	protected void sendNotify(int originId, InetSocketAddress originIP, InetSocketAddress destination)
+	{
+		if (destination.equals(this.parent.address))
+			this.parent.notify(originId, originIP);
+		else
+		{
+			String message = createNotifyMessage(originId, originIP);
+			
+			sendMessage(destination, message);
+		}
+	}
+	
+	
+	protected String createLookupMessage(InetSocketAddress requestIP, int hash, boolean successor)
+	{
+		String message = "CHORDLOOKUP" + " "; // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
+		
+		if (successor)
+			message += "SUCCESSOR" + " ";
+		else
+			message += "PREDECESSOR" + " ";
+		
+		if (requestIP == null)
+			message += "null" + " " + "null" + " " + hash;
+		else
+			message += requestIP.getAddress().getHostAddress() + " " + requestIP.getPort() + " " + hash;
+		
+		 return message;
+	}
+	
+	protected String createReturnMessage(int targetId, InetSocketAddress targetIP, int hash, boolean successor)
+	{
+		String message = "CHORDRETURN" + " ";  // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
+		
+		if (successor)
+			message += "SUCCESSOR" + " ";
+		else
+			message += "PREDECESSOR" + " ";
+		
+		if (targetId == -1)
+			message += targetId + " " + "null" + " " + "null" + " " + hash;
+		else
+			message += targetId + " " + targetIP.getAddress().getHostAddress() + " " + targetIP.getPort() + " " + hash;
+
+		return message;
+	}
+	
+	protected String createNotifyMessage(int originId, InetSocketAddress originIP)
+	{
+		String message = "CHORDNOTIFY" + " " + originId + " " + originIP.getAddress().getHostAddress() + " " + originIP.getPort();  // CHORDNOTIFY <origin_id> <origin_IP> <origin_port>
+		
+		return message;
 	}
 	
 	public void sendMessage(InetSocketAddress address, String message)
@@ -140,35 +216,13 @@ public class ChordChannel implements Runnable
 			oos.writeObject(message);
 			
 			connection.close();
-
 		}
 		catch (IOException e1)
 		{
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}
 	
-	public void sendChunk(InetSocketAddress address, String message, Chunk chunk)
-	{
-		try
-		{
-			Socket connection = new Socket();
-			connection.connect(address);
-			ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
-			
-			oos.writeObject(message);
-			oos.writeObject(chunk);
-
-			connection.close();
-
-		}
-		catch (IOException e1)
-		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
 	
 	public Pair<InetSocketAddress, String[]> waitMessage(int timeout)
 	{
@@ -187,22 +241,6 @@ public class ChordChannel implements Runnable
 		}
 	}
 	
-	public Pair<InetSocketAddress, Chunk> waitChunk(int timeout)
-	{
-		synchronized (this.parent)
-		{
-			try
-			{
-				this.parent.wait(timeout);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-			
-			return (Pair<InetSocketAddress, Chunk>) this.parent.notifyValue;
-		}
-	}
 	
 	public void start()
 	{

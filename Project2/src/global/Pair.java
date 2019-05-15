@@ -10,4 +10,12 @@ public class Pair<A,B>
 		this.first = a;
 		this.second = b;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "{" + first + ", " + second + "}";
+	}
+	
+	
 }
