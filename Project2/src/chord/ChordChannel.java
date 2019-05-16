@@ -153,9 +153,7 @@ public class ChordChannel implements Runnable
 	
 	protected void sendNotify(int originId, InetSocketAddress originIP, InetSocketAddress destination)
 	{
-		if (destination.equals(this.parent.address))
-			this.parent.notify(originId, originIP);
-		else
+		if (!destination.equals(this.parent.address))
 		{
 			String message = createNotifyMessage(originId, originIP);
 			

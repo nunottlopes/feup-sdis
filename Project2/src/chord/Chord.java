@@ -42,6 +42,8 @@ public class Chord
 	{
 		this.initialize(id, maxPeers, port);
 		
+		this.predecessor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
+				
 		this.fingerTable = new Pair[this.m];
 
 		for (int i = 0; i < this.fingerTable.length; i++)
@@ -131,7 +133,7 @@ public class Chord
 				break;
 		}
 		
-		if (i == 0)
+		if (i == -1)
 		{			
 			channel.sendReturn(fingerTable[0].first, fingerTable[0].second, origin, hash, successor);
 		}
@@ -167,6 +169,12 @@ public class Chord
 	
 	public void notify(int originId, InetSocketAddress originIP)
 	{
+		if (this.id == 6)
+		{
+			int a = 0;
+			a = a * 2;
+		}
+		
 		if (this.predecessor == null || this.predecessor.first == this.id || isInInterval(originId, this.predecessor.first, this.id))
 		{
 			this.predecessor = new Pair<Integer, InetSocketAddress>(originId, originIP);
