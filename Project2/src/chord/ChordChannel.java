@@ -109,15 +109,15 @@ public class ChordChannel implements Runnable
 	
 	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
 	{
-		if (connectionIP.equals(this.parent.address))
-		{
-			this.parent.lookup(requestIP, hash, successor);
-		}
-		else
-		{
+//		if (connectionIP.equals(this.parent.address))
+//		{
+//			this.parent.lookup(requestIP, hash, successor);
+//		}
+//		else
+//		{
 			String message = createLookupMessage(requestIP, hash, successor);		
 			sendMessage(connectionIP, message);
-		}
+//		}
 			
 		synchronized(this.parent)
 		{
@@ -130,17 +130,23 @@ public class ChordChannel implements Runnable
 				e.printStackTrace();
 			}
 			
-			Pair<InetSocketAddress, String[]> pair = messageQueue.poll();
+			for (Pair<InetSocketAddress, String[]> element : messageQueue) // Search for my response
+			{
+				if (element == null)
+					continue;
+				
+				String[] args = element.second;
+				boolean messageSuccessor = args[1].equals("SUCCESSOR");
+				int messageHash = Integer.parseInt(args[5]);
+				
+				if (messageSuccessor == successor && messageHash == hash)
+				{
+					messageQueue.remove(element);
+					return args;
+				}
+			}
 			
-			if (pair == null)
-				return null;
-			
-			boolean messageSuccessor = pair.second[1].equals("SUCCESSOR");
-			
-			if (messageSuccessor != successor)
-				return null;
-			
-			return pair.second;
+			return null;
 		}
 	}
 	
