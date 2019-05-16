@@ -42,14 +42,16 @@ public class Chord
 	{
 		this.initialize(id, maxPeers, port);
 		
-		this.predecessor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
+//		this.predecessor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
 				
 		this.fingerTable = new Pair[this.m];
 
-		for (int i = 0; i < this.fingerTable.length; i++)
-		{			
-			this.fingerTable[i] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
-		}
+//		for (int i = 0; i < this.fingerTable.length; i++)
+//		{			
+//			this.fingerTable[i] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
+//		}
+		
+		this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
 
 		startMaintenance();
 	}
@@ -58,29 +60,33 @@ public class Chord
 	public Chord(int id, int maxPeers, int port, InetSocketAddress address)
 	{
 		this.initialize(id, maxPeers, port);
-		
-		String[] args = this.channel.sendLookup(address, this.address, this.id, false);
-		
-		if (Integer.parseInt(args[2]) == -1)
-			this.predecessor = null;
-		else
-			this.predecessor = new Pair<Integer, InetSocketAddress>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
-		
+				
 		this.fingerTable = new Pair[this.m];
 
-		for (int i = 0; i < this.fingerTable.length; i++)
+//		for (int i = 0; i < this.fingerTable.length; i++)
+//		{
+//			int value = getFingerTableIndex(i);
+//			
+//			args = channel.sendLookup(address, this.address, value, true);
+//			
+//			if (args != null) // Success
+//			{
+//				int peerId = Integer.parseInt(args[2]);
+//				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
+//				
+//				this.fingerTable[i] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+//			}
+//		}
+		
+		int value = getFingerTableIndex(0);
+		String[] args = channel.sendLookup(address, this.address, value, true);
+		
+		if (args != null) // Success
 		{
-			int value = getFingerTableIndex(i);
+			int peerId = Integer.parseInt(args[2]);
+			InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 			
-			args = channel.sendLookup(address, this.address, value, true);
-			
-			if (args != null) // Success
-			{
-				int peerId = Integer.parseInt(args[2]);
-				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
-				
-				this.fingerTable[i] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
-			}
+			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
 		}
 		
 		startMaintenance();
@@ -120,40 +126,54 @@ public class Chord
 			
 			return;
 		}
-		if (isInInterval(hash, this.id, fingerTable[0].first-1))
+		
+		if (this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1)) // I am the successor of the hash
+		{
+			channel.sendReturn(this.id, this.address, origin, hash, successor);
+			return;
+		}
+		
+		if (isInInterval(hash, this.id, fingerTable[0].first+1)) // My successor is the successor of the hash
 		{
 			channel.sendReturn(fingerTable[0].first, fingerTable[0].second, origin, hash, successor);
 			return;
 		}
+		else // Search finger table
+		{
+			int i;
+			for (i = m-1; i >= 0; i--)
+			{
+				if (fingerTable[i] == null || fingerTable[i].first == null || fingerTable[i].second == null)
+					continue;
+				
+				if (isInInterval(fingerTable[i].first, this.id, hash)) // If peer id is greater than the hash then we have exceeded the desired peer
+					break;
+			}
+			
+			if (i == -1)
+			{			
+				channel.sendReturn(this.id, this.address, origin, hash, successor);
+			}
+			else
+			{
+				// Pass query to node i
+				channel.relayLookup(fingerTable[i].second, origin, hash, successor);
+			}
+		}
 
-		int i;
-		for (i = m-1; i >= 0; i--)
-		{
-			if (isInInterval(fingerTable[i].first, this.id, hash)) // If peer id is greater than the hash then we have exceeded the desired peer
-				break;
-		}
 		
-		if (i == -1)
-		{			
-			channel.sendReturn(fingerTable[0].first, fingerTable[0].second, origin, hash, successor);
-		}
-		else
-		{
-			// Pass query to node i
-			channel.relayLookup(fingerTable[i].second, origin, hash, successor);
-		}
 	}
 	
 	public void stabilize()
 	{
 		Pair<Integer, InetSocketAddress> successorPredecessor;
-		int successorId = fingerTable[0].first;
+		Pair<Integer, InetSocketAddress> successor = fingerTable[0];
 		
-		if (successorId == this.id)
+		if (successor.first == this.id)
 			successorPredecessor = this.predecessor;
 		else
 		{
-			String[] args = channel.sendLookup(fingerTable[0].second, this.address, fingerTable[0].first, false);
+			String[] args = channel.sendLookup(successor.second, this.address, successor.first, false);
 			
 			if (Integer.parseInt(args[2]) == -1)
 				successorPredecessor = null;
@@ -161,21 +181,15 @@ public class Chord
 				successorPredecessor = new Pair<Integer, InetSocketAddress>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
 		}
 
-		if (successorPredecessor != null && isInInterval(successorPredecessor.first, this.id, successorId))
+		if (successorPredecessor != null && isInInterval(successorPredecessor.first, this.id, successor.first))
 			fingerTable[0] = successorPredecessor;
 		
-		channel.sendNotify(this.id, this.address, fingerTable[0].second);		
+		channel.sendNotify(this.id, this.address, successor.second);		
 	}
 	
 	public void notify(int originId, InetSocketAddress originIP)
 	{
-		if (this.id == 6)
-		{
-			int a = 0;
-			a = a * 2;
-		}
-		
-		if (this.predecessor == null || this.predecessor.first == this.id || isInInterval(originId, this.predecessor.first, this.id))
+		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id))
 		{
 			this.predecessor = new Pair<Integer, InetSocketAddress>(originId, originIP);
 		}
@@ -186,22 +200,20 @@ public class Chord
 		this.fingerFixerIndex = (this.fingerFixerIndex + 1) % this.m; // Increments fingerFixerIndex
 		
 		int value = getFingerTableIndex(this.fingerFixerIndex);
+
+		String[] args = channel.sendLookup(this.fingerTable[0].second, this.address, value, true);
 		
-		for (int i = 0; i < m; i++) // Tries to lookup with the different peers in the fingerTable
+		if (args == null)
 		{
-			if (i != this.fingerFixerIndex)
-			{
-				String[] args = channel.sendLookup(this.fingerTable[i].second, this.address, value, true);
-				
-				if (args == null) // Retries with next peer in fingerTable
-					continue;
-				
-				int peerId = Integer.parseInt(args[2]);
-				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
-				
-				this.fingerTable[this.fingerFixerIndex] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
-			}
+			System.err.println("error");
+			return;
 		}
+		
+		int peerId = Integer.parseInt(args[2]);
+		InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
+		
+		this.fingerTable[this.fingerFixerIndex] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+
 	}
 	
 	public void checkPredecessor()
@@ -210,21 +222,25 @@ public class Chord
 		{
 			String[] args = channel.sendLookup(this.predecessor.second, this.address, this.predecessor.first, true);
 			
-			if (args == null) // Retries with next peer in fingerTable
+			if (args == null)
 				this.predecessor = null;
 		}
 	}
 	
 	public boolean isInInterval(int target, int lowerBound, int upperBound)
 	{
-		if (upperBound >= lowerBound)
-		{
+		target = Math.floorMod(target,  this.maxPeers);
+		lowerBound = Math.floorMod(lowerBound,  this.maxPeers);
+		upperBound = Math.floorMod(upperBound,  this.maxPeers);
+		
+		if (upperBound == lowerBound)
+			return true;
+	
+		else if (upperBound > lowerBound)
 			return (target > lowerBound && target < upperBound);
-		}
+		
 		else
-		{
 			return !isInInterval(target, upperBound, lowerBound);
-		}
 	}
 
 	protected int getFingerTableIndex(int i)
