@@ -3,7 +3,6 @@ package chord;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -83,9 +82,11 @@ public class ChordChannel implements Runnable
 		
 		if (args[0].equals("CHORDLOOKUP")) // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
 		{
-			boolean successor = args[1].equals("SUCCESSOR");
-			
-			parent.lookup(new InetSocketAddress(args[2], Integer.parseInt(args[3])), Integer.parseInt(args[4]), successor);						
+			if (!parent.client)
+			{
+				boolean successor = args[1].equals("SUCCESSOR");
+				parent.lookup(new InetSocketAddress(args[2], Integer.parseInt(args[3])), Integer.parseInt(args[4]), successor);						
+			}
 		}
 		
 		else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
@@ -103,7 +104,10 @@ public class ChordChannel implements Runnable
 		
 		else if (args[0].equals("CHORDNOTIFY")) // CHORDNOTIFY <origin_id> <origin_IP> <origin_port>
 		{
-			parent.notify(Integer.parseInt(args[1]), new InetSocketAddress(args[2], Integer.parseInt(args[3])));						
+			if (!parent.client)
+			{
+				parent.notify(Integer.parseInt(args[1]), new InetSocketAddress(args[2], Integer.parseInt(args[3])));
+			}
 		}
 	}
 	
@@ -241,24 +245,6 @@ public class ChordChannel implements Runnable
 	private void failedLookup(InetSocketAddress address, String message)
 	{
 		
-	}
-	
-	
-	public Pair<InetSocketAddress, String[]> waitMessage(int timeout)
-	{
-		synchronized (this.parent)
-		{
-			try
-			{
-				this.parent.wait(timeout);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-			
-			return (Pair<InetSocketAddress, String[]>) this.parent.notifyValue;
-		}
 	}
 	
 	

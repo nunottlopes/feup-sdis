@@ -8,11 +8,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.jmx.snmp.tasks.Task;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -33,56 +29,73 @@ public class Chord
 	 Pair<Integer, InetSocketAddress>[] successorList = null;
 	
 	 ChordChannel channel = null;
-	
-	 Object notifyValue = null;
-	 
+		 
 	 ScheduledThreadPoolExecutor  pool = null;
+	 
+	 boolean client = false;
 
 
-	public Chord(int id, int maxPeers, int port)
+	public Chord(int maxPeers, int port)
 	{
-		this.initialize(id, maxPeers, port);
-						
-		this.fingerTable = new Pair[this.m];
+		this.initialize(maxPeers, port, false);
 		
 		this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
 
 		startMaintenance();
 	}
-
-	public Chord(int id, int maxPeers, int port, InetSocketAddress address)
+	
+	public Chord(int maxPeers, int port, InetSocketAddress address, boolean client)
 	{
-		this.initialize(id, maxPeers, port);
+		this.initialize(maxPeers, port, client);
 		
-		int value = getFingerTableIndex(0);
-		String[] args = channel.sendLookup(address, this.address, value, true);
-		
-		if (args != null) // Success
+		if (!client) // Peer
 		{
-			int peerId = Integer.parseInt(args[2]);
-			InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
+			int value = getFingerTableIndex(0);
 			
-			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+			String[] args = channel.sendLookup(address, this.address, value, true);
+			
+			if (args != null) // Success
+			{
+				int peerId = Integer.parseInt(args[2]);
+				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
+				
+				this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+			}
+			
+			startMaintenance();
 		}
-		
-		startMaintenance();
+		else // Client
+		{			
+			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
+		}
+	}
+
+	public Chord(int maxPeers, int port, InetSocketAddress address)
+	{
+		this(maxPeers, port, address, false);
 	}
 	
+	
 	@SuppressWarnings("unchecked")
-	public void initialize(int id, int maxPeers, int port)
+	public void initialize(int maxPeers, int port, boolean client)
 	{
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
 		this.maxPeers = (int)Math.pow(2, this.m);
+		
+		this.address = new InetSocketAddress("localhost", port);
+		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
+		
+		if (!client)
+			this.id = Math.floorMod(sha1(this.address.toString()), this.maxPeers);
 
-		this.id = Math.floorMod(sha1(new Integer(id).toString()), this.maxPeers);
 		
 		this.fingerTable = new Pair[this.m];
 		this.successorList = new Pair[this.m];
 		
-		this.address = new InetSocketAddress("localhost", port);
-		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 		this.channel = new ChordChannel(this);
 		this.channel.open(port);
+		
+		this.client = client;
 	}
 	
 	public void startMaintenance()
@@ -91,8 +104,33 @@ public class Chord
         pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 1000, TimeUnit.MILLISECONDS);
 	}
 	
-	public void lookup(InetSocketAddress origin, int hash, boolean successor)
+	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
 	{
+		if (client)
+		{
+//			System.out.println("Sent lookup request for hash " + hash);
+			
+			long start = System.currentTimeMillis();
+			
+			String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
+			
+			long end = System.currentTimeMillis();
+			
+			if (args == null)
+				System.err.println("Connection peer is not alive!");
+			
+//			System.out.print("Received response: ");
+			
+			for (int i = 0; i < args.length; i++)
+			{
+				System.out.print(args[i] + " ");
+			}
+			
+			System.out.println("\nQuery took " + (end-start) + " milliseconds");
+			
+			return args;
+		}
+		
 		if (!successor)
 		{
 			if (predecessor == null)
@@ -104,19 +142,19 @@ public class Chord
 				channel.sendReturn(predecessor.first, predecessor.second, origin, hash, successor);
 			}
 			
-			return;
+			return null;
 		}
 		
 		if ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1)) || hash == this.id) // I am the successor of the hash
 		{
 			channel.sendReturn(this.id, this.address, origin, hash, successor);
-			return;
+			return null;
 		}
 		
 		if (isInInterval(hash, this.id, fingerTable[0].first+1)) // My successor is the successor of the hash
 		{
 			channel.sendReturn(fingerTable[0].first, fingerTable[0].second, origin, hash, successor);
-			return;
+			return null;
 		}
 		else // Search finger table
 		{
@@ -141,13 +179,13 @@ public class Chord
 			}
 		}
 
-		
+		return null;
 	}
 	
 	public void stabilize()
 	{
-		Pair<Integer, InetSocketAddress> successorPredecessor;
 		Pair<Integer, InetSocketAddress> successor = fingerTable[0];
+		Pair<Integer, InetSocketAddress> successorPredecessor;
 		
 		if (successor.first == this.id)
 			successorPredecessor = this.predecessor;
@@ -224,7 +262,7 @@ public class Chord
 		if (Math.abs(upperBound - lowerBound) <= 1)
 			return inclusive;
 			
-		if (upperBound > lowerBound)
+		if (upperBound > lowerBound || lowerBound == 0 || upperBound == 0)
 			return (target > lowerBound && target < upperBound);
 		
 		else
@@ -236,16 +274,7 @@ public class Chord
 		return (this.id + (int)Math.pow(2, i)) % this.maxPeers;
 	}
 
-	
-	public void notifyMessage(Pair<InetSocketAddress, String[]> value)
-	{
-		synchronized (this)
-		{
-			this.notifyValue = value;
-			this.notify();
-		}
-	}
-	
+		
 	public static InetAddress getLocalIP()
 	{
 		try

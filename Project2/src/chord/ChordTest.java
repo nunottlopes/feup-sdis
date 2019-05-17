@@ -6,31 +6,42 @@ public class ChordTest
 {
 	public static void main(String[] args)
 	{
-		int id = Integer.parseInt(args[0]);
 		int maxPeers = 32;
-		int port = Integer.parseInt(args[1]);
+		int port;
 		InetSocketAddress connectionPeer = null;
+		
 		Chord chord = null;
 		
-		if (args.length == 4)
+		if (args.length == 3)
 		{
-			connectionPeer = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
-			chord = new Chord(id, maxPeers, port, connectionPeer);
+			port = Integer.parseInt(args[0]);
+			connectionPeer = new InetSocketAddress(args[1], Integer.parseInt(args[2]));
+			
+			chord = new Chord(maxPeers, port, connectionPeer);
 
+		}
+		else if (args.length == 4)
+		{
+			port = Integer.parseInt(args[1]);
+			connectionPeer = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
+			
+			chord = new Chord(maxPeers, port, connectionPeer, true);
+			
+			for (int i = 0; i < maxPeers; i++)
+			{
+				String[] messageArgs = chord.lookup(null, i, true);
+				
+				System.out.println("lookup(" + i + ") = " + messageArgs[2] + "\n");
+			}
+			
+			System.exit(0);
 		}
 		else
 		{
-			chord = new Chord(id, maxPeers, port);
+			port = Integer.parseInt(args[0]);
+			chord = new Chord(maxPeers, port);
 		}
 		
-//		System.out.println("ID = " + chord.id);
-//		System.out.println("IP Address = " + chord.address);
-//		
-//		System.out.println("Finger Table:");
-//		for (int i = 0; i < chord.fingerTable.length; i++)
-//		{
-//			System.out.println(chord.fingerTable[i]);
-//		}
 
 	}
 	
