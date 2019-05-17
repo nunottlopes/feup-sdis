@@ -101,7 +101,7 @@ public class Chord
 	public void startMaintenance()
 	{
         pool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
-        pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 1000, TimeUnit.MILLISECONDS);
+        pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 500, TimeUnit.MILLISECONDS);
 	}
 	
 	public String[] lookup(int hash, boolean successor)
@@ -251,6 +251,55 @@ public class Chord
 			if (args == null)
 				this.predecessor = null;
 		}
+	}
+	
+	protected void updateSuccessorList()
+	{
+		Pair<Integer, InetSocketAddress> successor = fingerTable[0];
+		for (int i = 0; i < this.successorList.length; i++)
+		{
+			this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
+
+			String[] args = this.channel.sendLookup(successor.second, this.address, successor.first+1, true);
+			
+			if (args != null) // Success
+			{
+				int peerId = Integer.parseInt(args[2]);
+				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
+				
+				successor = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+			}
+		}
+	}
+	
+	protected boolean fixSuccessor()
+	{
+		boolean found = false;
+		int i;
+		String[] args;
+		Integer lastPeer = this.fingerTable[0].first;
+		
+		for (i = 1; i < this.m ; i++)
+		{
+			if (this.fingerTable[i].first != lastPeer)
+			{
+				lastPeer = this.fingerTable[i].first;
+				args = this.channel.sendLookup(this.fingerTable[i].second, this.address, 0, false);
+				
+				if (args != null)
+				{
+					found = true;
+					break;
+				}
+			}
+		}
+		
+		if (found)
+		{
+			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.fingerTable[i]);
+		}
+		
+		return found;
 	}
 	
 	public boolean isInInterval(int target, int lowerBound, int upperBound)

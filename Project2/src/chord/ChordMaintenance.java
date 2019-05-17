@@ -12,6 +12,9 @@ public class ChordMaintenance implements Runnable
 	@Override
 	public void run()
 	{
+		
+//		System.out.println(parent);
+
 //		System.out.println("\nStarting maintenance...");
 		
 		parent.stabilize();
@@ -20,6 +23,5 @@ public class ChordMaintenance implements Runnable
 
 //		System.out.println("Finished maintenance.");
 		
-//		System.out.println(parent);
 	}
 }

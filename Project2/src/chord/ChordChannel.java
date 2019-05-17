@@ -244,7 +244,14 @@ public class ChordChannel implements Runnable
 	
 	private void failedLookup(InetSocketAddress address, String message)
 	{
-		
+		if (address.equals(this.parent.fingerTable[0].second))
+		{
+			if (this.parent.fixSuccessor())
+			{
+				sendMessage(this.parent.fingerTable[0].second, message);
+			}
+			
+		}
 	}
 	
 	
