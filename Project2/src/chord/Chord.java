@@ -9,12 +9,18 @@ import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import global.Pair;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URL;
 
-import global.Pair;
 
 public class Chord
 {	
@@ -82,7 +88,7 @@ public class Chord
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
 		this.maxPeers = (int)Math.pow(2, this.m);
 		
-		this.address = new InetSocketAddress("localhost", port);
+		this.address = new InetSocketAddress(getExternalIP(), port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 		
 		if (!client)
@@ -352,6 +358,25 @@ public class Chord
 			e1.printStackTrace();
 		}
 
+		return null;
+	}
+	
+	public static InetAddress getExternalIP()
+	{
+		String ip;
+		try
+		{
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+			ip = in.readLine(); //you get the IP as a String
+			return InetAddress.getByName(ip);
+		}
+		catch (IOException e)
+		{
+			ip = null;
+			e.printStackTrace();
+		}
+		
 		return null;
 	}
 	

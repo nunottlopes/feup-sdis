@@ -1,5 +1,5 @@
 JFLAGS = -g
-JC = javac
+JC = "C:\\Program Files\\Java\\jdk1.8.0_211\\bin\\javac.exe"
 CLASSPATH = -classpath src/
 BIN = -d bin/
 .SUFFIXES: .java .class
@@ -8,6 +8,10 @@ BIN = -d bin/
 
 CLASSES = \
     src/chord/Chord.java \
+    src/chord/ChordChannel.java \
+    src/chord/ChordMaintenance.java \
+    src/chord/ChordTest.java \
+    src/global/Pair.java
 
  
 default: classes \
