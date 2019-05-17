@@ -246,15 +246,12 @@ public class ChordChannel implements Runnable
 	{
 		if (address.equals(this.parent.fingerTable[0].second))
 		{
-			if (this.parent.fixSuccessor())
-			{
-				sendMessage(this.parent.fingerTable[0].second, message);
-			}
-			else
+			if (!this.parent.fixSuccessor())
 			{
 				this.parent.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.parent.id, this.parent.address);
 			}
-			
+
+			sendMessage(this.parent.fingerTable[0].second, message);
 		}
 	}
 	
