@@ -225,7 +225,7 @@ public class ChordChannel implements Runnable
 			try
 			{
 				Socket connection = new Socket();
-				connection.connect(address, 5000);
+				connection.connect(address, (int)this.timeout);
 				ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
 				
 				oos.writeObject(message);
