@@ -20,7 +20,7 @@ public class ChordChannel implements Runnable
 
 	ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
 	
-	long timeout = 1 * 500;
+	long timeout = 1 * 2000;
 
 	public ChordChannel(Chord parent)
 	{
@@ -225,7 +225,7 @@ public class ChordChannel implements Runnable
 			try
 			{
 				Socket connection = new Socket();
-				connection.connect(address);
+				connection.connect(address, 5000);
 				ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
 				
 				oos.writeObject(message);
@@ -249,6 +249,10 @@ public class ChordChannel implements Runnable
 			if (this.parent.fixSuccessor())
 			{
 				sendMessage(this.parent.fingerTable[0].second, message);
+			}
+			else
+			{
+				this.parent.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.parent.id, this.parent.address);
 			}
 			
 		}
