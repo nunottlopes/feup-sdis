@@ -231,9 +231,16 @@ public class ChordChannel implements Runnable
 			catch (IOException e1)
 			{
 				System.err.println("Failed!");
+				
+				failedLookup(address, message);
 			}
 		}
 				
+	}
+	
+	private void failedLookup(InetSocketAddress address, String message)
+	{
+		
 	}
 	
 	

@@ -23,14 +23,14 @@ public class ChordTest
 			chord = new Chord(id, maxPeers, port);
 		}
 		
-		System.out.println("ID = " + chord.id);
-		System.out.println("IP Address = " + chord.address);
-		
-		System.out.println("Finger Table:");
-		for (int i = 0; i < chord.fingerTable.length; i++)
-		{
-			System.out.println(chord.fingerTable[i]);
-		}
+//		System.out.println("ID = " + chord.id);
+//		System.out.println("IP Address = " + chord.address);
+//		
+//		System.out.println("Finger Table:");
+//		for (int i = 0; i < chord.fingerTable.length; i++)
+//		{
+//			System.out.println(chord.fingerTable[i]);
+//		}
 
 	}
 	

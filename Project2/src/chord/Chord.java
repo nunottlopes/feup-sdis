@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -29,6 +30,7 @@ public class Chord
 
 	 Pair<Integer, InetSocketAddress> predecessor = null;
 	 Pair<Integer, InetSocketAddress>[] fingerTable = null;
+	 Pair<Integer, InetSocketAddress>[] successorList = null;
 	
 	 ChordChannel channel = null;
 	
@@ -37,46 +39,20 @@ public class Chord
 	 ScheduledThreadPoolExecutor  pool = null;
 
 
-	@SuppressWarnings("unchecked")
 	public Chord(int id, int maxPeers, int port)
 	{
 		this.initialize(id, maxPeers, port);
-		
-//		this.predecessor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
-				
+						
 		this.fingerTable = new Pair[this.m];
-
-//		for (int i = 0; i < this.fingerTable.length; i++)
-//		{			
-//			this.fingerTable[i] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
-//		}
 		
 		this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
 
 		startMaintenance();
 	}
 
-	@SuppressWarnings("unchecked")
 	public Chord(int id, int maxPeers, int port, InetSocketAddress address)
 	{
 		this.initialize(id, maxPeers, port);
-				
-		this.fingerTable = new Pair[this.m];
-
-//		for (int i = 0; i < this.fingerTable.length; i++)
-//		{
-//			int value = getFingerTableIndex(i);
-//			
-//			args = channel.sendLookup(address, this.address, value, true);
-//			
-//			if (args != null) // Success
-//			{
-//				int peerId = Integer.parseInt(args[2]);
-//				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
-//				
-//				this.fingerTable[i] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
-//			}
-//		}
 		
 		int value = getFingerTableIndex(0);
 		String[] args = channel.sendLookup(address, this.address, value, true);
@@ -92,12 +68,16 @@ public class Chord
 		startMaintenance();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void initialize(int id, int maxPeers, int port)
 	{
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
 		this.maxPeers = (int)Math.pow(2, this.m);
 
 		this.id = Math.floorMod(sha1(new Integer(id).toString()), this.maxPeers);
+		
+		this.fingerTable = new Pair[this.m];
+		this.successorList = new Pair[this.m];
 		
 		this.address = new InetSocketAddress("localhost", port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
@@ -182,8 +162,11 @@ public class Chord
 		}
 
 		if (successorPredecessor != null && isInInterval(successorPredecessor.first, this.id, successor.first+1, true))
+		{
 			fingerTable[0] = successorPredecessor;
-		
+			successor = fingerTable[0];
+		}
+				
 		channel.sendNotify(this.id, this.address, successor.second);		
 	}
 	
@@ -245,7 +228,7 @@ public class Chord
 			return (target > lowerBound && target < upperBound);
 		
 		else
-			return !isInInterval(target, upperBound, lowerBound, inclusive);
+			return !isInInterval(target, upperBound-1, lowerBound+1, inclusive);
 	}
 
 	protected int getFingerTableIndex(int i)
@@ -305,6 +288,12 @@ public class Chord
 
 		return wrapped.getInt();
     }
+
+	@Override
+	public String toString()
+	{
+		return "Chord: " + "m=" + m + ", id = " + id + ", address=" + address + "\nfingerFixerIndex=" + fingerFixerIndex + "\npredecessor=" + predecessor + ", \nfingerTable=" + Arrays.toString(fingerTable);
+	}
 
 
 }
