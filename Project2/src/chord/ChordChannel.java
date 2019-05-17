@@ -109,21 +109,15 @@ public class ChordChannel implements Runnable
 	
 	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
 	{
-//		if (connectionIP.equals(this.parent.address))
-//		{
-//			this.parent.lookup(requestIP, hash, successor);
-//		}
-//		else
-//		{
-			String message = createLookupMessage(requestIP, hash, successor);		
-			sendMessage(connectionIP, message);
-//		}
+		String message = createLookupMessage(requestIP, hash, successor);		
+		sendMessage(connectionIP, message);
 			
 		synchronized(this.parent)
 		{
 			try
 			{
-				this.parent.wait(this.timeout);
+				if (!connectionIP.equals(this.parent.address))
+					this.parent.wait(this.timeout);
 			}
 			catch (InterruptedException e)
 			{
@@ -166,12 +160,12 @@ public class ChordChannel implements Runnable
 	
 	protected void sendNotify(int originId, InetSocketAddress originIP, InetSocketAddress destination)
 	{
-		if (!destination.equals(this.parent.address))
-		{
+//		if (!destination.equals(this.parent.address))
+//		{
 			String message = createNotifyMessage(originId, originIP);
 			
 			sendMessage(destination, message);
-		}
+//		}
 	}
 	
 	
@@ -218,12 +212,12 @@ public class ChordChannel implements Runnable
 	
 	public void sendMessage(InetSocketAddress address, String message)
 	{
-//		if (address.equals(this.parent.address))
-//		{
-//			handleMessage(null, message);
-//		}
-//		else
-//		{
+		if (address.equals(this.parent.address))
+		{
+			handleMessage(null, message);
+		}
+		else
+		{
 			try
 			{
 				Socket connection = new Socket();
@@ -238,7 +232,7 @@ public class ChordChannel implements Runnable
 			{
 				System.err.println("Failed!");
 			}
-//		}
+		}
 				
 	}
 	

@@ -108,7 +108,7 @@ public class Chord
 	public void startMaintenance()
 	{
         pool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
-        pool.scheduleWithFixedDelay(new ChordMaintenance(this), 0, 1, TimeUnit.SECONDS);
+        pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 1000, TimeUnit.MILLISECONDS);
 	}
 	
 	public void lookup(InetSocketAddress origin, int hash, boolean successor)
@@ -127,7 +127,7 @@ public class Chord
 			return;
 		}
 		
-		if (this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1)) // I am the successor of the hash
+		if ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1)) || hash == this.id) // I am the successor of the hash
 		{
 			channel.sendReturn(this.id, this.address, origin, hash, successor);
 			return;
@@ -181,7 +181,7 @@ public class Chord
 				successorPredecessor = new Pair<Integer, InetSocketAddress>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
 		}
 
-		if (successorPredecessor != null && isInInterval(successorPredecessor.first, this.id, successor.first))
+		if (successorPredecessor != null && isInInterval(successorPredecessor.first, this.id, successor.first+1, true))
 			fingerTable[0] = successorPredecessor;
 		
 		channel.sendNotify(this.id, this.address, successor.second);		
@@ -189,7 +189,7 @@ public class Chord
 	
 	public void notify(int originId, InetSocketAddress originIP)
 	{
-		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id))
+		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id, true))
 		{
 			this.predecessor = new Pair<Integer, InetSocketAddress>(originId, originIP);
 		}
@@ -229,18 +229,23 @@ public class Chord
 	
 	public boolean isInInterval(int target, int lowerBound, int upperBound)
 	{
+		return isInInterval(target, lowerBound, upperBound, false);
+	}
+	
+	public boolean isInInterval(int target, int lowerBound, int upperBound, boolean inclusive)
+	{
 		target = Math.floorMod(target,  this.maxPeers);
 		lowerBound = Math.floorMod(lowerBound,  this.maxPeers);
 		upperBound = Math.floorMod(upperBound,  this.maxPeers);
 		
-		if (upperBound == lowerBound)
-			return true;
-	
-		else if (upperBound > lowerBound)
+		if (Math.abs(upperBound - lowerBound) <= 1)
+			return inclusive;
+			
+		if (upperBound > lowerBound)
 			return (target > lowerBound && target < upperBound);
 		
 		else
-			return !isInInterval(target, upperBound, lowerBound);
+			return !isInInterval(target, upperBound, lowerBound, inclusive);
 	}
 
 	protected int getFingerTableIndex(int i)
