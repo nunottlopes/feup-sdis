@@ -29,7 +29,7 @@ public class ChordTest
 			
 			for (int i = 0; i < maxPeers; i++)
 			{
-				String[] messageArgs = chord.lookup(null, i, true);
+				String[] messageArgs = chord.lookup(i, true);
 				
 				System.out.println("lookup(" + i + ") = " + messageArgs[2] + "\n");
 			}

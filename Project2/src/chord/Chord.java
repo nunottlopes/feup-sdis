@@ -104,6 +104,11 @@ public class Chord
         pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 1000, TimeUnit.MILLISECONDS);
 	}
 	
+	public String[] lookup(int hash, boolean successor)
+	{
+		return lookup(this.address, hash, successor);
+	}
+	
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
 	{
 		if (client)
@@ -121,12 +126,12 @@ public class Chord
 			
 //			System.out.print("Received response: ");
 			
-			for (int i = 0; i < args.length; i++)
-			{
-				System.out.print(args[i] + " ");
-			}
-			
-			System.out.println("\nQuery took " + (end-start) + " milliseconds");
+//			for (int i = 0; i < args.length; i++)
+//			{
+//				System.out.print(args[i] + " ");
+//			}
+//			
+			System.out.println("Query took " + (end-start) + " milliseconds");
 			
 			return args;
 		}

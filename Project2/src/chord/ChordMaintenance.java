@@ -12,14 +12,14 @@ public class ChordMaintenance implements Runnable
 	@Override
 	public void run()
 	{
-		System.out.println("\nStarting maintenance...");
+//		System.out.println("\nStarting maintenance...");
 		
 		parent.stabilize();
 		parent.fixFingers();
 		parent.checkPredecessor();
 
-		System.out.println("Finished maintenance.");
+//		System.out.println("Finished maintenance.");
 		
-		System.out.println(parent);
+//		System.out.println(parent);
 	}
 }
