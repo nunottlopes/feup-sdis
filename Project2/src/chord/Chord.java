@@ -26,6 +26,7 @@ public class Chord
 {	
 	 int id;
 	 int m;
+	 int r; //successorList size, r < m
 	 int maxPeers;
 	 InetSocketAddress address;
 	 int fingerFixerIndex = 0;
@@ -86,6 +87,7 @@ public class Chord
 	public void initialize(int maxPeers, int port, boolean client)
 	{
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
+		this.r = Math.ceil(this.m/3.0);
 		this.maxPeers = (int)Math.pow(2, this.m);
 		
 		this.address = new InetSocketAddress(getExternalIP(), port);
@@ -96,7 +98,8 @@ public class Chord
 
 		
 		this.fingerTable = new Pair[this.m];
-		this.successorList = new Pair[this.m];
+		this.successorList = new Pair[this.r];
+		this.setSuccessorList();
 		
 		this.channel = new ChordChannel(this);
 		this.channel.open(port);
@@ -215,6 +218,8 @@ public class Chord
 			fingerTable[0] = successorPredecessor;
 			successor = fingerTable[0];
 		}
+
+		this.updateSuccessorList();
 				
 		channel.sendNotify(this.id, this.address, successor.second);		
 	}
@@ -258,9 +263,17 @@ public class Chord
 				this.predecessor = null;
 		}
 	}
+
+
+	protected void setSuccessorList(){
+		for(int i=1;i<=this.r;i++){
+			this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
+		}
+	}
 	
 	protected void updateSuccessorList()
 	{
+		
 		Pair<Integer, InetSocketAddress> successor = fingerTable[0];
 		for (int i = 0; i < this.successorList.length; i++)
 		{
