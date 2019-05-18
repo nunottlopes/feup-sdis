@@ -55,10 +55,23 @@ public class Chord
 		this.initialize(maxPeers, port, client);
 		
 		if (!client) // Peer
-		{
-			int value = getFingerTableIndex(0);
+		{			
+			String[] args = channel.sendLookup(address, this.address, this.id, true);
 			
-			String[] args = channel.sendLookup(address, this.address, value, true);
+			if (args != null) // Success
+			{
+				int peerId = Integer.parseInt(args[2]);
+				
+				if (peerId == this.id)
+				{
+					System.err.println("The network already has a peer with this id!");
+					System.exit(1);
+				}
+			}
+			
+			int value = getFingerTableIndex(0);
+			args = channel.sendLookup(address, this.address, value, true);
+
 			
 			if (args != null) // Success
 			{
@@ -88,7 +101,7 @@ public class Chord
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
 		this.maxPeers = (int)Math.pow(2, this.m);
 		
-		this.address = new InetSocketAddress(getExternalIP(), port);
+		this.address = new InetSocketAddress("localhost", port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 		
 		if (!client)
