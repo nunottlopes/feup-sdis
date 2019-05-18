@@ -67,6 +67,7 @@ public class Chord
 				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 				
 				this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+				this.setSuccessorList();
 			}
 			
 			startMaintenance();
@@ -74,6 +75,7 @@ public class Chord
 		else // Client
 		{			
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
+			this.setSuccessorList();
 		}
 	}
 
@@ -87,7 +89,7 @@ public class Chord
 	public void initialize(int maxPeers, int port, boolean client)
 	{
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
-		this.r = Math.ceil(this.m/3.0);
+		this.r = (int)Math.ceil(this.m/3.0);
 		this.maxPeers = (int)Math.pow(2, this.m);
 		
 		this.address = new InetSocketAddress(getExternalIP(), port);
@@ -99,7 +101,6 @@ public class Chord
 		
 		this.fingerTable = new Pair[this.m];
 		this.successorList = new Pair[this.r];
-		this.setSuccessorList();
 		
 		this.channel = new ChordChannel(this);
 		this.channel.open(port);
@@ -266,6 +267,7 @@ public class Chord
 
 
 	protected void setSuccessorList(){
+		Pair<Integer, InetSocketAddress> successor = this.fingerTable[0];
 		for(int i=1;i<=this.r;i++){
 			this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
 		}
