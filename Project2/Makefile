@@ -1,5 +1,5 @@
 JFLAGS = -g
-JC = "C:\\Program Files\\Java\\jdk1.8.0_211\\bin\\javac.exe"
+JC = javac
 CLASSPATH = -classpath src/
 BIN = -d bin/
 .SUFFIXES: .java .class
