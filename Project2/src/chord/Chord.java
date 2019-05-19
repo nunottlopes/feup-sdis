@@ -47,6 +47,8 @@ public class Chord
 		this.initialize(maxPeers, port, false);
 		
 		this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
+		
+		this.updateSuccessorList();
 
 		startMaintenance();
 	}
@@ -80,7 +82,7 @@ public class Chord
 				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 				
 				this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
-				this.setSuccessorList();
+				updateSuccessorList();
 			}
 			
 			startMaintenance();
@@ -88,7 +90,6 @@ public class Chord
 		else // Client
 		{			
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
-			this.setSuccessorList();
 		}
 	}
 
@@ -134,10 +135,14 @@ public class Chord
 	
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
 	{
-		if (client)
+		
+		if (hash == 0 && this.id == 16)
 		{
-//			System.out.println("Sent lookup request for hash " + hash);
-			
+			int a = 0;
+		}
+		
+		if (client)
+		{			
 			long start = System.currentTimeMillis();
 			
 			String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
@@ -147,13 +152,6 @@ public class Chord
 			if (args == null)
 				System.err.println("Connection peer is not alive!");
 			
-//			System.out.print("Received response: ");
-			
-//			for (int i = 0; i < args.length; i++)
-//			{
-//				System.out.print(args[i] + " ");
-//			}
-//			
 			System.out.println("Query took " + (end-start) + " milliseconds");
 			
 			return args;
@@ -173,7 +171,7 @@ public class Chord
 			return null;
 		}
 		
-		if ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1)) || hash == this.id) // I am the successor of the hash
+		if ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1, true)) || hash == this.id) // I am the successor of the hash
 		{
 			channel.sendReturn(this.id, this.address, origin, hash, successor);
 			return null;
@@ -212,19 +210,33 @@ public class Chord
 	
 	public void stabilize()
 	{
-		Pair<Integer, InetSocketAddress> successor = fingerTable[0];
-		Pair<Integer, InetSocketAddress> successorPredecessor;
+		Pair<Integer, InetSocketAddress> successor = null;
+		Pair<Integer, InetSocketAddress> successorPredecessor = null;
 		
-		if (successor.first == this.id)
-			successorPredecessor = this.predecessor;
-		else
+		for (int i = 0; i < this.r; i++) // Search for first successor alive
 		{
+			successor = this.successorList[i];
+			
+			if (successor.first == this.id)
+			{
+				successorPredecessor = this.predecessor;
+				break;
+			}
+			
 			String[] args = channel.sendLookup(successor.second, this.address, successor.first, false);
 			
-			if (Integer.parseInt(args[2]) == -1)
-				successorPredecessor = null;
-			else
-				successorPredecessor = new Pair<Integer, InetSocketAddress>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
+			if (args != null)
+			{
+				if (Integer.parseInt(args[2]) == -1)
+					successorPredecessor = null;
+				else
+					successorPredecessor = new Pair<Integer, InetSocketAddress>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
+				
+				if (i > 0)
+					fingerTable[0] = successor;
+				
+				break;
+			}
 		}
 
 		if (successorPredecessor != null && isInInterval(successorPredecessor.first, this.id, successor.first+1, true))
@@ -232,10 +244,10 @@ public class Chord
 			fingerTable[0] = successorPredecessor;
 			successor = fingerTable[0];
 		}
-
+		
+		channel.sendNotify(this.id, this.address, successor.second);
+		
 		this.updateSuccessorList();
-				
-		channel.sendNotify(this.id, this.address, successor.second);		
 	}
 	
 	public void notify(int originId, InetSocketAddress originIP)
@@ -278,22 +290,12 @@ public class Chord
 		}
 	}
 
-
-	protected void setSuccessorList(){
-		Pair<Integer, InetSocketAddress> successor = this.fingerTable[0];
-		for(int i=1;i<=this.r;i++){
-			this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
-		}
-	}
 	
 	protected void updateSuccessorList()
 	{
-		
-		Pair<Integer, InetSocketAddress> successor = fingerTable[0];
+		Pair<Integer, InetSocketAddress> successor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
 		for (int i = 0; i < this.successorList.length; i++)
 		{
-			this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
-
 			String[] args = this.channel.sendLookup(successor.second, this.address, successor.first+1, true);
 			
 			if (args != null) // Success
@@ -302,6 +304,8 @@ public class Chord
 				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 				
 				successor = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+				
+				this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
 			}
 		}
 	}
@@ -349,12 +353,19 @@ public class Chord
 		
 		if (Math.abs(upperBound - lowerBound) <= 1)
 			return inclusive;
-			
-		if (upperBound > lowerBound || lowerBound == 0 || upperBound == 0)
-			return (target > lowerBound && target < upperBound);
 		
+		if (upperBound == 0)
+		{
+			upperBound = Math.floorMod(upperBound-1,  this.maxPeers);
+			return (target > lowerBound && target <= upperBound); 
+		}
+			
+		if (upperBound > lowerBound)
+			return (target > lowerBound && target < upperBound);
 		else
+		{
 			return !isInInterval(target, upperBound-1, lowerBound+1, inclusive);
+		}
 	}
 
 	protected int getFingerTableIndex(int i)
@@ -428,7 +439,7 @@ public class Chord
 	@Override
 	public String toString()
 	{
-		return "Chord: " + "m=" + m + ", id = " + id + ", address=" + address + "\nfingerFixerIndex=" + fingerFixerIndex + "\npredecessor=" + predecessor + ", \nfingerTable=" + Arrays.toString(fingerTable);
+		return "Chord: " + "m=" + m + ", id = " + id + ", address=" + address + "\nfingerFixerIndex=" + fingerFixerIndex + "\npredecessor=" + predecessor + ", \nfingerTable=" + Arrays.toString(fingerTable) + "\nsuccessorList=" + Arrays.toString(successorList);
 	}
 
 
