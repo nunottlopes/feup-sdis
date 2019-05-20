@@ -14,14 +14,10 @@ public class ChordMaintenance implements Runnable
 	{
 		
 		System.out.println(parent);
-
-//		System.out.println("\nStarting maintenance...");
 		
 		parent.stabilize();
 		parent.fixFingers();
 		parent.checkPredecessor();
-
-//		System.out.println("Finished maintenance.");
 		
 	}
 }

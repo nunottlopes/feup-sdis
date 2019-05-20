@@ -8,19 +8,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import global.Pair;
-
 public class ChordChannel implements Runnable
 {
-	Chord parent = null;;
+	private Chord parent = null;;
 	
-	Thread thread = null;
+	private Thread thread = null;
 	
-	ServerSocket socket = null;
+	private ServerSocket socket = null;
 
-	ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
+	private ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
 	
-	long timeout = 1 * 2000;
+	private long timeout = 1 * 2000;
 
 	public ChordChannel(Chord parent)
 	{
@@ -29,12 +27,7 @@ public class ChordChannel implements Runnable
 		messageQueue = new ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>>();
 	}
 	
-	public void open()
-	{
-		this.open(5000);
-	}
-	
-	public void open(int port)
+	protected void open(int port)
 	{
 		try
 		{
@@ -113,7 +106,7 @@ public class ChordChannel implements Runnable
 	
 	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
 	{
-		String message = createLookupMessage(requestIP, hash, successor);		
+		String message = createLookupMessage(requestIP, hash, successor);
 		sendMessage(connectionIP, message);
 			
 		synchronized(this.parent)
@@ -214,7 +207,7 @@ public class ChordChannel implements Runnable
 		return message;
 	}
 	
-	public void sendMessage(InetSocketAddress address, String message)
+	protected void sendMessage(InetSocketAddress address, String message)
 	{
 		if (address.equals(this.parent.address))
 		{
@@ -256,7 +249,7 @@ public class ChordChannel implements Runnable
 	}
 	
 	
-	public void start()
+	protected void start()
 	{
 		thread = new Thread(this, "ChordChannel");
 		

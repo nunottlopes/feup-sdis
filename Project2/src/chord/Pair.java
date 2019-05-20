@@ -1,4 +1,4 @@
-package global;
+package chord;
 
 public class Pair<A,B>
 {

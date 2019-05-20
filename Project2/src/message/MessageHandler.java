@@ -29,9 +29,9 @@ public class MessageHandler implements Runnable {
      * @param packet
      * @throws InvalidPacketException
      */
-    public MessageHandler(DatagramPacket packet) throws InvalidPacketException {
-        this.msg = new Message(packet);
-        this.address = packet.getAddress();
+    public MessageHandler(String message, InetAddress address) throws InvalidPacketException {
+        this.msg = new Message(message);
+        this.address = address;
     }
 
     /**

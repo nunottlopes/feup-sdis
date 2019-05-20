@@ -9,9 +9,6 @@ import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import global.Pair;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,22 +22,22 @@ import java.net.UnknownHostException;
 
 public class Chord
 {	
-	 int id;
-	 int m;
-	 int r; //successorList size, r < m
-	 int maxPeers;
-	 InetSocketAddress address;
-	 int fingerFixerIndex = 0;
+	 protected int id;
+	 protected int m;
+	 protected int r; //successorList size, r < m
+	 protected int maxPeers;
+	 protected InetSocketAddress address;
+	 protected int fingerFixerIndex = 0;
 
-	 Pair<Integer, InetSocketAddress> predecessor = null;
-	 Pair<Integer, InetSocketAddress>[] fingerTable = null;
-	 Pair<Integer, InetSocketAddress>[] successorList = null;
+	 protected Pair<Integer, InetSocketAddress> predecessor = null;
+	 protected Pair<Integer, InetSocketAddress>[] fingerTable = null;
+	 protected Pair<Integer, InetSocketAddress>[] successorList = null;
 	
-	 ChordChannel channel = null;
+	 protected ChordChannel channel = null;
 		 
-	 ScheduledThreadPoolExecutor  pool = null;
+	 protected ScheduledThreadPoolExecutor  pool = null;
 	 
-	 boolean client = false;
+	 protected boolean client = false;
 
 
 	public Chord(int maxPeers, int port)
@@ -101,7 +98,7 @@ public class Chord
 	
 	
 	@SuppressWarnings("unchecked")
-	public void initialize(int maxPeers, int port, boolean client)
+	private void initialize(int maxPeers, int port, boolean client)
 	{
 		this.m = (int) Math.ceil(Math.log(maxPeers)/Math.log(2));
 		this.r = (int)Math.ceil(this.m/3.0);
@@ -123,7 +120,7 @@ public class Chord
 		this.client = client;
 	}
 	
-	public void startMaintenance()
+	private void startMaintenance()
 	{
         pool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
         pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 500, TimeUnit.MILLISECONDS);
@@ -135,13 +132,7 @@ public class Chord
 	}
 	
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
-	{
-		
-		if (hash == 0 && this.id == 16)
-		{
-			int a = 0;
-		}
-		
+	{	
 		if (client)
 		{			
 			long start = System.currentTimeMillis();
@@ -209,7 +200,12 @@ public class Chord
 		return null;
 	}
 	
-	public void stabilize()
+	public String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
+	{
+		return channel.sendLookup(connectionIP, requestIP, hash, successor);
+	}
+	
+	protected void stabilize()
 	{
 		Pair<Integer, InetSocketAddress> successor = null;
 		Pair<Integer, InetSocketAddress> successorPredecessor = null;
@@ -251,7 +247,7 @@ public class Chord
 		this.updateSuccessorList();
 	}
 	
-	public void notify(int originId, InetSocketAddress originIP)
+	protected void notify(int originId, InetSocketAddress originIP)
 	{
 		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id, true))
 		{
@@ -259,7 +255,7 @@ public class Chord
 		}
 	}
 	
-	public void fixFingers()
+	protected void fixFingers()
 	{
 		this.fingerFixerIndex = (this.fingerFixerIndex + 1) % this.m; // Increments fingerFixerIndex
 		
@@ -280,7 +276,7 @@ public class Chord
 
 	}
 	
-	public void checkPredecessor()
+	protected void checkPredecessor()
 	{
 		if (this.predecessor != null)
 		{
@@ -341,12 +337,12 @@ public class Chord
 		return found;
 	}
 	
-	public boolean isInInterval(int target, int lowerBound, int upperBound)
+	protected boolean isInInterval(int target, int lowerBound, int upperBound)
 	{
 		return isInInterval(target, lowerBound, upperBound, false);
 	}
 	
-	public boolean isInInterval(int target, int lowerBound, int upperBound, boolean inclusive)
+	protected boolean isInInterval(int target, int lowerBound, int upperBound, boolean inclusive)
 	{
 		target = Math.floorMod(target,  this.maxPeers);
 		lowerBound = Math.floorMod(lowerBound,  this.maxPeers);
@@ -404,37 +400,25 @@ public class Chord
 	public String getAddress() {
 		try {
 	        InetAddress candidateAddress = null;
-	        // Iterate all NICs (network interface cards)...
 	        for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
 	            NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
-	            // Iterate all IP addresses assigned to each card...
+	            
 	            for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
 	                InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
 	                if (!inetAddr.isLoopbackAddress()) {
 
 	                    if (inetAddr.isSiteLocalAddress()) {
-	                        // Found non-loopback site-local address. Return it immediately...
 	                        return inetAddr.getHostAddress();
 	                    }
 	                    else if (candidateAddress == null) {
-	                        // Found non-loopback address, but not necessarily site-local.
-	                        // Store it as a candidate to be returned if site-local address is not subsequently found...
 	                        candidateAddress = inetAddr;
-	                        // Note that we don't repeatedly assign non-loopback non-site-local addresses as candidates,
-	                        // only the first. For subsequent iterations, candidate will be non-null.
 	                    }
 	                }
 	            }
 	        }
 	        if (candidateAddress != null) {
-	            // We did not find a site-local address, but we found some other non-loopback address.
-	            // Server might have a non-site-local address assigned to its NIC (or it might be running
-	            // IPv6 which deprecates the "site-local" concept).
-	            // Return this non-loopback candidate address...
 	            return candidateAddress.getHostAddress();
 	        }
-	        // At this point, we did not find a non-loopback address.
-	        // Fall back to returning whatever InetAddress.getLocalHost() returns...
 	        InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
 	        if (jdkSuppliedAddress == null) {
 	            throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
