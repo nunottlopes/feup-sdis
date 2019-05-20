@@ -19,6 +19,8 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
+import java.net.DatagramSocket;
+
 
 public class Chord
 {	
@@ -398,37 +400,16 @@ public class Chord
 	}
 	
 	public String getAddress() {
-		try {
-	        InetAddress candidateAddress = null;
-	        for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
-	            NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
-	            
-	            for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
-	                InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
-	                if (!inetAddr.isLoopbackAddress()) {
-
-	                    if (inetAddr.isSiteLocalAddress()) {
-	                        return inetAddr.getHostAddress();
-	                    }
-	                    else if (candidateAddress == null) {
-	                        candidateAddress = inetAddr;
-	                    }
-	                }
-	            }
-	        }
-	        if (candidateAddress != null) {
-	            return candidateAddress.getHostAddress();
-	        }
-	        InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
-	        if (jdkSuppliedAddress == null) {
-	            throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
-	        }
-	        return jdkSuppliedAddress.getHostName();
-	    }
-	    catch (Exception e) {
-	    	
-	    }
-		return "";
+		String address = "";
+		try(final DatagramSocket socket = new DatagramSocket()){
+			socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+			address = socket.getLocalAddress().getHostAddress();
+			socket.close();
+		}
+		catch(SocketException | UnknownHostException e){
+			System.out.println("Failed to get local address");
+		}
+		return address;
 	}
 	
 	public static InetAddress getExternalIP()
