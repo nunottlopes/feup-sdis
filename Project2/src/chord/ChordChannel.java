@@ -229,7 +229,7 @@ public class ChordChannel implements Runnable
 			{
 				System.err.println("Failed!");
 				
-				e1.printStackTrace();
+//				e1.printStackTrace();
 				
 //				failedLookup(address, message);
 			}
