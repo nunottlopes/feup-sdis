@@ -402,7 +402,7 @@ public class Chord
 	public String getAddress() {
 		String address = "";
 		try(final DatagramSocket socket = new DatagramSocket()){
-			socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+			socket.connect(InetAddress.getByName("google.com"), 80);
 			address = socket.getLocalAddress().getHostAddress();
 			socket.close();
 		}
