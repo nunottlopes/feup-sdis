@@ -11,7 +11,7 @@ CLASSES = \
     src/chord/ChordChannel.java \
     src/chord/ChordMaintenance.java \
     src/chord/ChordTest.java \
-    src/global/Pair.java
+    src/chord/Pair.java
 
  
 default: classes \
