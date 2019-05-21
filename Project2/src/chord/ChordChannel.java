@@ -3,10 +3,10 @@ package chord;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -105,11 +105,17 @@ public class ChordChannel implements Runnable
 			}
 		}
 	}
-	
+
 	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
 	{
+		return sendLookup(connectionIP, requestIP, hash, successor, true);
+	}
+
+	
+	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor, boolean fix)
+	{
 		String message = createLookupMessage(requestIP, hash, successor);
-		sendMessage(connectionIP, message);
+		sendMessage(connectionIP, message, fix);
 			
 		synchronized(this.parent)
 		{
@@ -211,6 +217,11 @@ public class ChordChannel implements Runnable
 	
 	protected void sendMessage(InetSocketAddress address, String message)
 	{
+		sendMessage(address, message, false);
+	}
+	
+	protected void sendMessage(InetSocketAddress address, String message, boolean fix)
+	{
 		if (address.equals(this.parent.address))
 		{
 			handleMessage(null, message);
@@ -227,40 +238,36 @@ public class ChordChannel implements Runnable
 				
 				connection.close();
 			}
-			catch (ConnectException e)
-			{
-				System.err.println(e.getMessage());
-				sendMessage(address, message);
-			}
-			catch (SocketTimeoutException e)
+//			catch (SocketTimeoutException e)
+//			{
+//				System.err.println("SocketTimeoutException");
+//				System.err.println(e.getMessage());
+//				System.err.println("Failed!");
+//				
+//				if (fix)
+//					this.parent.fixSuccessor();
+//			}
+//			catch (SocketException e)
+//			{
+//				System.err.println("SocketException");
+//				System.err.println(e.getMessage());
+//				System.err.println("Failed!");
+//				
+//				if (fix)
+//					this.parent.fixSuccessor();
+//
+//			}
+			catch (IOException e)
 			{
 				System.err.println("Failed!");
 				
-//				e1.printStackTrace();
-				
-//				failedLookup(address, message);
-			}
-			catch (IOException e)
-			{
-				System.err.println("Error!");
-
+				if (fix)
+					this.parent.fixSuccessor();
 			}
 		}
 				
 	}
 	
-	private void failedLookup(InetSocketAddress address, String message)
-	{
-		if (address.equals(this.parent.fingerTable[0].second))
-		{
-			if (!this.parent.fixSuccessor())
-			{
-				this.parent.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.parent.id, this.parent.address);
-			}
-
-			sendMessage(this.parent.fingerTable[0].second, message);
-		}
-	}
 	
 	
 	protected void start()

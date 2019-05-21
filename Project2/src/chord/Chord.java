@@ -309,34 +309,34 @@ public class Chord
 		}
 	}
 	
-	protected boolean fixSuccessor()
+	protected void fixSuccessor()
 	{
+		Pair<Integer, InetSocketAddress> successor = null;
 		boolean found = false;
-		int i;
-		String[] args;
-		Integer lastPeer = this.fingerTable[0].first;
 		
-		for (i = 1; i < this.m ; i++)
+		for (int i = 0; i < this.r; i++) // Search for first successor alive
 		{
-			if (this.fingerTable[i].first != lastPeer)
+			successor = this.successorList[i];
+			
+			if (successor.first == this.id)
 			{
-				lastPeer = this.fingerTable[i].first;
-				args = this.channel.sendLookup(this.fingerTable[i].second, this.address, 0, false);
-				
-				if (args != null)
-				{
-					found = true;
-					break;
-				}
+				found = true;
+				break;
+			}
+			
+			String[] args = channel.sendLookup(successor.second, this.address, successor.first, false, false);
+			
+			if (args != null)
+			{
+				found = true;
+				break;
 			}
 		}
 		
 		if (found)
-		{
-			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.fingerTable[i]);
-		}
-		
-		return found;
+			this.fingerTable[0] = successor;
+		else
+			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, this.address);
 	}
 	
 	protected boolean isInInterval(int target, int lowerBound, int upperBound)
