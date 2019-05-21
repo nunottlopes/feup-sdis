@@ -31,7 +31,14 @@ public class ChordTest
 			{
 				String[] messageArgs = chord.lookup(i, true);
 				
-				System.out.println("lookup(" + i + ") = " + messageArgs[2] + "\n");
+				System.out.print("lookup(" + i + ") = ");
+				
+				for (int j = 0; j < messageArgs.length; j++)
+				{
+					System.out.print(messageArgs[j] + " ");
+				}
+				
+				System.out.print("\n\n");
 			}
 			
 			System.exit(0);

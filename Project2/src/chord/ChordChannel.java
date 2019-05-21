@@ -18,7 +18,7 @@ public class ChordChannel implements Runnable
 
 	private ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
 	
-	private long timeout = 1 * 2000;
+	private long timeout = 1 * 5000;
 
 	public ChordChannel(Chord parent)
 	{
@@ -228,6 +228,8 @@ public class ChordChannel implements Runnable
 			catch (IOException e1)
 			{
 				System.err.println("Failed!");
+				
+				e1.printStackTrace();
 				
 //				failedLookup(address, message);
 			}
