@@ -3,9 +3,11 @@ package chord;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ChordChannel implements Runnable
@@ -225,13 +227,23 @@ public class ChordChannel implements Runnable
 				
 				connection.close();
 			}
-			catch (IOException e1)
+			catch (ConnectException e)
+			{
+				System.err.println(e.getMessage());
+				sendMessage(address, message);
+			}
+			catch (SocketTimeoutException e)
 			{
 				System.err.println("Failed!");
 				
 //				e1.printStackTrace();
 				
 //				failedLookup(address, message);
+			}
+			catch (IOException e)
+			{
+				System.err.println("Error!");
+
 			}
 		}
 				
