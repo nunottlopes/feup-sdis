@@ -159,7 +159,7 @@ public class FileManager implements Serializable {
                     removeChunkFile(chunk_path, Integer.toString(chunkNo), true);
                     removeChunk(fileId, chunkNo);
                     removeFolderIfEmpty(chunk_path);
-                    sendREMOVED(fileId, chunkNo);
+                    //TODO: sendREMOVED(fileId, chunkNo);
                 }
                 else{
                     System.out.println("No more available memory!");

@@ -83,9 +83,9 @@ public class RestoreInitiator {
                 int delay = 1;
                 for(int j = 0; j < MAX_RETRANSMISSIONS; j++) {
                     if(!Peer.getInstance().isEnhanced()) {
-                        sendGETCHUNK(fileId, chunkNo);
+                        //TODO: sendGETCHUNK(fileId, chunkNo);
                     } else {
-                        sendGETCHUNKENH(fileId, chunkNo, tcp.getPort());
+                        //TODO: sendGETCHUNKENH(fileId, chunkNo, tcp.getPort());
                     }
 
                     try {

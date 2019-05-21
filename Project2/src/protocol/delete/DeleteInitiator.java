@@ -59,7 +59,7 @@ public class DeleteInitiator {
 
         for (int i = 0 ; i < MAX_DELETE_MESSAGES; i++){
             Peer.getInstance().getExecutor().schedule(()->{
-                sendDELETE(fileId);
+                //TODO: sendDELETE(fileId);
                 latch.countDown();
                 }, TIME_INTERVAL*i, TimeUnit.MILLISECONDS);
         }

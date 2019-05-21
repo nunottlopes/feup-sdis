@@ -120,7 +120,7 @@ public class BackupInitiator {
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData());
+                    //TODO: sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData());
 
                     if(i != MAX_RETRANSMISSIONS-1){
                         try {
@@ -160,7 +160,7 @@ public class BackupInitiator {
             ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
             for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData());
+                //TODO: sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData());
 
                 if(i != MAX_RETRANSMISSIONS-1){
                     try {
