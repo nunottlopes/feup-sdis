@@ -20,7 +20,7 @@ fi
 if [[ "$#" -eq 2 ]]; then
     java -Djavax.net.ssl.keyStore="$KeyStore" -Djavax.net.ssl.keyStorePassword="$KeyStore_PW" \
         -Djavax.net.ssl.trustStore="$TrustStore" -Djavax.net.ssl.trustStorePassword="$TrustStore_PW" \
-        -cp "$OUT_DIR" "$SSLClient" "$Host" "$Port" "$1" "$2""$CypherSuite"
+        -cp "$OUT_DIR" "$SSLClient" "$Host" "$Port" "$1" "$2" "${CypherSuite[@]}"
 elif [[ "$#" -eq 3 ]]; then
     java -Djavax.net.ssl.keyStore="$KeyStore" -Djavax.net.ssl.keyStorePassword="$KeyStore_PW" \
         -Djavax.net.ssl.trustStore="$TrustStore" -Djavax.net.ssl.trustStorePassword="$TrustStore_PW" \
