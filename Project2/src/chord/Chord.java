@@ -268,7 +268,6 @@ public class Chord
 		
 		if (args == null)
 		{
-			System.err.println("error");
 			return;
 		}
 		
