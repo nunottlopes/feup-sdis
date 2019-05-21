@@ -6,9 +6,12 @@ import peer.Chunk;
 import peer.Peer;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 
 /**
@@ -51,7 +54,7 @@ public class Channel implements Runnable{
     /**
      * Channel socket
      */
-    private MulticastSocket socket;
+    private ServerSocket socket;
 
     /**
      * Channel constructor
@@ -92,9 +95,7 @@ public class Channel implements Runnable{
      * @throws IOException
      */
     private void start() throws IOException {
-        this.socket = new MulticastSocket(this.port);
-        this.socket.setTimeToLive(1);
-        this.socket.joinGroup(this.address);
+        this.socket = new ServerSocket(this.port);
         System.out.println("--- Started " + this.type + " Channel ---");
     }
 
@@ -105,18 +106,20 @@ public class Channel implements Runnable{
     public void run() {
         byte[] received_data = new byte[MAX_BUF_SIZE];
 
-        DatagramPacket packet = new DatagramPacket(received_data, received_data.length);
-
         while(true) {
             try {
-                this.socket.receive(packet);
-                MessageHandler handler = new MessageHandler(packet);
+                Socket connection = this.socket.accept();
+				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+				String message = (String) ois.readObject();
+                MessageHandler handler = new MessageHandler(message, connection.getInetAddress());
                 Peer.getInstance().getPool().execute(handler);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InvalidPacketException e) {
                 System.out.println("Invalid Packet Received: " + e);
-            }
+            } catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
         }
 
     }

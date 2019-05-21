@@ -84,13 +84,13 @@ public class Message implements Serializable {
      * @param packet
      * @throws InvalidPacketException
      */
-    public Message(DatagramPacket packet) throws InvalidPacketException {
-        if(!parseHeader(packet.getData())) {
+    public Message(String message) throws InvalidPacketException {
+        if(!parseHeader(message)) {
             throw new InvalidPacketException("Invalid Message Header");
         }
 
         if (type == MessageType.PUTCHUNK || (type == MessageType.CHUNK && !Peer.getInstance().isEnhanced())) {
-            if(!parseBody(packet.getData(), packet.getLength())) {
+            if(!parseBody(message)) {
                 throw new InvalidPacketException("Invalid Message Body (" + type + ")");
             }
         }
@@ -144,8 +144,8 @@ public class Message implements Serializable {
      * @param data
      * @return true if valid message header, false otherwise
      */
-    private boolean parseHeader(byte[] data) {
-        ByteArrayInputStream stream = new ByteArrayInputStream(data);
+    private boolean parseHeader(String message) {
+        ByteArrayInputStream stream = new ByteArrayInputStream(message.getBytes());
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
         String header = "";
@@ -196,13 +196,13 @@ public class Message implements Serializable {
      * @param data_length
      * @return true if valid body, false otherwise
      */
-    private boolean parseBody(byte[] data, int data_length) {
+    private boolean parseBody(String message) {
         int from = header_length + 2 * CRLF.length();
-        int to   = data_length;
+        int to   = message.length();
 
         if(from > to) return false;
 
-        this.body = Arrays.copyOfRange(data, from, to);
+        this.body = Arrays.copyOfRange(message.getBytes(), from, to);
         return true;
     }
 
