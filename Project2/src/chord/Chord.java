@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -401,12 +402,13 @@ public class Chord
 	
 	public String getAddress() {
 		String address = "";
-		try(final DatagramSocket socket = new DatagramSocket()){
-			socket.connect(InetAddress.getByName("google.com"), 80);
+		try {
+			Socket socket = new Socket();
+			socket.connect(new InetSocketAddress("google.com", 80));
 			address = socket.getLocalAddress().getHostAddress();
 			socket.close();
 		}
-		catch(SocketException | UnknownHostException e){
+		catch(Exception e){
 			System.out.println("Failed to get local address");
 		}
 		return address;
