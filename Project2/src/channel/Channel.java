@@ -32,11 +32,6 @@ public class Channel implements Runnable{
     private static final int CHANNEL_OFFSET = 265;
 
     /**
-     * Channel max buf size to read from socket
-     */
-    private int MAX_BUF_SIZE;
-
-    /**
      * Channel type
      */
     private Type type;
@@ -64,20 +59,6 @@ public class Channel implements Runnable{
      * @throws IOException
      */
     public Channel(String address, int port, Type type) throws IOException {
-        this(address, port, type, Chunk.MAX_SIZE);
-    }
-
-    /**
-     * Channel constructor
-     * @param address
-     * @param port
-     * @param type
-     * @param CHUNK_SIZE
-     * @throws IOException
-     */
-    public Channel(String address, int port, Type type, int CHUNK_SIZE) throws IOException {
-
-        this.MAX_BUF_SIZE = CHUNK_SIZE + CHANNEL_OFFSET;
         this.type = type;
 
         try {
@@ -104,8 +85,6 @@ public class Channel implements Runnable{
      */
     @Override
     public void run() {
-        byte[] received_data = new byte[MAX_BUF_SIZE];
-
         while(true) {
             try {
                 Socket connection = this.socket.accept();

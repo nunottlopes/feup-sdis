@@ -11,8 +11,7 @@ import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
 
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.net.*;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -94,7 +93,7 @@ public class Peer implements RemoteInterface {
     /**
      * Peer socket
      */
-    private DatagramSocket socket;
+    private Socket socket;
 
     /**
      * Peer pool
@@ -105,6 +104,8 @@ public class Peer implements RemoteInterface {
      * Peer executor
      */
     private ScheduledExecutorService executor;
+
+    private long timeout = 1 * 5000;
 
     /**
      * Peer main function
@@ -157,8 +158,6 @@ public class Peer implements RemoteInterface {
 
         this.pool = new ScheduledThreadPoolExecutor(MAX_THREADS);
         this.executor = Executors.newScheduledThreadPool(1);
-
-        this.socket = new DatagramSocket();
 
 
         Channel MC = new Channel(args[3], Integer.parseInt(args[4]), Channel.Type.MC);
@@ -378,13 +377,23 @@ public class Peer implements RemoteInterface {
      * @param channel
      * @param msg
      */
-    public synchronized void send(Channel.Type channel, Message msg) {
+    public synchronized void send(Channel.Type channel, Message msg, InetAddress destination) {
         Channel c = channels.get(channel);
 
-        try {
-            this.socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, c.getAddress(), c.getPort()));
-        } catch (IOException e) {
-            System.out.println("Error sending message to " + c.getAddress());
+        InetSocketAddress address = new InetSocketAddress(destination, c.getPort());
+        try
+        {
+            Socket connection = new Socket();
+            connection.connect(address, (int) this.timeout);
+            ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
+
+            oos.writeObject(msg);
+
+            connection.close();
+        }
+        catch (IOException e1)
+        {
+            System.out.println("Error sending message to " + address);
         }
     }
 
