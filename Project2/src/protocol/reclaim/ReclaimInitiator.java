@@ -80,7 +80,7 @@ public class ReclaimInitiator {
             fm.removeFolderIfEmpty(path);
             fm.updateFreeMem(spaceReclaim); //To avoid doing backup of delete filed
             Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo);
-            sendREMOVED(fileId, chunkNo);
+            //TODO: sendREMOVED(fileId, chunkNo);
             i++;
         }
     }
@@ -97,7 +97,7 @@ public class ReclaimInitiator {
             for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
                 int chunkNo = entry_chunk.getValue().getChunkNo();
                 Peer.getInstance().getProtocolInfo().updateChunkRepDegree(fileId, chunkNo);
-                sendREMOVED(fileId, chunkNo);
+                //TODO: sendREMOVED(fileId, chunkNo);
             }
             fm.getChunksStored().remove(fileId);
             fm.removeFileFolder(path, false);

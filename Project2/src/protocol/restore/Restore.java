@@ -86,9 +86,9 @@ public class Restore {
                 }
 
                 if(Peer.getInstance().isEnhanced()) {
-                    sendCHUNK(fileId, chunkNo, body, addressTCP, portTCP);
+                    //TODO: sendCHUNK(fileId, chunkNo, body, addressTCP, portTCP);
                 } else {
-                    sendCHUNK(fileId, chunkNo, body);
+                    //TODO: sendCHUNK(fileId, chunkNo, body);
                 }
 
             } else {

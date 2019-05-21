@@ -47,7 +47,7 @@ public class Chord
 	{
 		this.initialize(maxPeers, port, false);
 		
-		this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
+		this.fingerTable[0] = new Pair<>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
 		
 		this.updateSuccessorList();
 
@@ -230,7 +230,7 @@ public class Chord
 				if (Integer.parseInt(args[2]) == -1)
 					successorPredecessor = null;
 				else
-					successorPredecessor = new Pair<Integer, InetSocketAddress>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
+					successorPredecessor = new Pair<>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
 				
 				if (i > 0)
 					fingerTable[0] = successor;
@@ -254,7 +254,7 @@ public class Chord
 	{
 		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id, true))
 		{
-			this.predecessor = new Pair<Integer, InetSocketAddress>(originId, originIP);
+			this.predecessor = new Pair<>(originId, originIP);
 		}
 	}
 	
@@ -275,7 +275,7 @@ public class Chord
 		int peerId = Integer.parseInt(args[2]);
 		InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 		
-		this.fingerTable[this.fingerFixerIndex] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+		this.fingerTable[this.fingerFixerIndex] = new Pair<>(peerId, peerIP);
 
 	}
 	
@@ -303,9 +303,9 @@ public class Chord
 				int peerId = Integer.parseInt(args[2]);
 				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 				
-				successor = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
+				successor = new Pair<>(peerId, peerIP);
 				
-				this.successorList[i] = new Pair<Integer, InetSocketAddress>(successor);
+				this.successorList[i] = new Pair<>(successor);
 			}
 		}
 	}
@@ -334,7 +334,7 @@ public class Chord
 		
 		if (found)
 		{
-			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.fingerTable[i]);
+			this.fingerTable[0] = new Pair<>(this.fingerTable[i]);
 		}
 		
 		return found;

@@ -1,22 +1,14 @@
-JFLAGS = -g
 JC = javac
-CLASSPATH = -classpath src/
-BIN = -d bin/
-.SUFFIXES: .java .class
-.java.class:
-	$(JC) $(BIN) $(JFLAGS) $(CLASSPATH) $*.java
+OUT_DIR := out/production/Project2
 
-CLASSES = \
-    src/chord/Chord.java \
-    src/chord/ChordChannel.java \
-    src/chord/ChordMaintenance.java \
-    src/chord/ChordTest.java \
-    src/chord/Pair.java
+all: mkdir
+	$(JC) -d $(OUT_DIR) src/*/*/*.java src/*/*.java
 
- 
-default: classes \
+mkdir:
+	@mkdir -p $(OUT_DIR)
 
-classes: $(CLASSES:.java=.class)
+rmi:
+	rmiregistry -J-Djava.class.path=$(OUT_DIR)
  
 clean:
-	$(RM) *.class
+	@rm -rf out/ database/

@@ -1,6 +1,7 @@
 package peer;
 
 import channel.Channel;
+import chord.Chord;
 import message.Message;
 import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
@@ -9,6 +10,7 @@ import protocol.delete.DeleteInitiator;
 import protocol.reclaim.ReclaimInitiator;
 import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
+
 
 import java.io.*;
 import java.net.*;
@@ -107,6 +109,9 @@ public class Peer implements RemoteInterface {
 
     private long timeout = 1 * 5000;
 
+    private int maxChordPeers = 32;
+    private Chord chord;
+
     /**
      * Peer main function
      * Creates Peer singleton object
@@ -119,8 +124,8 @@ public class Peer implements RemoteInterface {
     public static void main(String args[]) throws IOException, AlreadyBoundException {
         if(!checkArgs(args)) {
             System.out.println("Usage: Java Peer <protocol version> <peer id> " +
-                    "<service access point> <MCReceiver address> <MCReceiver port> <MDBReceiver address> " +
-                    "<MDBReceiver port> <MDRReceiver address> <MDRReceiver port>");
+                    "<service access point> <MCReceiver port> " +
+                    "<MDBReceiver port> <MDRReceiver port> <Chord port> [<ConnectionPeer address> <ConnectionPeer port>]");
             return;
         }
 
@@ -159,10 +164,18 @@ public class Peer implements RemoteInterface {
         this.pool = new ScheduledThreadPoolExecutor(MAX_THREADS);
         this.executor = Executors.newScheduledThreadPool(1);
 
+        if(args.length == 9){
+            int port = Integer.parseInt(args[6]);
+            InetSocketAddress connectionPeer = new InetSocketAddress(args[7], Integer.parseInt(args[8]));
+            this.chord = new Chord(maxChordPeers, port, connectionPeer);
+        } else{
+            int port = Integer.parseInt(args[6]);
+            this.chord = new Chord(maxChordPeers, port);
+        }
 
-        Channel MC = new Channel(args[3], Integer.parseInt(args[4]), Channel.Type.MC);
-        Channel MDB = new Channel(args[5], Integer.parseInt(args[6]), Channel.Type.MDB);
-        Channel MDR = new Channel(args[7], Integer.parseInt(args[8]), Channel.Type.MDR);
+        Channel MC = new Channel(Integer.parseInt(args[3]), Channel.Type.MC);
+        Channel MDB = new Channel(Integer.parseInt(args[4]), Channel.Type.MDB);
+        Channel MDR = new Channel(Integer.parseInt(args[5]), Channel.Type.MDR);
 
         new Thread(MC).start();
         new Thread(MDB).start();
@@ -180,7 +193,7 @@ public class Peer implements RemoteInterface {
      * @return true if valid, false otherwise
      */
     private static boolean checkArgs(String args[]) {
-        if(args.length != 9)
+        if(args.length != 7 && args.length != 9)
             return false;
         else
             return true;
@@ -195,6 +208,10 @@ public class Peer implements RemoteInterface {
             return instance;
         else
             return null;
+    }
+
+    public Chord getChord() {
+        return chord;
     }
 
     /**

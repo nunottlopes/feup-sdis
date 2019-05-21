@@ -3,10 +3,9 @@ package message;
 import peer.Peer;
 import protocol.backup.Backup;
 import protocol.delete.Delete;
-import protocol.reclaim.Reclaim;
 import protocol.restore.Restore;
+import protocol.reclaim.Reclaim;
 
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 
 /**
@@ -26,11 +25,10 @@ public class MessageHandler implements Runnable {
 
     /**
      * MessageHandler constructor
-     * @param packet
      * @throws InvalidPacketException
      */
-    public MessageHandler(String message, InetAddress address) throws InvalidPacketException {
-        this.msg = new Message(message);
+    public MessageHandler(Message message, InetAddress address) throws InvalidPacketException {
+        this.msg = message;
         this.address = address;
     }
 

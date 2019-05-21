@@ -64,7 +64,7 @@ public class Backup {
             start();
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
-            sendSTORED(chunk.getFileId(), chunk.getChunkNo());
+            //TODO: sendSTORED(chunk.getFileId(), chunk.getChunkNo());
         }
     }
 
@@ -80,7 +80,7 @@ public class Backup {
             Peer.getInstance().getExecutor().schedule(() -> {
                 if (Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
                     if (saveChunk()) {
-                        sendSTORED(chunk.getFileId(), chunk.getChunkNo());
+                        //TODO: sendSTORED(chunk.getFileId(), chunk.getChunkNo());
                     }
                 }
             }, delay, TimeUnit.MILLISECONDS);
@@ -88,7 +88,7 @@ public class Backup {
             if (saveChunk()) {
                 Random r = new Random();
                 int delay = r.nextInt(400);
-                Peer.getInstance().getExecutor().schedule(() -> sendSTORED(chunk.getFileId(), chunk.getChunkNo()), delay, TimeUnit.MILLISECONDS);
+                //TODO: Peer.getInstance().getExecutor().schedule(() -> sendSTORED(chunk.getFileId(), chunk.getChunkNo()), delay, TimeUnit.MILLISECONDS);
             }
         }
     }

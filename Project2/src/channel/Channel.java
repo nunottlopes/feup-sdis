@@ -1,6 +1,7 @@
 package channel;
 
 import message.InvalidPacketException;
+import message.Message;
 import message.MessageHandler;
 import peer.Chunk;
 import peer.Peer;
@@ -27,19 +28,9 @@ public class Channel implements Runnable{
     }
 
     /**
-     * Channel offset
-     */
-    private static final int CHANNEL_OFFSET = 265;
-
-    /**
      * Channel type
      */
     private Type type;
-
-    /**
-     * Channel Inet Address
-     */
-    private InetAddress address;
 
     /**
      * Channel port
@@ -53,20 +44,13 @@ public class Channel implements Runnable{
 
     /**
      * Channel constructor
-     * @param address
      * @param port
      * @param type
      * @throws IOException
      */
-    public Channel(String address, int port, Type type) throws IOException {
+    public Channel(int port, Type type) throws IOException {
         this.type = type;
-
-        try {
-            this.address = InetAddress.getByName(address);
-            this.port = port;
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        this.port = port;
 
         start();
     }
@@ -77,7 +61,7 @@ public class Channel implements Runnable{
      */
     private void start() throws IOException {
         this.socket = new ServerSocket(this.port);
-        System.out.println("--- Started " + this.type + " Channel ---");
+        System.out.println("--- Started " + this.type + " Channel on port "+ this.port + " ---");
     }
 
     /**
@@ -89,7 +73,7 @@ public class Channel implements Runnable{
             try {
                 Socket connection = this.socket.accept();
 				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
-				String message = (String) ois.readObject();
+				Message message = (Message) ois.readObject();
                 MessageHandler handler = new MessageHandler(message, connection.getInetAddress());
                 Peer.getInstance().getPool().execute(handler);
             } catch (IOException e) {
@@ -97,18 +81,10 @@ public class Channel implements Runnable{
             } catch (InvalidPacketException e) {
                 System.out.println("Invalid Packet Received: " + e);
             } catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
+                e.printStackTrace();
+            }
         }
 
-    }
-
-    /**
-     * Returns Channel Inet Address
-     * @return Inet Address
-     */
-    public InetAddress getAddress() {
-        return address;
     }
 
     /**
