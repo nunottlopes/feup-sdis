@@ -7,6 +7,7 @@ import peer.Peer;
 
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -37,11 +38,13 @@ public class Backup {
      */
     private Chunk chunk;
 
+    private InetAddress address;
+
     /**
      * Backup constructor
      * @param msg
      */
-    public Backup(Message msg) {
+    public Backup(Message msg, InetAddress address) {
         if(!msg.getVersion().equals("1.0") && !Peer.getInstance().isEnhanced()) {
             System.out.println("-- Incompatible peer version with backup enhancement --");
             return;
@@ -51,11 +54,12 @@ public class Backup {
             return;
         }
 
-//        System.out.println("\n> PUTCHUNK received");
-//        System.out.println("- Sender Id = " + msg.getSenderId());
-//        System.out.println("- File Id = " + msg.getFileId());
-//        System.out.println("- Chunk No = " + msg.getChunkNo());
+        System.out.println("\n> PUTCHUNK received");
+        System.out.println("- Sender Id = " + msg.getSenderId());
+        System.out.println("- File Id = " + msg.getFileId());
+        System.out.println("- Chunk No = " + msg.getChunkNo());
 
+        this.address = address;
         this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
 
@@ -64,7 +68,7 @@ public class Backup {
             start();
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
-            //TODO: sendSTORED(chunk.getFileId(), chunk.getChunkNo());
+            sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address);
         }
     }
 
@@ -80,7 +84,7 @@ public class Backup {
             Peer.getInstance().getExecutor().schedule(() -> {
                 if (Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
                     if (saveChunk()) {
-                        //TODO: sendSTORED(chunk.getFileId(), chunk.getChunkNo());
+                        sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address);
                     }
                 }
             }, delay, TimeUnit.MILLISECONDS);
@@ -88,7 +92,7 @@ public class Backup {
             if (saveChunk()) {
                 Random r = new Random();
                 int delay = r.nextInt(400);
-                //TODO: Peer.getInstance().getExecutor().schedule(() -> sendSTORED(chunk.getFileId(), chunk.getChunkNo()), delay, TimeUnit.MILLISECONDS);
+                Peer.getInstance().getExecutor().schedule(() -> sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address), delay, TimeUnit.MILLISECONDS);
             }
         }
     }

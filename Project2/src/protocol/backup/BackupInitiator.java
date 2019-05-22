@@ -1,5 +1,6 @@
 package protocol.backup;
 
+import chord.Chord;
 import globals.Globals;
 import peer.Chunk;
 import peer.Peer;
@@ -8,6 +9,8 @@ import protocol.ProtocolInfo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -119,8 +122,30 @@ public class BackupInitiator {
 
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
+                String name = fileId + c.getChunkNo();
+                System.out.println(name);
+                int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
+                System.out.println(hash);
+                String[] message = Peer.getInstance().getChord().lookup(hash, true);
+                System.out.println(message);
+                InetAddress address = null;
+                try {
+                    address = InetAddress.getByName(message[3]);
+                    System.out.println(address);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+
+//                for (int j = 0; j < message.length; j++)
+//                {
+//                    System.out.print(message[j] + " ");
+//                }
+//                System.out.println();
+
+
+
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    //TODO: sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData());
+                    sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
 
                     if(i != MAX_RETRANSMISSIONS-1){
                         try {

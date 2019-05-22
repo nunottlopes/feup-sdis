@@ -40,7 +40,7 @@ public class MessageHandler implements Runnable {
         if(this.msg.getType() == Message.MessageType.PUTCHUNK && msg.getSenderId() != Peer.getInstance().getId()) {
             if(Peer.getInstance().getProtocolInfo().isReclaimProtocol())
                 Peer.getInstance().getProtocolInfo().addChunksReceivedWhileReclaim(msg.getFileId(), msg.getChunkNo());
-            new Backup(this.msg);
+            new Backup(this.msg, address);
         }
         if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
             Peer.getInstance().getProtocolInfo().incRepDegree(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getSenderId());

@@ -107,7 +107,8 @@ public class Chord
 		this.r = (int)Math.ceil(this.m/3.0);
 		this.maxPeers = (int)Math.pow(2, this.m);
 		
-		this.address = new InetSocketAddress(getAddress(), port);
+		//this.address = new InetSocketAddress(getAddress(), port);
+		this.address = new InetSocketAddress("localhost", port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 		
 		if (!client)
@@ -135,7 +136,8 @@ public class Chord
 	}
 	
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
-	{	
+	{
+
 		if (client)
 		{			
 			long start = System.currentTimeMillis();
@@ -448,6 +450,10 @@ public class Chord
 
 		return wrapped.getInt();
     }
+
+	public int getMaxPeers() {
+		return maxPeers;
+	}
 
 	@Override
 	public String toString()
