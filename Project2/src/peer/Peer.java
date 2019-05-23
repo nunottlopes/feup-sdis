@@ -110,7 +110,7 @@ public class Peer implements RemoteInterface {
      */
     public static void main(String args[]) throws IOException, AlreadyBoundException {
         if(!checkArgs(args)) {
-            System.out.println("Usage: Java Peer <protocol version> <peer id> " +
+            System.out.println("Usage: Java Peer <peer id> " +
                     "<service access point> <TCP port> <Chord port> [<ConnectionPeer address> <ConnectionPeer port>]");
             return;
         }
@@ -134,10 +134,8 @@ public class Peer implements RemoteInterface {
     public Peer(String args[]) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
-        this.protocolVersion = args[0];
-
-        this.peerID = Integer.parseInt(args[1]);
-        this.accessPoint = args[2];
+        this.peerID = Integer.parseInt(args[0]);
+        this.accessPoint = args[1];
 
         if(!loadPeerFromFile()){
             fileManager = new FileManager();
@@ -148,15 +146,15 @@ public class Peer implements RemoteInterface {
         this.executor = Executors.newScheduledThreadPool(1);
 
         if(args.length == 7){
-            int port = Integer.parseInt(args[4]);
-            InetSocketAddress connectionPeer = new InetSocketAddress(args[5], Integer.parseInt(args[6]));
+            int port = Integer.parseInt(args[3]);
+            InetSocketAddress connectionPeer = new InetSocketAddress(args[4], Integer.parseInt(args[5]));
             this.chord = new Chord(maxChordPeers, port, connectionPeer);
         } else{
-            int port = Integer.parseInt(args[4]);
+            int port = Integer.parseInt(args[3]);
             this.chord = new Chord(maxChordPeers, port);
         }
 
-        this.tcp_channel = new Channel(Integer.parseInt(args[3]));
+        this.tcp_channel = new Channel(Integer.parseInt(args[2]));
         new Thread(tcp_channel).start();
     }
 
@@ -166,7 +164,7 @@ public class Peer implements RemoteInterface {
      * @return true if valid, false otherwise
      */
     private static boolean checkArgs(String args[]) {
-        if(args.length != 5 && args.length != 7)
+        if(args.length != 4 && args.length != 6)
             return false;
         else
             return true;
@@ -447,7 +445,7 @@ public class Peer implements RemoteInterface {
     public ScheduledExecutorService getExecutor() {
         return executor;
     }
-    
+
 
     public int getMaxChordPeers() {
         return maxChordPeers;

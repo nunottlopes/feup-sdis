@@ -1,14 +1,11 @@
 #!/bin/sh
-if [[ "$#" -eq 4 ]]
+if [[ "$#" -eq 3 ]]
 then
-  java -cp out/production/Project2 peer.Peer "$1" "$2" "$3" 29501 "$4"
-elif [[ "$#" -eq 6 ]]
+  java -cp out/production/Project2 peer.Peer "$1" "$2" 29501 "$3"
+elif [[ "$#" -eq 5 ]]
 then
-    java -cp out/production/Project2 peer.Peer "$1" "$2" "$3" 29501 "$4" "$5" "$6"
+    java -cp out/production/Project2 peer.Peer "$1" "$2" 29501 "$3" "$4" "$5"
 else
-    echo "Usage: peer.sh <version> <peer_num> <peer_access_point> <chord_port> [<ConnectionPeer address> <ConnectionPeer port>]"
+    echo "Usage: peer.sh <peer_num> <peer_access_point> <chord_port> [<ConnectionPeer address> <ConnectionPeer port>]"
     exit 1
 fi
-
-
-#java -cp out/production/Project2 peer.Peer 1.0 2 peer2 8004 1235 localhost 1234
