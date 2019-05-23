@@ -3,34 +3,17 @@ package channel;
 import message.InvalidPacketException;
 import message.Message;
 import message.MessageHandler;
-import peer.Chunk;
 import peer.Peer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * Channel class
  */
 public class Channel implements Runnable{
-
-    /**
-     * Channel types
-     */
-    public enum Type {
-        MC, MDB, MDR
-    }
-
-    /**
-     * Channel type
-     */
-    private Type type;
 
     /**
      * Channel port
@@ -45,11 +28,9 @@ public class Channel implements Runnable{
     /**
      * Channel constructor
      * @param port
-     * @param type
      * @throws IOException
      */
-    public Channel(int port, Type type) throws IOException {
-        this.type = type;
+    public Channel(int port) throws IOException {
         this.port = port;
 
         start();
@@ -61,7 +42,7 @@ public class Channel implements Runnable{
      */
     private void start() throws IOException {
         this.socket = new ServerSocket(this.port);
-        System.out.println("--- Started " + this.type + " Channel on port "+ this.port + " ---");
+        System.out.println("--- Started TCP Channel on port "+ this.port + " ---");
     }
 
     /**

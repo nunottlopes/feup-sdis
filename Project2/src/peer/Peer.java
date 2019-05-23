@@ -88,11 +88,6 @@ public class Peer implements RemoteInterface {
     private static String accessPoint;
 
     /**
-     * Peer channels
-     */
-    private HashMap<Channel.Type, Channel> channels;
-
-    /**
      * Peer socket
      */
     private Socket socket;
@@ -111,6 +106,8 @@ public class Peer implements RemoteInterface {
 
     private int maxChordPeers = 32;
     private Chord chord;
+
+    private Channel tcp_channel;
 
     /**
      * Peer main function
@@ -173,18 +170,8 @@ public class Peer implements RemoteInterface {
             this.chord = new Chord(maxChordPeers, port);
         }
 
-        Channel MC = new Channel(Integer.parseInt(args[3]), Channel.Type.MC);
-        Channel MDB = new Channel(Integer.parseInt(args[4]), Channel.Type.MDB);
-        Channel MDR = new Channel(Integer.parseInt(args[5]), Channel.Type.MDR);
-
-        new Thread(MC).start();
-        new Thread(MDB).start();
-        new Thread(MDR).start();
-
-        channels = new HashMap<>();
-        channels.put(Channel.Type.MC, MC);
-        channels.put(Channel.Type.MDB, MDB);
-        channels.put(Channel.Type.MDR, MDR);
+        this.tcp_channel = new Channel(Integer.parseInt(args[3]));
+        new Thread(tcp_channel).start();
     }
 
     /**
@@ -391,13 +378,11 @@ public class Peer implements RemoteInterface {
 
     /**
      * Send message in the channel
-     * @param channel
      * @param msg
      */
-    public synchronized void send(Channel.Type channel, Message msg, InetAddress destination) {
-        Channel c = channels.get(channel);
+    public synchronized void send(Message msg, InetAddress destination) {
 
-        InetSocketAddress address = new InetSocketAddress(destination, c.getPort());
+        InetSocketAddress address = new InetSocketAddress(destination, this.tcp_channel.getPort());
 
         try
         {

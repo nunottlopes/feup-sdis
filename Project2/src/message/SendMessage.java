@@ -1,6 +1,5 @@
 package message;
 
-import channel.Channel;
 import peer.Peer;
 
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.net.Socket;
 public class SendMessage {
 
     /**
-     * Sends REMOVED message on the MC channel
+     * Sends REMOVED message
      * @param fileId
      * @param chunkNo
      */
@@ -28,7 +27,7 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.REMOVED, args);
 
-        Peer.getInstance().send(Channel.Type.MC, msg, destination);
+        Peer.getInstance().send(msg, destination);
 
         System.out.println("\n> REMOVED sent");
         System.out.println("- File Id = " + fileId);
@@ -36,7 +35,7 @@ public class SendMessage {
     }
 
     /**
-     * Sends STORED message on the MC channel
+     * Sends STORED message
      * @param fileId
      * @param chunkNo
      */
@@ -50,7 +49,7 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.STORED, args);
 
-        Peer.getInstance().send(Channel.Type.MC, msg, destination);
+        Peer.getInstance().send(msg, destination);
 
         System.out.println("\n> STORED sent");
         System.out.println("- File Id = " + fileId);
@@ -58,7 +57,7 @@ public class SendMessage {
     }
 
     /**
-     * Sends PUTCHUNK message on the MDB channel
+     * Sends PUTCHUNK message
      * @param fileId
      * @param chunkNo
      * @param repDegree
@@ -75,7 +74,7 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.PUTCHUNK, args, data);
 
-        Peer.getInstance().send(Channel.Type.MDB, msg, destination);
+        Peer.getInstance().send(msg, destination);
 
         System.out.println("\n> PUTCHUNK sent");
         System.out.println("- Address destination = " + destination);
@@ -85,7 +84,7 @@ public class SendMessage {
     }
 
     /**
-     * Sends DELETE message on the MC channel
+     * Sends DELETE message
      * @param fileId
      */
     public static void sendDELETE(String fileId, InetAddress destination){
@@ -97,7 +96,7 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.DELETE, args);
 
-        Peer.getInstance().send(Channel.Type.MC, msg, destination);
+        Peer.getInstance().send(msg, destination);
 
         System.out.println("\n> DELETE sent");
         System.out.println("- Sender Id = " + Peer.getInstance().getId());
@@ -105,7 +104,7 @@ public class SendMessage {
     }
 
     /**
-     * Sends CHUNK message on the MDR channel
+     * Sends CHUNK message
      * @param fileId
      * @param chunkNo
      * @param body
@@ -120,7 +119,7 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.CHUNK, args, body);
 
-        Peer.getInstance().send(Channel.Type.MDR, msg, destination);
+        Peer.getInstance().send(msg, destination);
 
         System.out.println("\n> CHUNK sent");
         System.out.println("- Sender Id = " + Peer.getInstance().getId());
@@ -129,7 +128,7 @@ public class SendMessage {
     }
 
     /**
-     * Sends CHUNK message on the MDR channel and uses TCP for enhanced version of restore protocol
+     * Sends CHUNK message and uses TCP for enhanced version of restore protocol
      * @param fileId
      * @param chunkNo
      * @param body
@@ -145,7 +144,7 @@ public class SendMessage {
         };
 
         sendTCP(new Message(Message.MessageType.CHUNK, args, body), addressTCP, portTCP, chunkNo);
-        Peer.getInstance().send(Channel.Type.MDR, new Message(Message.MessageType.CHUNK, args), destination);
+        Peer.getInstance().send(new Message(Message.MessageType.CHUNK, args), destination);
 
         System.out.println("\n> CHUNK sent");
         System.out.println("- Sender Id = " + Peer.getInstance().getId());
@@ -175,7 +174,7 @@ public class SendMessage {
     }
 
     /**
-     * Sends GETCHUNK message on the MC channel
+     * Sends GETCHUNK message
      * @param fileId
      * @param chunkNo
      */
@@ -189,11 +188,11 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.GETCHUNK, args);
 
-        Peer.getInstance().send(Channel.Type.MC, msg, destination);
+        Peer.getInstance().send(msg, destination);
     }
 
     /**
-     * Sends GETCHUNKENH message on the MC channel
+     * Sends GETCHUNKENH message
      * @param fileId
      * @param chunkNo
      * @param tcpPort
@@ -209,6 +208,6 @@ public class SendMessage {
 
         Message msg = new Message(Message.MessageType.GETCHUNKENH, args);
 
-        Peer.getInstance().send(Channel.Type.MC, msg, destination);
+        Peer.getInstance().send(msg, destination);
     }
 }
