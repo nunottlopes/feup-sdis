@@ -3,6 +3,7 @@ package protocol;
 import peer.Peer;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +43,8 @@ public class ProtocolInfo implements Serializable {
      */
     private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
 
+    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<InetAddress> > > peersWhoSavedChunk;
+
     /**
      * ProtocolInfo constructor
      */
@@ -59,6 +62,7 @@ public class ProtocolInfo implements Serializable {
      */
     public void startBackup(String fileId) {
         backupRepDegree_init.put(fileId, new ConcurrentHashMap<>());
+        peersWhoSavedChunk.put(fileId, new ConcurrentHashMap<>());
     }
 
     /**
@@ -122,16 +126,18 @@ public class ProtocolInfo implements Serializable {
      * @return perceived replication degree
      */
     public int getChunkRepDegree(String fileId, int chunkNo) {
-        if(backupRepDegree_init.containsKey(fileId)) {
-            backupRepDegree_init.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
-            return backupRepDegree_init.get(fileId).get(chunkNo).size();
-        } else {
-            if(chunksRepDegree.containsKey(fileId)) {
-                if(chunksRepDegree.get(fileId).containsKey(chunkNo)) {
-                    return chunksRepDegree.get(fileId).get(chunkNo).size();
-                }
-            }
-        }
+//        if(backupRepDegree_init.containsKey(fileId)) {
+//            backupRepDegree_init.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+//            return backupRepDegree_init.get(fileId).get(chunkNo).size();
+//        } else {
+//            if(chunksRepDegree.containsKey(fileId)) {
+//                if(chunksRepDegree.get(fileId).containsKey(chunkNo)) {
+//                    return chunksRepDegree.get(fileId).get(chunkNo).size();
+//                }
+//            }
+//        }
+        if(peersWhoSavedChunk.get(fileId).containsKey(chunkNo))
+            return peersWhoSavedChunk.get(fileId).get(chunkNo).size();
 
         return 0;
     }
@@ -284,5 +290,17 @@ public class ProtocolInfo implements Serializable {
      */
     public void removeChunksRepDegree(String fileId) {
         chunksRepDegree.remove(fileId);
+    }
+
+    public void addPeerSavedChunk(String fileId, int chunkNo, InetAddress address) {
+        peersWhoSavedChunk.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+        peersWhoSavedChunk.get(fileId).get(chunkNo).add(address);
+    }
+
+    public boolean hasPeerSavedChunk(String fileId, int chunkNo, InetAddress address){
+        if(peersWhoSavedChunk.containsKey(fileId) && peersWhoSavedChunk.get(fileId).containsKey(chunkNo)){
+            return peersWhoSavedChunk.get(fileId).get(chunkNo).contains(address);
+        }
+        return false;
     }
 }

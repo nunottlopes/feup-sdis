@@ -43,7 +43,8 @@ public class MessageHandler implements Runnable {
             new Backup(this.msg, address);
         }
         if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
-            Peer.getInstance().getProtocolInfo().incRepDegree(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getSenderId());
+            //Peer.getInstance().getProtocolInfo().incRepDegree(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getSenderId());
+            Peer.getInstance().getProtocolInfo().addPeerSavedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.address);
         }
         if(this.msg.getType() == Message.MessageType.DELETE){
             new Delete(this.msg);
