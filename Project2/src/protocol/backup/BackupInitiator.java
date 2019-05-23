@@ -123,23 +123,22 @@ public class BackupInitiator {
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
                 String name = fileId + c.getChunkNo();
-                System.out.println(name);
                 int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
-                System.out.println(hash);
-                String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
-
-                System.out.println(message);
-                InetAddress address = null;
-                try {
-                    address = InetAddress.getByName(message[3]);
-                    System.out.println(address);
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                    sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
+                    for (int n = 0; n < repDegree; n++){
+                        String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+
+                        if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                            try {
+                                InetAddress address = InetAddress.getByName(message[3]);
+                                sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
+                            } catch (UnknownHostException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        hash = Integer.parseInt(message[2]) + 1;
+                    }
 
                     if(i != MAX_RETRANSMISSIONS-1){
                         try {
@@ -178,8 +177,23 @@ public class BackupInitiator {
 
             ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
+            String name = fileId + chunk.getChunkNo();
+            int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
+
             for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                //TODO: sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData());
+                for (int n = 0; n < repDegree; n++){
+                    String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+
+                    if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                        try {
+                            InetAddress address = InetAddress.getByName(message[3]);
+                            sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
+                        } catch (UnknownHostException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    hash = Integer.parseInt(message[2]) + 1;
+                }
 
                 if(i != MAX_RETRANSMISSIONS-1){
                     try {
