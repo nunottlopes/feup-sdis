@@ -121,8 +121,7 @@ public class Peer implements RemoteInterface {
     public static void main(String args[]) throws IOException, AlreadyBoundException {
         if(!checkArgs(args)) {
             System.out.println("Usage: Java Peer <protocol version> <peer id> " +
-                    "<service access point> <MCReceiver port> " +
-                    "<MDBReceiver port> <MDRReceiver port> <Chord port> [<ConnectionPeer address> <ConnectionPeer port>]");
+                    "<service access point> <TCP port> <Chord port> [<ConnectionPeer address> <ConnectionPeer port>]");
             return;
         }
 
@@ -161,12 +160,12 @@ public class Peer implements RemoteInterface {
         this.pool = new ScheduledThreadPoolExecutor(MAX_THREADS);
         this.executor = Executors.newScheduledThreadPool(1);
 
-        if(args.length == 9){
-            int port = Integer.parseInt(args[6]);
-            InetSocketAddress connectionPeer = new InetSocketAddress(args[7], Integer.parseInt(args[8]));
+        if(args.length == 7){
+            int port = Integer.parseInt(args[4]);
+            InetSocketAddress connectionPeer = new InetSocketAddress(args[5], Integer.parseInt(args[6]));
             this.chord = new Chord(maxChordPeers, port, connectionPeer);
         } else{
-            int port = Integer.parseInt(args[6]);
+            int port = Integer.parseInt(args[4]);
             this.chord = new Chord(maxChordPeers, port);
         }
 
@@ -180,7 +179,7 @@ public class Peer implements RemoteInterface {
      * @return true if valid, false otherwise
      */
     private static boolean checkArgs(String args[]) {
-        if(args.length != 7 && args.length != 9)
+        if(args.length != 5 && args.length != 7)
             return false;
         else
             return true;
