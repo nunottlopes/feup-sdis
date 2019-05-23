@@ -122,28 +122,27 @@ public class BackupInitiator {
 
                 ProtocolInfo status = Peer.getInstance().getProtocolInfo();
 
-//                String name = fileId + c.getChunkNo();
-//                int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
-
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
                     String name = fileId + c.getChunkNo();
                     int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
                     for (int n = 0; n < repDegree; n++){
-                        //System.out.println("HASH = " + hash);
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+                        //System.out.println(message);
 
-                        if (message != null && !message[3].equals(Peer.getInstance().getChord().getAddress())){
-                            try {
-                                InetAddress address = InetAddress.getByName(message[3]);
-                                if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
-                                    sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
-                            } catch (UnknownHostException e) {
-                                e.printStackTrace();
+                        if(message != null){
+                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                                try {
+                                    InetAddress address = InetAddress.getByName(message[3]);
+                                    if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
+                                        sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
+                                } catch (UnknownHostException e) {
+                                    e.printStackTrace();
+                                }
+                            } else{
+                                n--;
                             }
-                        } else{
-                            n--;
+                            hash = Integer.parseInt(message[2]) + 1;
                         }
-                        hash = Integer.parseInt(message[2]) + 1;
                     }
 
                     if(i != MAX_RETRANSMISSIONS-1){

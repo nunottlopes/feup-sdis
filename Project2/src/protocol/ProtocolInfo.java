@@ -54,6 +54,7 @@ public class ProtocolInfo implements Serializable {
         restoredChunks_init = new ConcurrentHashMap<>();
         chunksSent = new ConcurrentHashMap<>();
         chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
+        peersWhoSavedChunk = new ConcurrentHashMap<>();
     }
 
     /**
