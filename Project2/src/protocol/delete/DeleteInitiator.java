@@ -72,14 +72,12 @@ public class DeleteInitiator {
         fileId = Globals.generateFileId(file);
 
         int number_of_chunks = data.length / (Chunk.MAX_SIZE) + 1;
-        System.out.println(number_of_chunks);
 
         CountDownLatch latch = new CountDownLatch(MAX_DELETE_MESSAGES);
 
         for (int i = 0 ; i < MAX_DELETE_MESSAGES; i++){
             Peer.getInstance().getExecutor().schedule(()->{
                 for(int n = 0; n < number_of_chunks; n++){
-                    System.out.println(n);
                     String name = fileId + n;
                     int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
 

@@ -4,6 +4,8 @@ import message.Message;
 import peer.FileManager;
 import peer.Peer;
 
+import static message.SendMessage.sendDELETE;
+
 /**
  * Delete class
  */
@@ -26,10 +28,8 @@ public class Delete {
         this.fm = Peer.getInstance().getFileManager();
 
         if(this.fm.hasStoredChunks(msg.getFileId())){
+            sendDELETE(msg.getFileId(), Peer.getInstance().getChord().getSuccessor());
             removeFiles(msg.getFileId());
-        }
-        else{
-            this.fm.removeBackedupChunks(msg.getFileId());
         }
     }
 
@@ -37,10 +37,8 @@ public class Delete {
         this.fm = Peer.getInstance().getFileManager();
 
         if(this.fm.hasStoredChunks(fileId)){
+            sendDELETE(fileId, Peer.getInstance().getChord().getSuccessor());
             removeFiles(fileId);
-        }
-        else{
-            this.fm.removeBackedupChunks(fileId);
         }
     }
 

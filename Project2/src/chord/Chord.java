@@ -466,6 +466,8 @@ public class Chord
 		return "Chord: " + "m=" + m + ", id = " + id + ", address=" + address + "\nfingerFixerIndex=" + fingerFixerIndex + "\npredecessor=" + predecessor + ", \nfingerTable=" + Arrays.toString(fingerTable) + "\nsuccessorList=" + Arrays.toString(successorList);
 	}
 
-
+	public InetAddress getSuccessor() {
+		return fingerTable[0].second.getAddress();
+	}
 }
 
