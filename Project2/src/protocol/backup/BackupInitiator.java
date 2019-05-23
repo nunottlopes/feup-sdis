@@ -127,7 +127,6 @@ public class BackupInitiator {
                     int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
                     for (int n = 0; n < repDegree; n++){
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
-                        //System.out.println(message);
 
                         if(message != null){
                             if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
@@ -189,15 +188,20 @@ public class BackupInitiator {
                 for (int n = 0; n < repDegree; n++){
                     String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 
-                    if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
-                        try {
-                            InetAddress address = InetAddress.getByName(message[3]);
-                            sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
-                        } catch (UnknownHostException e) {
-                            e.printStackTrace();
+                    if(message != null){
+                        if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                            try {
+                                InetAddress address = InetAddress.getByName(message[3]);
+                                if(!status.hasPeerSavedChunk(fileId, chunk.getChunkNo(), address))
+                                    sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
+                            } catch (UnknownHostException e) {
+                                e.printStackTrace();
+                            }
+                        } else{
+                            n--;
                         }
+                        hash = Integer.parseInt(message[2]) + 1;
                     }
-                    hash = Integer.parseInt(message[2]) + 1;
                 }
 
                 if(i != MAX_RETRANSMISSIONS-1){
