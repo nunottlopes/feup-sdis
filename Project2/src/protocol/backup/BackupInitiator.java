@@ -12,13 +12,13 @@ import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static globals.Globals.getFileData;
+import static globals.Globals.splitIntoChunks;
 import static message.SendMessage.sendPUTCHUNK;
 
 /**
@@ -108,7 +108,7 @@ public class BackupInitiator {
 
         fileId = Globals.generateFileId(file);
 
-        ArrayList<Chunk> chunks = splitIntoChunks(data);
+        ArrayList<Chunk> chunks = splitIntoChunks(data, fileId, repDegree);
 
         if(!validBackup(repDegree, chunks.size())) return;
 
@@ -129,16 +129,16 @@ public class BackupInitiator {
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 
                         if(message != null){
-                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
-                                try {
-                                    InetAddress address = InetAddress.getByName(message[3]);
+                            try {
+                                InetAddress address = InetAddress.getByName(message[3]);
+                                if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
                                     if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
                                         sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
-                                } catch (UnknownHostException e) {
-                                    e.printStackTrace();
+                                } else{
+                                    new Backup(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 }
-                            } else{
-                                n--;
+                            } catch (UnknownHostException e) {
+                                e.printStackTrace();
                             }
                             hash = Integer.parseInt(message[2]) + 1;
                         }
@@ -189,16 +189,16 @@ public class BackupInitiator {
                     String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 
                     if(message != null){
-                        if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
-                            try {
-                                InetAddress address = InetAddress.getByName(message[3]);
+                        try {
+                            InetAddress address = InetAddress.getByName(message[3]);
+                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
                                 if(!status.hasPeerSavedChunk(fileId, chunk.getChunkNo(), address))
                                     sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
-                            } catch (UnknownHostException e) {
-                                e.printStackTrace();
+                            } else{
+                                new Backup(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
                             }
-                        } else{
-                            n--;
+                        } catch (UnknownHostException e) {
+                            e.printStackTrace();
                         }
                         hash = Integer.parseInt(message[2]) + 1;
                     }
@@ -243,34 +243,5 @@ public class BackupInitiator {
             throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP,"Backup Error: Max file size is 64GBytes");
         }
         return true;
-    }
-
-    /**
-     * Splits file to backup in chunks
-     * @param data
-     * @return
-     */
-    private ArrayList<Chunk> splitIntoChunks(byte[] data) {
-        ArrayList<Chunk> ret = new ArrayList<>();
-
-        int n = data.length / (Chunk.MAX_SIZE) + 1;
-
-        for(int i = 0; i < n; i++) {
-
-            byte[] chunk_data;
-
-            if(i == n-1) {
-                if(data.length % Chunk.MAX_SIZE ==0) {
-                    chunk_data= new byte[0];
-                } else {
-                    chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + (data.length % Chunk.MAX_SIZE));
-                }
-            } else {
-                chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + Chunk.MAX_SIZE);
-            }
-            Chunk chunk=new Chunk(fileId, i, repDegree, chunk_data);
-            ret.add(chunk);
-        }
-        return ret;
     }
 }

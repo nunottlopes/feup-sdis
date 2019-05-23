@@ -18,11 +18,7 @@ import static message.SendMessage.sendSTORED;
  */
 public class Backup {
 
-    /**
-     * Message that has information for backup protocol
-     */
-    private Message msg;
-
+    private boolean self_backup = false;
     /**
      * Peer file manager
      */
@@ -45,14 +41,6 @@ public class Backup {
      * @param msg
      */
     public Backup(Message msg, InetAddress address) {
-        if(!msg.getVersion().equals("1.0") && !Peer.getInstance().isEnhanced()) {
-            System.out.println("-- Incompatible peer version with backup enhancement --");
-            return;
-        }
-        if(msg.getVersion().equals("1.0") && Peer.getInstance().isEnhanced()) {
-            System.out.println("-- Incompatible peer version with backup restore --");
-            return;
-        }
 
         System.out.println("\n> PUTCHUNK received");
         System.out.println("- Sender Id = " + msg.getSenderId());
@@ -60,41 +48,43 @@ public class Backup {
         System.out.println("- Chunk No = " + msg.getChunkNo());
 
         this.address = address;
-        this.msg = msg;
         this.fm = Peer.getInstance().getFileManager();
 
         if (!this.fm.hasChunk(msg.getFileId(), msg.getChunkNo())) {
             path = Peer.getInstance().getBackupPath(msg.getFileId());
-            start();
+            start(msg.getFileId(), msg.getChunkNo(), msg.getReplicationDeg(), msg.getBody());
         } else {
             chunk = this.fm.getChunk(msg.getFileId(), msg.getChunkNo());
             sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address);
         }
     }
 
+    public Backup(String fileId, int chunkNo, int repDegree, byte[] body, InetAddress address) {
+        this.address = address;
+        this.fm = Peer.getInstance().getFileManager();
+        this.self_backup = true;
+
+        if (!this.fm.hasChunk(fileId, chunkNo)) {
+            path = Peer.getInstance().getBackupPath(fileId);
+            start(fileId, chunkNo, repDegree, body);
+        }
+    }
+
     /**
      * Starts Backup protocol
      */
-    private void start() {
-        chunk = new Chunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getReplicationDeg(), this.msg.getBody());
+    private void start(String fileId, int chunkNo, int repDegree, byte[] body) {
+        chunk = new Chunk(fileId, chunkNo, repDegree, body);
 
-        if(Peer.getInstance().isEnhanced()) {
-            Random r = new Random();
-            int delay = r.nextInt(400);
-            Peer.getInstance().getExecutor().schedule(() -> {
-                if (Peer.getInstance().getProtocolInfo().getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo()) < chunk.getRepDegree()) {
-                    if (saveChunk()) {
-                        sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address);
-                    }
-                }
-            }, delay, TimeUnit.MILLISECONDS);
-        } else {
+        Random r = new Random();
+        int delay = r.nextInt(400);
+        Peer.getInstance().getExecutor().schedule(() -> {
             if (saveChunk()) {
-                Random r = new Random();
-                int delay = r.nextInt(400);
-                Peer.getInstance().getExecutor().schedule(() -> sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address), delay, TimeUnit.MILLISECONDS);
+                if(!this.self_backup)
+                    sendSTORED(chunk.getFileId(), chunk.getChunkNo(), address);
             }
-        }
+        }, delay, TimeUnit.MILLISECONDS);
+
     }
 
     /**

@@ -1,5 +1,7 @@
 package globals;
 
+import peer.Chunk;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,6 +9,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Globals class
@@ -65,5 +69,36 @@ public class Globals {
         }
 
         return data;
+    }
+
+    /**
+     * Splits file to backup in chunks
+     * @param data
+     * @param fileId
+     * @param repDegree
+     * @return
+     */
+    public static ArrayList<Chunk> splitIntoChunks(byte[] data, String fileId, int repDegree) {
+        ArrayList<Chunk> ret = new ArrayList<>();
+
+        int n = data.length / (Chunk.MAX_SIZE) + 1;
+
+        for(int i = 0; i < n; i++) {
+
+            byte[] chunk_data;
+
+            if(i == n-1) {
+                if(data.length % Chunk.MAX_SIZE ==0) {
+                    chunk_data= new byte[0];
+                } else {
+                    chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + (data.length % Chunk.MAX_SIZE));
+                }
+            } else {
+                chunk_data= Arrays.copyOfRange(data, i*Chunk.MAX_SIZE, i*Chunk.MAX_SIZE + Chunk.MAX_SIZE);
+            }
+            Chunk chunk=new Chunk(fileId, i, repDegree, chunk_data);
+            ret.add(chunk);
+        }
+        return ret;
     }
 }

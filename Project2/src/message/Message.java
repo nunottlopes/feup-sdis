@@ -81,7 +81,6 @@ public class Message implements Serializable {
 
     /**
      * Message constructor
-     * @param packet
      * @throws InvalidPacketException
      */
     public Message(String message) throws InvalidPacketException {
