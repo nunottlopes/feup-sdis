@@ -126,7 +126,8 @@ public class BackupInitiator {
                 System.out.println(name);
                 int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
                 System.out.println(hash);
-                String[] message = Peer.getInstance().getChord().lookup(hash, true);
+                String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+
                 System.out.println(message);
                 InetAddress address = null;
                 try {
@@ -135,13 +136,6 @@ public class BackupInitiator {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-
-//                for (int j = 0; j < message.length; j++)
-//                {
-//                    System.out.print(message[j] + " ");
-//                }
-//                System.out.println();
-
 
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {

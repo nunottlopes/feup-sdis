@@ -167,7 +167,7 @@ public class Peer implements RemoteInterface {
         if(args.length == 9){
             int port = Integer.parseInt(args[6]);
             InetSocketAddress connectionPeer = new InetSocketAddress(args[7], Integer.parseInt(args[8]));
-            this.chord = new Chord(maxChordPeers, port, connectionPeer, true);
+            this.chord = new Chord(maxChordPeers, port, connectionPeer);
         } else{
             int port = Integer.parseInt(args[6]);
             this.chord = new Chord(maxChordPeers, port);
@@ -397,9 +397,8 @@ public class Peer implements RemoteInterface {
     public synchronized void send(Channel.Type channel, Message msg, InetAddress destination) {
         Channel c = channels.get(channel);
 
-        //InetSocketAddress address = new InetSocketAddress(destination, c.getPort());
-        //TODO:
-        InetSocketAddress address = new InetSocketAddress(destination, 8002);
+        InetSocketAddress address = new InetSocketAddress(destination, c.getPort());
+
         try
         {
             Socket connection = new Socket();

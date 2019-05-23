@@ -134,6 +134,11 @@ public class Chord
 	{
 		return lookup(this.address, hash, successor);
 	}
+
+	public String[] sendLookup(int hash, boolean successor){
+		String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
+		return args;
+	}
 	
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
 	{

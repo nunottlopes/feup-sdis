@@ -30,9 +30,9 @@ public class SendMessage {
 
         Peer.getInstance().send(Channel.Type.MC, msg, destination);
 
-//        System.out.println("\n> REMOVED sent");
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
+        System.out.println("\n> REMOVED sent");
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 
     /**
@@ -52,9 +52,9 @@ public class SendMessage {
 
         Peer.getInstance().send(Channel.Type.MC, msg, destination);
 
-//        System.out.println("\n> STORED sent");
-//        System.out.println("- File Id = " + chunk.getFileId());
-//        System.out.println("- Chunk No = " + chunk.getChunkNo());
+        System.out.println("\n> STORED sent");
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 
     /**
@@ -77,10 +77,10 @@ public class SendMessage {
 
         Peer.getInstance().send(Channel.Type.MDB, msg, destination);
 
-//        System.out.println("\n> PUTCHUNK sent");
-//        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
+        System.out.println("\n> PUTCHUNK sent");
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 
     /**
@@ -98,9 +98,9 @@ public class SendMessage {
 
         Peer.getInstance().send(Channel.Type.MC, msg, destination);
 
-//        System.out.println("\n> DELETE sent");
-//        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-//        System.out.println("- File Id = " + fileId);
+        System.out.println("\n> DELETE sent");
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
     }
 
     /**
@@ -121,10 +121,10 @@ public class SendMessage {
 
         Peer.getInstance().send(Channel.Type.MDR, msg, destination);
 
-//        System.out.println("\n> CHUNK sent");
-//        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
+        System.out.println("\n> CHUNK sent");
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 
     /**
@@ -146,10 +146,10 @@ public class SendMessage {
         sendTCP(new Message(Message.MessageType.CHUNK, args, body), addressTCP, portTCP, chunkNo);
         Peer.getInstance().send(Channel.Type.MDR, new Message(Message.MessageType.CHUNK, args), destination);
 
-//        System.out.println("\n> CHUNK sent");
-//        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
+        System.out.println("\n> CHUNK sent");
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 
     /**
