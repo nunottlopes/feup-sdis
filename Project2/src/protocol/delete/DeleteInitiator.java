@@ -61,17 +61,9 @@ public class DeleteInitiator {
         if(!file.exists())
             throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.DELETE, "File not found!");
 
-        byte[] data;
-
-        try {
-            data = getFileData(file);
-        } catch (FileNotFoundException e) {
-            throw new InvalidProtocolExecution(InvalidProtocolExecution.Protocol.BACKUP, "File not found!");
-        }
-
         fileId = Globals.generateFileId(file);
 
-        int number_of_chunks = data.length / (Chunk.MAX_SIZE) + 1;
+        int number_of_chunks = (int) file.length() / (Chunk.MAX_SIZE) + 1;
 
         CountDownLatch latch = new CountDownLatch(MAX_DELETE_MESSAGES);
 

@@ -128,52 +128,6 @@ public class SendMessage {
     }
 
     /**
-     * Sends CHUNK message and uses TCP for enhanced version of restore protocol
-     * @param fileId
-     * @param chunkNo
-     * @param body
-     * @param addressTCP
-     * @param portTCP
-     */
-    public static void sendCHUNK(String fileId, int chunkNo, byte[] body, InetAddress addressTCP, int portTCP, InetAddress destination){
-        String[] args = {
-                Peer.getInstance().getVersion(),
-                Integer.toString(Peer.getInstance().getId()),
-                fileId,
-                Integer.toString(chunkNo)
-        };
-
-        sendTCP(new Message(Message.MessageType.CHUNK, args, body), addressTCP, portTCP, chunkNo);
-        Peer.getInstance().send(new Message(Message.MessageType.CHUNK, args), destination);
-
-        System.out.println("\n> CHUNK sent");
-        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-        System.out.println("- File Id = " + fileId);
-        System.out.println("- Chunk No = " + chunkNo);
-    }
-
-    /**
-     * Sends message using TCP
-     * @param msg
-     * @param addressTCP
-     * @param portTCP
-     * @param chunkNo
-     */
-    public static void sendTCP(Message msg, InetAddress addressTCP, int portTCP, int chunkNo) {
-        Socket socket;
-
-        try {
-            socket = new Socket(addressTCP, portTCP);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(msg);
-            out.close();
-            socket.close();
-        } catch (IOException e) {
-            System.out.println("Error sending chunk " + chunkNo + " via TCP");
-        }
-    }
-
-    /**
      * Sends GETCHUNK message
      * @param fileId
      * @param chunkNo
@@ -187,26 +141,6 @@ public class SendMessage {
         };
 
         Message msg = new Message(Message.MessageType.GETCHUNK, args);
-
-        Peer.getInstance().send(msg, destination);
-    }
-
-    /**
-     * Sends GETCHUNKENH message
-     * @param fileId
-     * @param chunkNo
-     * @param tcpPort
-     */
-    public static void sendGETCHUNKENH(String fileId, int chunkNo, int tcpPort, InetAddress destination){
-        String[] args = {
-                Peer.getInstance().getVersion(),
-                Integer.toString(Peer.getInstance().getId()),
-                fileId,
-                Integer.toString(chunkNo),
-                Integer.toString(tcpPort)
-        };
-
-        Message msg = new Message(Message.MessageType.GETCHUNKENH, args);
 
         Peer.getInstance().send(msg, destination);
     }

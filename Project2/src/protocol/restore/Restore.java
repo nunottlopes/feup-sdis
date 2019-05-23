@@ -20,22 +20,15 @@ public class Restore {
     /**
      * File id
      */
-    String fileId;
+    private String fileId;
 
     /**
      * Chunk number
      */
-    int chunkNo;
+    private int chunkNo;
 
-    /**
-     * TCP port
-     */
-    int portTCP;
 
-    /**
-     * TCP Inet Address
-     */
-    InetAddress addressTCP;
+    private InetAddress address;
 
     /**
      * Restore constructor
@@ -43,14 +36,6 @@ public class Restore {
      * @param address
      */
     public Restore(Message msg, InetAddress address) {
-        if(msg.getType() == Message.MessageType.GETCHUNKENH && !Peer.getInstance().isEnhanced()) {
-            System.out.println("-- Incompatible peer version with restore enhancement --");
-            return;
-        }
-        if(msg.getType() == Message.MessageType.GETCHUNK && Peer.getInstance().isEnhanced()) {
-            System.out.println("-- Incompatible peer version with vanilla restore --");
-            return;
-        }
 
 //        System.out.println("\n> " + msg.getType() + " received");
 //        System.out.println("- Sender Id = " + msg.getSenderId());
@@ -59,22 +44,31 @@ public class Restore {
 
         this.fileId = msg.getFileId();
         this.chunkNo = msg.getChunkNo();
-        if(Peer.getInstance().isEnhanced()) {
-            this.portTCP = msg.getPort();
-            this.addressTCP = address;
-        }
+        this.address = address;
 
-        start(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo));
+        if(Peer.getInstance().getFileManager().hasChunk(this.fileId, this.chunkNo)){
+            start();
+        }
+    }
+
+    public Restore(String fileId, int chunkNo, InetAddress address){
+        this.fileId = fileId;
+        this.chunkNo = chunkNo;
+        this.address = address;
+
+        if(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)){
+            start();
+        }
     }
 
     /**
      * Starts Restore protocol
      */
-    private void start(boolean send) {
+    private void start() {
         Random r = new Random();
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
-            if(!Peer.getInstance().getProtocolInfo().isChunkAlreadySent(fileId, chunkNo) && send) {
+            if(!Peer.getInstance().getProtocolInfo().isChunkAlreadySent(fileId, chunkNo)) {
 
                 File file = new File(Peer.getInstance().getBackupPath(fileId) + chunkNo);
                 byte[] body;
@@ -85,12 +79,11 @@ public class Restore {
                     return;
                 }
 
-                if(Peer.getInstance().isEnhanced()) {
-                    //TODO: sendCHUNK(fileId, chunkNo, body, addressTCP, portTCP);
+                if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
+                    Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
                 } else {
-                    //TODO: sendCHUNK(fileId, chunkNo, body);
+                    sendCHUNK(fileId, chunkNo, body, address);
                 }
-
             } else {
                 Peer.getInstance().getProtocolInfo().removeChunkFromSent(fileId, chunkNo);
             }

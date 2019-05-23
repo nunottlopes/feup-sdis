@@ -1,9 +1,6 @@
 package message;
 
-import peer.Peer;
-
 import java.io.*;
-import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -79,21 +76,21 @@ public class Message implements Serializable {
      */
     private byte[] body;
 
-    /**
-     * Message constructor
-     * @throws InvalidPacketException
-     */
-    public Message(String message) throws InvalidPacketException {
-        if(!parseHeader(message)) {
-            throw new InvalidPacketException("Invalid Message Header");
-        }
-
-        if (type == MessageType.PUTCHUNK || (type == MessageType.CHUNK && !Peer.getInstance().isEnhanced())) {
-            if(!parseBody(message)) {
-                throw new InvalidPacketException("Invalid Message Body (" + type + ")");
-            }
-        }
-    }
+//    /**
+//     * Message constructor
+//     * @throws InvalidPacketException
+//     */
+//    public Message(String message) throws InvalidPacketException {
+//        if(!parseHeader(message)) {
+//            throw new InvalidPacketException("Invalid Message Header");
+//        }
+//
+//        if (type == MessageType.PUTCHUNK || type == MessageType.CHUNK) {
+//            if(!parseBody(message)) {
+//                throw new InvalidPacketException("Invalid Message Body (" + type + ")");
+//            }
+//        }
+//    }
 
     /**
      * Message constructor

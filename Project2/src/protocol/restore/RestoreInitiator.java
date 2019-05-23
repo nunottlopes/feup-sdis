@@ -1,5 +1,6 @@
 package protocol.restore;
 
+import chord.Chord;
 import globals.Globals;
 import peer.Chunk;
 import peer.Peer;
@@ -8,13 +9,14 @@ import protocol.InvalidProtocolExecution;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static message.SendMessage.sendGETCHUNK;
-import static message.SendMessage.sendGETCHUNKENH;
 
 /**
  * RestoreInitiator class
@@ -42,11 +44,6 @@ public class RestoreInitiator {
     private ThreadPoolExecutor pool;
 
     /**
-     * Restore protocol tcp for enhanced version
-     */
-    private TCPServer tcp;
-
-    /**
      * RestoreInitiator constructor
      * @param filepath
      */
@@ -66,9 +63,6 @@ public class RestoreInitiator {
 
         String fileId = Globals.generateFileId(file);
 
-        if(Peer.getInstance().isEnhanced())
-            startTCPServer();
-
         Peer.getInstance().getProtocolInfo().startRestore(fileId);
 
         int n = (int)this.file.length() / (Chunk.MAX_SIZE) + 1;
@@ -78,15 +72,26 @@ public class RestoreInitiator {
         for(int i = 0; i < n; i++) {
             int chunkNo = i;
 
+            String name = fileId + chunkNo;
+            int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
+
             pool.execute(() -> {
 
                 int delay = 1;
                 for(int j = 0; j < MAX_RETRANSMISSIONS; j++) {
-                    if(!Peer.getInstance().isEnhanced()) {
-                        //TODO: sendGETCHUNK(fileId, chunkNo);
-                    } else {
-                        //TODO: sendGETCHUNKENH(fileId, chunkNo, tcp.getPort());
+                    String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+
+                    try {
+                        InetAddress address = InetAddress.getByName(message[3]);
+                        if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                            sendGETCHUNK(fileId, chunkNo, address);
+                        } else{
+                            new Restore(fileId, chunkNo, address);
+                        }
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
                     }
+
 
                     try {
                         TimeUnit.SECONDS.sleep(delay);
@@ -109,10 +114,6 @@ public class RestoreInitiator {
             e.printStackTrace();
         }
 
-        if(Peer.getInstance().isEnhanced())
-            closeTCPServer();
-
-
         if(Peer.getInstance().getProtocolInfo().getChunksRecieved(fileId) < n) {
             System.out.println("Couldn't restore " + this.file.getName());
             return;
@@ -131,22 +132,6 @@ public class RestoreInitiator {
             return;
         }
 
-
         Peer.getInstance().getProtocolInfo().endRestore(fileId);
-    }
-
-    /**
-     * Starts TCP Server
-     */
-    private void startTCPServer() {
-        this.tcp = new TCPServer();
-        new Thread(this.tcp).start();
-    }
-
-    /**
-     * Closes TCP Server
-     */
-    private void closeTCPServer() {
-        this.tcp.close();
     }
 }

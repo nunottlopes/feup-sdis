@@ -73,11 +73,6 @@ public class Peer implements RemoteInterface {
     private String protocolVersion;
 
     /**
-     * Peer version (enhanced or not)
-     */
-    private boolean enhanced;
-
-    /**
      * Peer id
      */
     private int peerID;
@@ -86,11 +81,6 @@ public class Peer implements RemoteInterface {
      * Peer access point
      */
     private static String accessPoint;
-
-    /**
-     * Peer socket
-     */
-    private Socket socket;
 
     /**
      * Peer pool
@@ -145,9 +135,6 @@ public class Peer implements RemoteInterface {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         this.protocolVersion = args[0];
-
-        if(this.protocolVersion.equals("1.0")) this.enhanced = false;
-        else this.enhanced = true;
 
         this.peerID = Integer.parseInt(args[1]);
         this.accessPoint = args[2];
@@ -207,15 +194,6 @@ public class Peer implements RemoteInterface {
      * @param enhanced
      */
     public void backup(String filepath, int replicationDegree, boolean enhanced) {
-        if(enhanced && !this.enhanced) {
-            System.out.println("-- Incompatible peer version with backup enhancement --");
-            return;
-        }
-        if(!enhanced && this.enhanced) {
-            System.out.println("-- Incompatible peer version with vanilla backup --");
-            return;
-        }
-
         System.out.println("\n---- BACKUP SERVICE ---- FILE PATH = " + filepath + " | REPLICATION DEGREEE = " + replicationDegree);
         BackupInitiator backupInitiator = new BackupInitiator(filepath, replicationDegree);
         try {
@@ -233,15 +211,6 @@ public class Peer implements RemoteInterface {
      * @param enhanced
      */
     public void restore(String filepath, boolean enhanced) {
-        if(enhanced && !this.enhanced) {
-            System.out.println("-- Incompatible peer version with restore enhancement --");
-            return;
-        }
-        if(!enhanced && this.enhanced) {
-            System.out.println("-- Incompatible peer version with vanilla restore --");
-            return;
-        }
-
         System.out.println("\n----- RESTORE SERVICE ----- FILE PATH = " + filepath);
         RestoreInitiator restoreInitiator = new RestoreInitiator(filepath);
         try {
@@ -383,18 +352,13 @@ public class Peer implements RemoteInterface {
 
         InetSocketAddress address = new InetSocketAddress(destination, this.tcp_channel.getPort());
 
-        try
-        {
+        try {
             Socket connection = new Socket();
             connection.connect(address, (int) this.timeout);
             ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
-
             oos.writeObject(msg);
-
             connection.close();
-        }
-        catch (IOException e1)
-        {
+        } catch (IOException e1) {
             System.out.println("Error sending message to " + address);
         }
     }
@@ -483,14 +447,7 @@ public class Peer implements RemoteInterface {
     public ScheduledExecutorService getExecutor() {
         return executor;
     }
-
-    /**
-     * Returns Peer version
-     * @return true if version is enhanced, false otherwise
-     */
-    public boolean isEnhanced() {
-        return this.enhanced;
-    }
+    
 
     public int getMaxChordPeers() {
         return maxChordPeers;
