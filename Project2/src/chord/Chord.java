@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -21,6 +22,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import java.net.DatagramSocket;
+
+import peer.Chunk;
 
 
 public class Chord
@@ -468,6 +471,16 @@ public class Chord
 
 	public InetAddress getSuccessor() {
 		return fingerTable[0].second.getAddress();
+	}
+
+	private void getKeysFromSuccessor(){
+		this.channel.sendGetKeys(fingerTable[0].second,this.address, this.id);
+	}
+
+	public ArrayList<Pair<Integer, Chunk>> getKeysToSuccessor(int hash){
+		//TODO: Complete method
+		ArrayList<Pair<Integer, Chunk>> keysValues = new ArrayList<>();
+		return keysValues;
 	}
 }
 

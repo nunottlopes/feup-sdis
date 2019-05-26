@@ -9,6 +9,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+
+import peer.Chunk;
 
 public class ChordChannel implements Runnable
 {
@@ -94,6 +97,17 @@ public class ChordChannel implements Runnable
 					messageQueue.add(new Pair<InetSocketAddress, String[]>((InetSocketAddress) connection.getRemoteSocketAddress(), args));
 
 				this.parent.notify();
+			}
+		}
+
+		else if (args[0].equals("CHORDGETKEYS")) // CHORDGETKEYS <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
+		{
+			
+			synchronized(this.parent)
+			{
+				
+				int hash = Integer.parseInt(args[4]);
+				ArrayList<Pair<Integer,Chunk>> chunks = this.parent.getKeysToSuccessor(hash);
 			}
 		}
 		
@@ -267,12 +281,71 @@ public class ChordChannel implements Runnable
 		}
 				
 	}
+
+
+	protected String[] sendGetKeys(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash){
+		String msg = createGetKeysMessage(requestIP,hash,true);
+
+		sendMessage(connectionIP, msg);
+
+		synchronized(this.parent)
+		{
+			try
+			{
+				if (!connectionIP.equals(this.parent.address))
+					this.parent.wait(this.timeout);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+			
+			for (Pair<InetSocketAddress, String[]> element : messageQueue) // Search for my response
+			{
+				if (element == null)
+					continue;
+				
+				String[] args = element.second;
+				boolean messageSuccessor = args[1].equals("SUCCESSOR");
+				int messageHash = Integer.parseInt(args[5]);
+				
+				if (messageSuccessor && messageHash == hash)
+				{
+					messageQueue.remove(element);
+					return args;
+				}
+			}
+			
+			return null;
+		}
+	}
+
+	protected String createGetKeysMessage(InetSocketAddress requestIP, int hash, boolean successor)
+	{
+		String message = "CHORDGETKEYS" + " "; // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
+		
+		if (successor)
+			message += "SUCCESSOR" + " ";
+		else
+			message += "PREDECESSOR" + " ";
+		
+		if (requestIP == null)
+			message += "null" + " " + "null" + " " + hash;
+		else
+			message += requestIP.getAddress().getHostAddress() + " " + requestIP.getPort() + " " + hash;
+		
+		 return message;
+	}
 	
+	protected void sendChunksKeys(Pair<Integer,Chunk> chunks){
+		//TODO Send Chunks to new Node
+	}
 	
 	
 	protected void start()
 	{
 		thread = new Thread(this, "ChordChannel");
+
 		
 		thread.start();
 	}
