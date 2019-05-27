@@ -100,14 +100,15 @@ public class ChordChannel implements Runnable
 			}
 		}
 
-		else if (args[0].equals("CHORDGETKEYS")) // CHORDGETKEYS <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
+		else if (args[0].equals("CHORDGETKEYS")) // CHORDGETKEYS 
 		{
 			
 			synchronized(this.parent)
 			{
 				
-				int hash = Integer.parseInt(args[4]);
-				ArrayList<Pair<Integer,Chunk>> chunks = this.parent.getKeysToSuccessor(hash);
+				int hash = Integer.parseInt(args[1]);
+				ArrayList<Pair<Integer,Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
+				this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
 			}
 		}
 		
@@ -186,7 +187,22 @@ public class ChordChannel implements Runnable
 			sendMessage(destination, message);
 //		}
 	}
-	
+
+	protected void sendKeys(InetSocketAddress targetIP, ArrayList<Pair<Integer,Chunk>> keysChunks){
+		String message = createKeysMessage(keysChunks);
+		//sendMessage(targetIP, message);
+		System.out.println(message);
+
+	}	
+
+	protected String createKeysMessage(ArrayList<Pair<Integer,Chunk>> keysChunks){
+		String message = "CHORDKEYS" + " ";
+		for(Pair<Integer, Chunk> chunkPair: keysChunks){
+
+			message += chunkPair.first + " " + chunkPair.second.toString() + " ";
+		}
+		return message;
+	}
 	
 	protected String createLookupMessage(InetSocketAddress requestIP, int hash, boolean successor)
 	{
@@ -283,62 +299,16 @@ public class ChordChannel implements Runnable
 	}
 
 
-	protected String[] sendGetKeys(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash){
-		String msg = createGetKeysMessage(requestIP,hash,true);
-
+	protected void sendGetKeys(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash){
+		String msg = createGetKeysMessage(requestIP,hash);
 		sendMessage(connectionIP, msg);
-
-		synchronized(this.parent)
-		{
-			try
-			{
-				if (!connectionIP.equals(this.parent.address))
-					this.parent.wait(this.timeout);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-			
-			for (Pair<InetSocketAddress, String[]> element : messageQueue) // Search for my response
-			{
-				if (element == null)
-					continue;
-				
-				String[] args = element.second;
-				boolean messageSuccessor = args[1].equals("SUCCESSOR");
-				int messageHash = Integer.parseInt(args[5]);
-				
-				if (messageSuccessor && messageHash == hash)
-				{
-					messageQueue.remove(element);
-					return args;
-				}
-			}
-			
-			return null;
-		}
 	}
 
-	protected String createGetKeysMessage(InetSocketAddress requestIP, int hash, boolean successor)
+	protected String createGetKeysMessage(InetSocketAddress originIP, int hash)
 	{
-		String message = "CHORDGETKEYS" + " "; // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
+		String message = "CHORDGETKEYS" + " " + hash + " " + originIP.getAddress().getHostAddress() + " " + originIP.getPort();  // CHORDGETKEYS <origin_id> <origin_IP> <origin_port>
 		
-		if (successor)
-			message += "SUCCESSOR" + " ";
-		else
-			message += "PREDECESSOR" + " ";
-		
-		if (requestIP == null)
-			message += "null" + " " + "null" + " " + hash;
-		else
-			message += requestIP.getAddress().getHostAddress() + " " + requestIP.getPort() + " " + hash;
-		
-		 return message;
-	}
-	
-	protected void sendChunksKeys(Pair<Integer,Chunk> chunks){
-		//TODO Send Chunks to new Node
+		return message;
 	}
 	
 	

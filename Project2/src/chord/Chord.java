@@ -4,9 +4,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import java.util.Map;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +28,7 @@ import java.net.UnknownHostException;
 import java.net.DatagramSocket;
 
 import peer.Chunk;
+import peer.Peer;
 
 
 public class Chord
@@ -95,6 +100,8 @@ public class Chord
 		{			
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
 		}
+
+		getKeysFromSuccessor();
 	}
 
 	public Chord(int maxPeers, int port, InetSocketAddress address)
@@ -477,9 +484,34 @@ public class Chord
 		this.channel.sendGetKeys(fingerTable[0].second,this.address, this.id);
 	}
 
-	public ArrayList<Pair<Integer, Chunk>> getKeysToSuccessor(int hash){
-		//TODO: Complete method
+	public ArrayList<Pair<Integer, Chunk>> getKeysToPredecessor(int peerHash){
 		ArrayList<Pair<Integer, Chunk>> keysValues = new ArrayList<>();
+
+		ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> chunksStored = Peer.getInstance().getFileManager().getChunksStored();
+
+		for(Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> fileChunks: chunksStored.entrySet()){
+			ConcurrentHashMap<Integer,Chunk> chunksMap = fileChunks.getValue();
+			for(Map.Entry<Integer, Chunk> chunkEntry: chunksMap.entrySet()){
+				Chunk chunk = chunkEntry.getValue();
+				int chunkHash = sha1(chunk.getFileId() + chunk.getChunkNo());
+
+					
+				if(this.id < peerHash){
+					if(chunkHash > this.id && chunkHash <= peerHash){
+						keysValues.add(new Pair<Integer,Chunk>(chunkHash,chunk));
+						chunksMap.remove(chunkEntry.getKey());
+					}
+				}
+
+				else{
+					if(chunkHash <= peerHash || chunkHash > this.id){
+						keysValues.add(new Pair<Integer,Chunk>(chunkHash,chunk));
+						chunksMap.remove(chunkEntry.getKey());
+					}
+				}
+			}
+		}
+
 		return keysValues;
 	}
 }
