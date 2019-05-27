@@ -145,7 +145,7 @@ public class Peer implements RemoteInterface {
         this.pool = new ScheduledThreadPoolExecutor(MAX_THREADS);
         this.executor = Executors.newScheduledThreadPool(1);
 
-        if(args.length == 7){
+        if(args.length == 6){
             int port = Integer.parseInt(args[3]);
             InetSocketAddress connectionPeer = new InetSocketAddress(args[4], Integer.parseInt(args[5]));
             this.chord = new Chord(maxChordPeers, port, connectionPeer);
