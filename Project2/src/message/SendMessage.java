@@ -2,37 +2,12 @@ package message;
 
 import peer.Peer;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 
 /**
  * SendMessage class
  */
 public class SendMessage {
-
-    /**
-     * Sends REMOVED message
-     * @param fileId
-     * @param chunkNo
-     */
-    public static void sendREMOVED(String fileId, int chunkNo, InetAddress destination) {
-        String[] args = {
-                Peer.getInstance().getVersion(),
-                Integer.toString(Peer.getInstance().getId()),
-                fileId,
-                Integer.toString(chunkNo)
-        };
-
-        Message msg = new Message(Message.MessageType.REMOVED, args);
-
-        Peer.getInstance().send(msg, destination);
-
-        System.out.println("\n> REMOVED sent");
-        System.out.println("- File Id = " + fileId);
-        System.out.println("- Chunk No = " + chunkNo);
-    }
 
     /**
      * Sends STORED message
@@ -41,7 +16,6 @@ public class SendMessage {
      */
     public static void sendSTORED(String fileId, int chunkNo, InetAddress destination) {
         String[] args = {
-                Peer.getInstance().getVersion(),
                 Integer.toString(Peer.getInstance().getId()),
                 fileId,
                 Integer.toString(chunkNo)
@@ -65,7 +39,6 @@ public class SendMessage {
      */
     public static void sendPUTCHUNK(String fileId, int chunkNo, int repDegree, byte[] data, InetAddress destination){
         String[] args = {
-                Peer.getInstance().getVersion(),
                 Integer.toString(Peer.getInstance().getId()),
                 fileId,
                 Integer.toString(chunkNo),
@@ -89,7 +62,6 @@ public class SendMessage {
      */
     public static void sendDELETE(String fileId, InetAddress destination){
         String[] args = {
-                Peer.getInstance().getVersion(),
                 Integer.toString(Peer.getInstance().getId()),
                 fileId
         };
@@ -111,7 +83,6 @@ public class SendMessage {
      */
     public static void sendCHUNK(String fileId, int chunkNo, byte[] body, InetAddress destination){
         String[] args = {
-                Peer.getInstance().getVersion(),
                 Integer.toString(Peer.getInstance().getId()),
                 fileId,
                 Integer.toString(chunkNo)
@@ -134,7 +105,6 @@ public class SendMessage {
      */
     public static void sendGETCHUNK(String fileId, int chunkNo, InetAddress destination){
         String[] args = {
-                Peer.getInstance().getVersion(),
                 Integer.toString(Peer.getInstance().getId()),
                 fileId,
                 Integer.toString(chunkNo)

@@ -200,7 +200,7 @@ public class Chord
 				if (fingerTable[i] == null || fingerTable[i].first == null || fingerTable[i].second == null)
 					continue;
 				
-				if (isInInterval(fingerTable[i].first, this.id, hash, true)) // If peer id is greater than the hash then we have exceeded the desired peer
+				if (isInInterval(fingerTable[i].first, this.id, hash)) // If peer id is greater than the hash then we have exceeded the desired peer
 					break;
 			}
 			

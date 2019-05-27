@@ -35,11 +35,6 @@ public class Chunk implements Serializable {
     private byte[] data;
 
     /**
-     * Set of peers id that backedup this chunk. The length of this set is the chunks perceived replication degree
-     */
-    private Set<Integer> perceivedRepDegree;
-
-    /**
      * Chunk data size
      */
     private long size;
@@ -57,8 +52,6 @@ public class Chunk implements Serializable {
         this.repDegree = repDegree;
         this.data = data;
         this.size = data.length;
-        this.perceivedRepDegree = new HashSet<>();
-//        this.perceivedRepDegree.add(Peer.getInstance().getId());
     }
 
     /**
@@ -72,15 +65,6 @@ public class Chunk implements Serializable {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
         this.repDegree = repDegree;
-        this.perceivedRepDegree = perceivedRepDegree;
-    }
-
-    /**
-     * Returns chunk perceived replication degree
-     * @return perceived replication degree
-     */
-    public int getPerceivedRepDegree() {
-        return perceivedRepDegree.size();
     }
 
     /**
@@ -128,31 +112,6 @@ public class Chunk implements Serializable {
      */
     public void clearData(){
         data = null;
-    }
-
-    /**
-     * Sets chunk data
-     * @param data
-     */
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
-    /**
-     * Sets chunk perceived replication degree list
-     * @param perceivedRepDegree
-     */
-    public void setPerceivedRepDegree(Set<Integer> perceivedRepDegree) {
-        perceivedRepDegree.add(Peer.getInstance().getId());
-        this.perceivedRepDegree = perceivedRepDegree;
-    }
-
-    /**
-     * Removes peerId from perceived replication degree list
-     * @param peerId
-     */
-    public void removePerceivedRepDegreePeer(int peerId){
-        perceivedRepDegree.remove(peerId);
     }
 }
 
