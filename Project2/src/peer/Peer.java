@@ -21,6 +21,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.ArrayList;
+import chord.Pair;
 
 /**
  * Peer class
@@ -121,7 +123,7 @@ public class Peer implements RemoteInterface {
         RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
 
         Registry registry = LocateRegistry.getRegistry();
-        registry.bind(Peer.accessPoint, stub);
+        registry.rebind(Peer.accessPoint, stub);
 
         System.out.println("--- Peer ready ---");
     }
