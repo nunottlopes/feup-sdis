@@ -123,7 +123,7 @@ public class Peer implements RemoteInterface {
         RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
 
         Registry registry = LocateRegistry.getRegistry();
-        registry.bind(Peer.accessPoint, stub);
+        registry.rebind(Peer.accessPoint, stub);
 
         System.out.println("--- Peer ready ---");
     }
