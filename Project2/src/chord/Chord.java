@@ -101,7 +101,7 @@ public class Chord
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
 		}
 
-		getKeysFromSuccessor();
+		//getKeysFromSuccessor();
 	}
 
 	public Chord(int maxPeers, int port, InetSocketAddress address)
@@ -513,6 +513,10 @@ public class Chord
 		}
 
 		return keysValues;
+	}
+
+	public void storeChunk(Chunk chunk){
+		Peer.getInstance().getFileManager().addChunk(chunk);
 	}
 }
 

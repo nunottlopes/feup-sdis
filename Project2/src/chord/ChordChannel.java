@@ -108,9 +108,30 @@ public class ChordChannel implements Runnable
 				
 				int hash = Integer.parseInt(args[1]);
 				ArrayList<Pair<Integer,Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
-				this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
+				
+			}
+			this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
+		}
+
+		else if (args[0].equals("CHORDKEYS")) // CHORDGETKEYS 
+		{
+			
+			synchronized(this.parent)
+			{
+				
+				int hash = Integer.parseInt(args[1]);
+				ArrayList<Pair<Integer,Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
+				
 			}
 		}
+
+		else if (args[0].equals("CHORDKEYS")) // CHORDGETKEYS
+		{
+		
+			int chunkNum = Integer.parseInt(args[1]);
+			this.receiveKeys(connection,chunkNum);
+		
+		} 
 		
 		else if (args[0].equals("CHORDNOTIFY")) // CHORDNOTIFY <origin_id> <origin_IP> <origin_port>
 		{
@@ -189,19 +210,19 @@ public class ChordChannel implements Runnable
 	}
 
 	protected void sendKeys(InetSocketAddress targetIP, ArrayList<Pair<Integer,Chunk>> keysChunks){
-		String message = createKeysMessage(keysChunks);
-		//sendMessage(targetIP, message);
+		sendChunks(targetIP, keyChunks);
+		
 		System.out.println(message);
 
 	}	
 
-	protected String createKeysMessage(ArrayList<Pair<Integer,Chunk>> keysChunks){
-		String message = "CHORDKEYS" + " ";
-		for(Pair<Integer, Chunk> chunkPair: keysChunks){
-
-			message += chunkPair.first + " " + chunkPair.second.toString() + " ";
+	protected void receiveKeys(Socket connection, int chunkNum){
+		for(int i = 0; i < chunkNum; i++){
+			ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+				
+			Chunk chunk = (Chunk) ois.readObject();
+			this.parent.storeChunk(chunk);
 		}
-		return message;
 	}
 	
 	protected String createLookupMessage(InetSocketAddress requestIP, int hash, boolean successor)
@@ -296,6 +317,39 @@ public class ChordChannel implements Runnable
 			}
 		}
 				
+	}
+
+	protected void sendChunks(InetSocketAddress address, ArrayList<Pair<Integer,Chunk>> keysChunks){
+		if (address.equals(this.parent.address))
+		{
+			handleMessage(null, message);
+		}
+		else
+		{
+			try
+			{
+				Socket connection = new Socket();
+				connection.connect(address, (int)this.timeout);
+				ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
+				
+				String message = "CHORDKEYS " + keysChunks.size();
+				oos.writeObject(message);
+				
+				for(Pair<Integer,Chunk> chunk: keysChunks){
+					oss.writeObject(chunk.second);
+				}
+				
+				connection.close();
+			}
+			catch (IOException e)
+			{
+				System.err.println("Failed!");
+				
+				if (fix)
+					this.parent.fixSuccessor();
+			}
+		}
+		
 	}
 
 
