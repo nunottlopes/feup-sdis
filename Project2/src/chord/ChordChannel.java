@@ -108,9 +108,10 @@ public class ChordChannel implements Runnable
 				
 				int hash = Integer.parseInt(args[1]);
 				ArrayList<Pair<Integer,Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
+				this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
 				
 			}
-			this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
+			
 		}
 
 		else if (args[0].equals("CHORDKEYS")) // CHORDGETKEYS 
@@ -210,18 +211,23 @@ public class ChordChannel implements Runnable
 	}
 
 	protected void sendKeys(InetSocketAddress targetIP, ArrayList<Pair<Integer,Chunk>> keysChunks){
-		sendChunks(targetIP, keyChunks);
+		sendChunks(targetIP, keysChunks);
 		
-		System.out.println(message);
+		//System.out.println(message);
 
 	}	
 
 	protected void receiveKeys(Socket connection, int chunkNum){
 		for(int i = 0; i < chunkNum; i++){
+			try{
 			ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 				
 			Chunk chunk = (Chunk) ois.readObject();
 			this.parent.storeChunk(chunk);
+			}
+			catch(ClassNotFoundException|IOException e){
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -322,7 +328,7 @@ public class ChordChannel implements Runnable
 	protected void sendChunks(InetSocketAddress address, ArrayList<Pair<Integer,Chunk>> keysChunks){
 		if (address.equals(this.parent.address))
 		{
-			handleMessage(null, message);
+			return;
 		}
 		else
 		{
@@ -336,7 +342,7 @@ public class ChordChannel implements Runnable
 				oos.writeObject(message);
 				
 				for(Pair<Integer,Chunk> chunk: keysChunks){
-					oss.writeObject(chunk.second);
+					oos.writeObject(chunk.second);
 				}
 				
 				connection.close();
@@ -344,9 +350,6 @@ public class ChordChannel implements Runnable
 			catch (IOException e)
 			{
 				System.err.println("Failed!");
-				
-				if (fix)
-					this.parent.fixSuccessor();
 			}
 		}
 		
