@@ -80,6 +80,11 @@ public class Chord
 					System.exit(1);
 				}
 			}
+			else
+			{
+				System.err.println("Failed to connect to peer!");
+				System.exit(1);
+			}
 			
 			int value = getFingerTableIndex(0);
 			args = channel.sendLookup(address, this.address, value, true);

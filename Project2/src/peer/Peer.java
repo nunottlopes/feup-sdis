@@ -7,7 +7,6 @@ import protocol.InvalidProtocolExecution;
 import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
-import protocol.reclaim.ReclaimInitiator;
 import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
 
@@ -18,11 +17,8 @@ import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.ArrayList;
-import chord.Pair;
 
 /**
  * Peer class
@@ -68,11 +64,6 @@ public class Peer implements RemoteInterface {
      * Peer protocol info
      */
     private ProtocolInfo protocolInfo;
-
-    /**
-     * Protocol version
-     */
-    private String protocolVersion;
 
     /**
      * Peer id
@@ -202,7 +193,7 @@ public class Peer implements RemoteInterface {
             System.out.println(e);
         }
         writePeerToFile();
-        System.out.println("\n---- FINISHED BACKUP SERVICE ----");
+        System.out.println("---- FINISHED BACKUP SERVICE ----");
     }
 
     /**
@@ -235,23 +226,7 @@ public class Peer implements RemoteInterface {
             System.out.println(e);
         }
         writePeerToFile();
-        System.out.println("\n---- FINISHED DELETE SERVICE ----");
-    }
-
-    /**
-     * Initializes reclaim protocol
-     * @param spaceReclaim
-     */
-    public void reclaim(long spaceReclaim) {
-        System.out.println("\n----- RECLAIM SERVICE ----- DISK SPACE RECLAIM = " + spaceReclaim);
-        ReclaimInitiator reclaimInitiator = new ReclaimInitiator(spaceReclaim);
-        try {
-            reclaimInitiator.run();
-        } catch (InvalidProtocolExecution e) {
-            System.out.println(e);
-        }
-        writePeerToFile();
-        System.out.println("\n---- FINISHED RECLAIM SERVICE ----");
+        System.out.println("---- FINISHED DELETE SERVICE ----");
     }
 
     /**
@@ -273,7 +248,7 @@ public class Peer implements RemoteInterface {
             ret += "\n> File Pathname = " + path_name + "\n> File Id = " + fileId + "\n> Desired Replication Degree= " + desiredRepDegree + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
-                ret += "\t- Chunk Id = "+ chunkno + "\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+                ret += "\t- Chunk Id = "+ chunkno + "\n";
             }
 
         }
@@ -287,7 +262,7 @@ public class Peer implements RemoteInterface {
             ret += "\n> File Id = " + fileId + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
-                ret += "\t- Chunk Id = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + " Bytes\n\t\t- Perceived Replication Degree = " + chunkMap.get(chunkno).getPerceivedRepDegree() + "\n";
+                ret += "\t- Chunk Id = "+ chunkno + "\n\t\t- Chunk Size = "+ chunkMap.get(chunkno).getSize() + " Bytes\n";
             }
 
         }
@@ -377,14 +352,6 @@ public class Peer implements RemoteInterface {
      */
     public int getId() {
         return peerID;
-    }
-
-    /**
-     * Gets Peer protocol version
-     * @return version
-     */
-    public String getVersion() {
-        return protocolVersion;
     }
 
     /**

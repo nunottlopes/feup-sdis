@@ -81,15 +81,17 @@ public class RestoreInitiator {
                 for(int j = 0; j < MAX_RETRANSMISSIONS; j++) {
                     String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 
-                    try {
-                        InetAddress address = InetAddress.getByName(message[3]);
-                        if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
-                            sendGETCHUNK(fileId, chunkNo, address);
-                        } else{
-                            new Restore(fileId, chunkNo, address);
+                    if(message != null){
+                        try {
+                            InetAddress address = InetAddress.getByName(message[3]);
+                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                                sendGETCHUNK(fileId, chunkNo, address);
+                            } else{
+                                new Restore(fileId, chunkNo, address);
+                            }
+                        } catch (UnknownHostException e) {
+                            e.printStackTrace();
                         }
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
                     }
 
 

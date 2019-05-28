@@ -32,13 +32,6 @@ public interface RemoteInterface extends Remote {
     void delete(String filepath) throws RemoteException;
 
     /**
-     * Reclaim protocol
-     * @param spaceReclaim
-     * @throws RemoteException
-     */
-    void reclaim(long spaceReclaim) throws RemoteException;
-
-    /**
      * Peer state
      * @return
      * @throws RemoteException
