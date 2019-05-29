@@ -90,19 +90,21 @@ public class ChordChannel implements Runnable {
 
 		else if (args[0].equals("CHORDGETKEYS")) // CHORDGETKEYS
 		{
+			System.out.println("Received CHORDKEYS");
 
 			synchronized (this.parent) {
 
 				int hash = Integer.parseInt(args[1]);
 				ArrayList<Pair<Integer, Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
 				this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
-
+				System.out.println("CHUNKS SENT");
 			}
 
 		}
 
 		else if (args[0].equals("CHORDKEYS")) // CHORDGETKEYS
 		{
+			System.out.println("Received CHORDKEYS");
 
 			synchronized (this.parent) {
 
@@ -307,7 +309,6 @@ public class ChordChannel implements Runnable {
 
 				String message = "CHORDKEYS " + keysChunks.size();
 				oos.writeObject(message);
-				System.out.println("-------CHUNK SENT-------");
 				for (Pair<Integer, Chunk> chunk : keysChunks) {
 					oos.writeObject(chunk.second);
 				}
