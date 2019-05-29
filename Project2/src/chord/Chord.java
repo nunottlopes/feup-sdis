@@ -106,7 +106,7 @@ public class Chord
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
 		}
 
-		//getKeysFromSuccessor();
+		getKeysFromSuccessor();
 	}
 
 	public Chord(int maxPeers, int port, InetSocketAddress address)
