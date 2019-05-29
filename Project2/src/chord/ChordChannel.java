@@ -90,7 +90,7 @@ public class ChordChannel implements Runnable {
 
 		else if (args[0].equals("CHORDGETKEYS")) // CHORDGETKEYS
 		{
-			System.out.println("Received CHORDKEYS");
+			System.out.println("Received CHORDGETKEYS");
 
 			synchronized (this.parent) {
 
@@ -266,7 +266,6 @@ public class ChordChannel implements Runnable {
 				ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
 
 				oos.writeObject(message);
-				System.out.println("------------" + message + "----------");
 				connection.close();
 			}
 			// catch (SocketTimeoutException e)
@@ -324,6 +323,7 @@ public class ChordChannel implements Runnable {
 	protected void sendGetKeys(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash) {
 		String msg = createGetKeysMessage(requestIP, hash);
 		sendMessage(connectionIP, msg);
+		System.out.println("-------SEND GET KEYS ---------");
 	}
 
 	protected String createGetKeysMessage(InetSocketAddress originIP, int hash) {
