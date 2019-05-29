@@ -104,19 +104,7 @@ public class ChordChannel implements Runnable {
 
 		else if (args[0].equals("CHORDKEYS")) // CHORDGETKEYS
 		{
-			System.out.println("Received CHORDKEYS");
-
-			synchronized (this.parent) {
-
-				int hash = Integer.parseInt(args[1]);
-				ArrayList<Pair<Integer, Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
-
-			}
-		}
-
-		else if (args[0].equals("CHORDKEYS")) // CHORDGETKEYS
-		{
-
+			System.out.println("Received " + message);
 			int chunkNum = Integer.parseInt(args[1]);
 			this.receiveKeys(connection, chunkNum);
 
