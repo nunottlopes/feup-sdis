@@ -113,5 +113,10 @@ public class SendMessage {
         Message msg = new Message(Message.MessageType.GETCHUNK, args);
 
         Peer.getInstance().send(msg, destination);
+
+        System.out.println("\n> GETCHUNK sent");
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 }

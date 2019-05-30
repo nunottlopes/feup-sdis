@@ -37,10 +37,10 @@ public class Restore {
      */
     public Restore(Message msg, InetAddress address) {
 
-//        System.out.println("\n> " + msg.getType() + " received");
-//        System.out.println("- Sender Id = " + msg.getSenderId());
-//        System.out.println("- File Id = " + msg.getFileId());
-//        System.out.println("- Chunk No = " + msg.getChunkNo());
+        System.out.println("\n> " + msg.getType() + " received");
+        System.out.println("- Sender Id = " + msg.getSenderId());
+        System.out.println("- File Id = " + msg.getFileId());
+        System.out.println("- Chunk No = " + msg.getChunkNo());
 
         this.fileId = msg.getFileId();
         this.chunkNo = msg.getChunkNo();
@@ -79,11 +79,12 @@ public class Restore {
                     return;
                 }
 
-                if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
-                    Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
-                } else {
-                    sendCHUNK(fileId, chunkNo, body, address);
-                }
+//                if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
+//                    Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
+//                } else {
+//                    sendCHUNK(fileId, chunkNo, body, address);
+//                }
+                sendCHUNK(fileId, chunkNo, body, address);
             } else {
                 Peer.getInstance().getProtocolInfo().removeChunkFromSent(fileId, chunkNo);
             }
