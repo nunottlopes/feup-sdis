@@ -68,6 +68,14 @@ public class Chunk implements Serializable {
     }
 
     /**
+     * Sets chunk data
+     * @param data
+     */
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    /**
      * Return chunk file id
      * @return file id
      */

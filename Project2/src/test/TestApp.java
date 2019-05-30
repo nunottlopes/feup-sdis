@@ -56,6 +56,14 @@ public class TestApp {
                     filePath = args[2];
                     stub.delete(filePath);
                     break;
+                case "reclaim":
+                    if(args.length != 3){
+                        System.out.println("Usage: java TestApp <peer_ap> RECLAIM <disk_space_to_reclaim>");
+                        return;
+                    }
+                    long spaceReclaim = Long.parseLong(args[2]);
+                    stub.reclaim(spaceReclaim);
+                    break;
                 case "state":
                     if(args.length != 2){
                         System.out.println("Usage: java TestApp <peer_ap> STATE");

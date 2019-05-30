@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import static globals.Globals.getFileData;
+import static message.SendMessage.sendREMOVED;
 
 /**
  * Chunk FileManager class
@@ -85,16 +87,39 @@ public class FileManager implements Serializable {
         return chunks != null && chunks.containsKey(chunkNo);
     }
 
-//    /**
-//     * Removes a chunk from chunksStored
-//     * @param fileId
-//     * @param chunkNo
-//     */
-//    public void removeChunk(String fileId, int chunkNo) {
-//        chunksStored.get(fileId).remove(chunkNo);
-//        if(chunksStored.get(fileId).size() == 0)
-//            chunksStored.remove(fileId);
-//    }
+    /**
+     * Removes a chunk from chunksStored
+     * @param fileId
+     * @param chunkNo
+     */
+    public void removeChunk(String fileId, int chunkNo) {
+        chunksStored.get(fileId).remove(chunkNo);
+        if(chunksStored.get(fileId).size() == 0)
+            chunksStored.remove(fileId);
+    }
+
+    /**
+     * Gets chunk from a file
+     * @param fileId
+     * @param chunkNo
+     * @return chunk
+     */
+    public Chunk getChunkFromFile(String fileId, int chunkNo) {
+        Chunk chunk = chunksStored.get(fileId).get(chunkNo);
+        File file = new File(Peer.getInstance().getBackupPath(fileId) + chunkNo);
+
+        byte[] data;
+        try {
+            data = getFileData(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        chunk.setData(data);
+
+        return chunk;
+    }
 
     /**
      * Returns chunk from chunksStored
@@ -208,18 +233,18 @@ public class FileManager implements Serializable {
         backedupFiles.putIfAbsent(path, chunks);
     }
 
-//    /**
-//     * Removes chunk from backedupFiles
-//     * @param fileId
-//     */
-//    public void removeBackedupChunks(String fileId) {
-//        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry : backedupFiles.entrySet()){
-//            if(entry.getValue().entrySet().iterator().next().getValue().getFileId().equals(fileId)){
-//                backedupFiles.remove(entry.getKey());
-//                break;
-//            }
-//        }
-//    }
+    /**
+     * Removes chunk from backedupFiles
+     * @param fileId
+     */
+    public void removeBackedupChunks(String fileId) {
+        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry : backedupFiles.entrySet()){
+            if(entry.getValue().entrySet().iterator().next().getValue().getFileId().equals(fileId)){
+                backedupFiles.remove(entry.getKey());
+                break;
+            }
+        }
+    }
 
     /**
      * Removes file from chunksStored and backedupFiles
@@ -230,20 +255,6 @@ public class FileManager implements Serializable {
         backedupFiles.remove(fileId);
     }
 
-//    /**
-//     * Updates chunks from chunksStored perceived replication degree
-//     * @param fileId
-//     * @param chunkPerceivedRepDegree
-//     */
-//    public void updateStoredChunks(String fileId, ConcurrentHashMap<Integer,Set<Integer>> chunkPerceivedRepDegree) {
-//        ConcurrentHashMap<Integer, Chunk> chunks = chunksStored.get(fileId);
-//        for(ConcurrentHashMap.Entry<Integer, Chunk> entry : chunks.entrySet()){
-//            Set<Integer> item = chunkPerceivedRepDegree.get(entry.getKey());
-//            if(item != null)
-//                entry.getValue().setPerceivedRepDegree(item);
-//        }
-//    }
-
     /**
      * Checks if file exists in chunksStored
      * @param fileId
@@ -253,19 +264,19 @@ public class FileManager implements Serializable {
         return chunksStored.containsKey(fileId);
     }
 
-//    /**
-//     * Returns all stored chunks from chunksStored
-//     * @return all stored chunks
-//     */
-//    public List<Chunk> getAllStoredChunks(){
-//        List<Chunk> chunks =  new ArrayList<>();;
-//        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry_file : chunksStored.entrySet()){
-//            for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
-//                chunks.add(entry_chunk.getValue());
-//            }
-//        }
-//        return chunks;
-//    }
+    /**
+     * Returns all stored chunks from chunksStored
+     * @return all stored chunks
+     */
+    public List<Chunk> getAllStoredChunks(){
+        List<Chunk> chunks =  new ArrayList<>();;
+        for(ConcurrentHashMap.Entry<String, ConcurrentHashMap<Integer, Chunk>> entry_file : chunksStored.entrySet()){
+            for(ConcurrentHashMap.Entry<Integer, Chunk> entry_chunk : entry_file.getValue().entrySet()){
+                chunks.add(entry_chunk.getValue());
+            }
+        }
+        return chunks;
+    }
 
     /**
      * Returns backedupFiles
@@ -297,5 +308,21 @@ public class FileManager implements Serializable {
      */
     public long getMaxMemory(){
         return free_mem+used_mem;
+    }
+
+    /**
+     * Updates free memory
+     * @param spaceReclaim
+     */
+    public void updateFreeMem(long spaceReclaim) {
+        this.free_mem = spaceReclaim - this.used_mem;
+    }
+
+    /**
+     * Sets free memory
+     * @param free_mem
+     */
+    public void setFree_mem(long free_mem) {
+        this.free_mem = free_mem;
     }
 }

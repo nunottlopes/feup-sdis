@@ -30,7 +30,11 @@ import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
 import protocol.restore.RestoreInitiator;
+import protocol.reclaim.ReclaimInitiator;
+import java.util.HashMap;
 import rmi.RemoteInterface;
+import java.util.ArrayList;
+import chord.Pair;
 
 /**
  * Peer class
@@ -136,10 +140,6 @@ public class Peer implements RemoteInterface {
         } catch (Exception e) {
             System.out.println("--- Client service unavailable ---");
         }
-//        RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
-//
-//        Registry registry = LocateRegistry.getRegistry();
-//        registry.rebind(Peer.accessPoint, stub);
 
         System.out.println("--- Peer ready ---");
     }
@@ -242,6 +242,22 @@ public class Peer implements RemoteInterface {
         }
         writePeerToFile();
         System.out.println("---- FINISHED RESTORE SERVICE ----");
+    }
+
+    /**
+     * Initializes reclaim protocol
+     * @param spaceReclaim
+     */
+    public void reclaim(long spaceReclaim) {
+        System.out.println("\n----- RECLAIM SERVICE ----- DISK SPACE RECLAIM = " + spaceReclaim);
+        ReclaimInitiator reclaimInitiator = new ReclaimInitiator(spaceReclaim);
+        try {
+            reclaimInitiator.run();
+        } catch (InvalidProtocolExecution e) {
+            System.out.println(e);
+        }
+        writePeerToFile();
+        System.out.println("\n---- FINISHED RECLAIM SERVICE ----");
     }
 
     /**

@@ -28,7 +28,7 @@ public class Message implements Serializable {
      * Messages Types
      */
     public enum MessageType {
-        PUTCHUNK, STORED, GETCHUNK, CHUNK, DELETE
+        PUTCHUNK, STORED, GETCHUNK, CHUNK, DELETE, REMOVED
     }
 
     /**
@@ -87,6 +87,8 @@ public class Message implements Serializable {
                 parseGETCHUNK(args);
             case CHUNK:
                 parseCHUNK(args);
+            case REMOVED:
+                parseREMOVED(args);
             case DELETE:
                 parseDELETE(args);
             default:
@@ -104,49 +106,6 @@ public class Message implements Serializable {
         this.body = body;
     }
 
-//    /**
-//     * Parses message header
-//     * @return true if valid message header, false otherwise
-//     */
-//    private boolean parseHeader(String message) {
-//        ByteArrayInputStream stream = new ByteArrayInputStream(message.getBytes());
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-//
-//        String header = "";
-//        try {
-//            header = reader.readLine();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        if(header.equals("")) return false;
-//
-//        this.header_length = header.getBytes().length;
-//
-//        String[] fields = header.trim().split(" +");
-//
-//
-//        switch (fields[0]) {
-//            case "PUTCHUNK":
-//                this.type = MessageType.PUTCHUNK;
-//                return parsePUTCHUNK(fields);
-//            case "STORED":
-//                this.type = MessageType.STORED;
-//                return parseSTORED(fields);
-//            case "GETCHUNK":
-//                this.type = MessageType.GETCHUNK;
-//                return parseGETCHUNK(fields);
-//            case "CHUNK":
-//                this.type = MessageType.CHUNK;
-//                return parseCHUNK(fields);
-//            case "DELETE":
-//                this.type = MessageType.DELETE;
-//                return parseDELETE(fields);
-//            default:
-//                return false;
-//
-//        }
-//    }
 
     /**
      * Parses PUTCHUNK messages
@@ -212,6 +171,25 @@ public class Message implements Serializable {
      * @return true if valid message, false otherwise
      */
     private boolean parseCHUNK(String[] fields) {
+        if(fields.length != 4) return false;
+
+        try {
+            senderId = Integer.parseInt(fields[1]);
+            fileId = fields[2];
+            chunkNo = Integer.parseInt(fields[3]);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Parses REMOVED messages
+     * @param fields
+     * @return true if valid message, false otherwise
+     */
+    private boolean parseREMOVED(String[] fields) {
         if(fields.length != 4) return false;
 
         try {
@@ -292,57 +270,4 @@ public class Message implements Serializable {
         return body;
     }
 
-//    /**
-//     * Returns header string
-//     * @return header string
-//     */
-//    public String getHeaderString() {
-//        String str;
-//
-//        switch (type) {
-//            case PUTCHUNK:
-//                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + replicationDeg + " " + CRLF + CRLF;
-//                break;
-//            case STORED:
-//                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
-//                break;
-//            case GETCHUNK:
-//                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
-//                break;
-//            case CHUNK:
-//                str = type + " " + version + " " + senderId + " " + fileId + " " + chunkNo + " " + CRLF + CRLF;
-//                break;
-//            case DELETE:
-//                str = type + " " + version + " " + senderId + " " + fileId + " " + CRLF + CRLF;
-//                break;
-//            default:
-//                str = "";
-//                break;
-//
-//        }
-//
-//        return str;
-//    }
-
-//    /**
-//     * Returns message bytes
-//     * @return bytes
-//     */
-//    public byte[] getBytes() {
-//        byte[] header = getHeaderString().getBytes();
-//
-//        if(body != null) {
-//            ByteArrayOutputStream out = new ByteArrayOutputStream();
-//            try {
-//                out.write(header);
-//                out.write(body);
-//            } catch (IOException e) {
-//                System.out.println("Couldn't get Message bytes");
-//            }
-//
-//            return out.toByteArray();
-//        }
-//
-//        return header;
-//    }
 }

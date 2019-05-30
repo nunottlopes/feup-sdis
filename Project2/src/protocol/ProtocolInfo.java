@@ -13,11 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ProtocolInfo implements Serializable {
 
-//    /**
-//     * Saving chunks perceived replication degree
-//     */
-//    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
-
     /**
      * Backup Initiator perceived replication degree
      */
@@ -28,21 +23,27 @@ public class ProtocolInfo implements Serializable {
      */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, byte[] > > restoredChunks_init;
 
-//    /**
-//     * Chunks number received while on protocol reclaim
-//     */
-//    private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
+    /**
+     * Running Reclaim protocol state
+     */
+    private boolean reclaimProtocol = false;
+
+    /**
+     * Chunks number received while on protocol reclaim
+     */
+    private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
 
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<InetAddress> > > peersWhoSavedChunk;
+
+
 
     /**
      * ProtocolInfo constructor
      */
     public ProtocolInfo() {
-        //chunksRepDegree = new ConcurrentHashMap<>();
         backupRepDegree_init = new ConcurrentHashMap<>();
         restoredChunks_init = new ConcurrentHashMap<>();
-        //chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
+        chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
         peersWhoSavedChunk = new ConcurrentHashMap<>();
     }
 
@@ -154,5 +155,50 @@ public class ProtocolInfo implements Serializable {
             return peersWhoSavedChunk.get(fileId).get(chunkNo).contains(address);
         }
         return false;
+    }
+
+    public boolean isReclaimProtocol() {
+        return reclaimProtocol;
+    }
+
+    public void setReclaimProtocol(boolean reclaimProtocol) {
+        this.reclaimProtocol = reclaimProtocol;
+    }
+
+
+    /**
+     * Adds chunk to chunksReceivedWhileReclaim when it's on reclaim protocol
+     * @param fileId
+     * @param chunkNo
+     */
+    public void addChunksReceivedWhileReclaim(String fileId, int chunkNo){
+        if (chunksReceivedWhileReclaim.containsKey(fileId)){
+            chunksReceivedWhileReclaim.get(fileId).add(chunkNo);
+        }
+        else{
+            Set<Integer> chunks = new HashSet<>();
+            chunks.add(chunkNo);
+            chunksReceivedWhileReclaim.put(fileId, chunks);
+        }
+    }
+
+    /**
+     * Checks if chunk was already sent on reclaim protocol
+     * @param fileId
+     * @param chunkNo
+     * @return
+     */
+    public boolean isChunkAlreadyReceivedWhileReclaim(String fileId, int chunkNo){
+        if(chunksReceivedWhileReclaim.containsKey(fileId)){
+            return chunksReceivedWhileReclaim.get(fileId).contains(chunkNo);
+        }
+        return false;
+    }
+
+    /**
+     * Removes chunks from chunksReceivedWhileReclaim
+     */
+    public void clearChunksReceivedWhileReclaim(){
+        chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
     }
 }
