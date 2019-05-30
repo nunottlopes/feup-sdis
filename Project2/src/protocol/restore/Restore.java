@@ -70,26 +70,6 @@ public class Restore {
         Random r = new Random();
         int delay = r.nextInt(400);
         Peer.getInstance().getExecutor().schedule(() -> {
-//            if(!Peer.getInstance().getProtocolInfo().isChunkAlreadySent(fileId, chunkNo)) {
-//
-//                File file = new File(Peer.getInstance().getBackupPath(fileId) + chunkNo);
-//                byte[] body;
-//                try {
-//                    body = getFileData(file);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                    return;
-//                }
-//
-//                if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
-//                    System.out.println("GUARDEI O CHUNK " +chunkNo);
-//                    Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
-//                } else {
-//                    sendCHUNK(fileId, chunkNo, body, address);
-//                }
-//            } else {
-//                Peer.getInstance().getProtocolInfo().removeChunkFromSent(fileId, chunkNo);
-//            }
             File file = new File(Peer.getInstance().getBackupPath(fileId) + chunkNo);
             byte[] body;
             try {
@@ -100,8 +80,7 @@ public class Restore {
             }
 
             if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
-                System.out.println("GUARDEI O CHUNK " +chunkNo);
-                Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
+                Peer.getInstance().getProtocolInfo().addReceivedChunk(fileId, chunkNo, body);
             } else {
                 sendCHUNK(fileId, chunkNo, body, address);
             }

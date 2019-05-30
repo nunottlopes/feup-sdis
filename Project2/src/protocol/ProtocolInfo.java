@@ -19,11 +19,6 @@ public class ProtocolInfo implements Serializable {
 //    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
 
     /**
-     * Chunks sent in restore protocol
-     */
-    private ConcurrentHashMap<String, Set<Integer> > chunksSent;
-
-    /**
      * Backup Initiator perceived replication degree
      */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > backupRepDegree_init;
@@ -47,7 +42,6 @@ public class ProtocolInfo implements Serializable {
         //chunksRepDegree = new ConcurrentHashMap<>();
         backupRepDegree_init = new ConcurrentHashMap<>();
         restoredChunks_init = new ConcurrentHashMap<>();
-        chunksSent = new ConcurrentHashMap<>();
         //chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
         peersWhoSavedChunk = new ConcurrentHashMap<>();
     }
@@ -109,13 +103,9 @@ public class ProtocolInfo implements Serializable {
      * @param chunkNo
      * @param body
      */
-    public void chunkSent(String fileId, int chunkNo, byte[] body) {
+    public void addReceivedChunk(String fileId, int chunkNo, byte[] body) {
         if(restoredChunks_init.containsKey(fileId)) {
             restoredChunks_init.get(fileId).putIfAbsent(chunkNo, body);
-        }
-        else {
-            chunksSent.putIfAbsent(fileId, new HashSet<>());
-            chunksSent.get(fileId).add(chunkNo);
         }
     }
 
@@ -140,28 +130,6 @@ public class ProtocolInfo implements Serializable {
     }
 
     /**
-     * Checks if chunk was already sent in restore protocol
-     * @param fileId
-     * @param chunkNo
-     * @return true if it was already sent, false otherwise
-     */
-    public boolean isChunkAlreadySent(String fileId, int chunkNo) {
-        if(chunksSent.containsKey(fileId)) {
-            return chunksSent.get(fileId).contains(chunkNo);
-        }
-        return false;
-    }
-
-    /**
-     * Removes chunks from chunks sent in restore protocol
-     * @param fileId
-     * @param chunkNo
-     */
-    public void removeChunkFromSent(String fileId, int chunkNo) {
-        chunksSent.get(fileId).remove(chunkNo);
-    }
-
-    /**
      * Return restored chunk data
      * @param fileId
      * @param chunkNo
@@ -170,30 +138,6 @@ public class ProtocolInfo implements Serializable {
     public byte[] getChunkData(String fileId, int chunkNo) {
         return restoredChunks_init.get(fileId).get(chunkNo);
     }
-
-//    /**
-//     * Adds chunk to chunksReceivedWhileReclaim when it's on reclaim protocol
-//     * @param fileId
-//     * @param chunkNo
-//     */
-//    public void addChunksReceivedWhileReclaim(String fileId, int chunkNo){
-//        if (chunksReceivedWhileReclaim.containsKey(fileId)){
-//            chunksReceivedWhileReclaim.get(fileId).add(chunkNo);
-//        }
-//        else{
-//            Set<Integer> chunks = new HashSet<>();
-//            chunks.add(chunkNo);
-//            chunksReceivedWhileReclaim.put(fileId, chunks);
-//        }
-//    }
-
-//    /**
-//     * Removes file from chunksRepDegree
-//     * @param fileId
-//     */
-//    public void removeChunksRepDegree(String fileId) {
-//        chunksRepDegree.remove(fileId);
-//    }
 
     public void addPeerSavedChunk(String fileId, int chunkNo, InetAddress address) {
         System.out.println("\n> STORED received");

@@ -87,7 +87,6 @@ public class RestoreInitiator {
                             if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
                                 sendGETCHUNK(fileId, chunkNo, address);
                             } else{
-                                System.out.println("EU TENHO O CHUNK "+ chunkNo);
                                 new Restore(fileId, chunkNo, address);
                             }
                         } catch (UnknownHostException e) {

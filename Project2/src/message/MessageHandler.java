@@ -49,7 +49,7 @@ public class MessageHandler implements Runnable {
             new Restore(this.msg, address);
         }
         if(this.msg.getType() == Message.MessageType.CHUNK && msg.getSenderId() != Peer.getInstance().getId()){
-            Peer.getInstance().getProtocolInfo().chunkSent(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getBody());
+            Peer.getInstance().getProtocolInfo().addReceivedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getBody());
         }
         Peer.getInstance().writePeerToFile();
     }
