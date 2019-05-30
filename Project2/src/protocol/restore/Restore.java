@@ -48,6 +48,8 @@ public class Restore {
 
         if(Peer.getInstance().getFileManager().hasChunk(this.fileId, this.chunkNo)){
             start();
+        } else{
+            System.out.println("!!!!!! no chunk !!!!");
         }
     }
 

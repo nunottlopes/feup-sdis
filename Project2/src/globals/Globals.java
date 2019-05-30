@@ -24,6 +24,7 @@ public class Globals {
      */
     public static String generateFileId(File f) {
         String file_id = f.getName() + f.lastModified() + f.length() + f.hashCode();
+        System.out.println("NAME " +f.getName()+" "+ f.lastModified() + " " + f.length() + " "+ f.hashCode());
         return sha256(file_id);
     }
 
