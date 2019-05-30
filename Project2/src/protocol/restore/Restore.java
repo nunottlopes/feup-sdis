@@ -82,6 +82,7 @@ public class Restore {
                 }
 
                 if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
+                    System.out.println("GUARDEI O CHUNK " +chunkNo);
                     Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
                 } else {
                     sendCHUNK(fileId, chunkNo, body, address);
