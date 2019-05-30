@@ -127,10 +127,19 @@ public class Peer implements RemoteInterface {
         }
 
         // RMI Connection
-        RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
+        try{
+            RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
 
-        Registry registry = LocateRegistry.getRegistry();
-        registry.rebind(Peer.accessPoint, stub);
+            Registry registry = LocateRegistry.getRegistry();
+            registry.rebind(Peer.accessPoint, stub);
+            System.out.println("--- Client service ready ---");
+        } catch (Exception e) {
+            System.out.println("--- Client service unavailable ---");
+        }
+//        RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
+//
+//        Registry registry = LocateRegistry.getRegistry();
+//        registry.rebind(Peer.accessPoint, stub);
 
         System.out.println("--- Peer ready ---");
     }
