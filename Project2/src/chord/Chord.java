@@ -1,19 +1,5 @@
 package chord;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,9 +9,18 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
-import java.net.UnknownHostException;
-
-import java.net.DatagramSocket;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import peer.Chunk;
 import peer.Peer;
@@ -123,7 +118,7 @@ public class Chord
 		this.maxPeers = (int)Math.pow(2, this.m);
 		
 		this.address = new InetSocketAddress(getAddress(), port);
-		//this.address = new InetSocketAddress("localhost", port);
+		// this.address = new InetSocketAddress("localhost", port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 		
 		if (!client)

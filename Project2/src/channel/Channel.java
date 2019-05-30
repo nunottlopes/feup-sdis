@@ -1,14 +1,16 @@
 package channel;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+
 import message.InvalidPacketException;
 import message.Message;
 import message.MessageHandler;
 import peer.Peer;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 /**
  * Channel class
@@ -23,7 +25,7 @@ public class Channel implements Runnable{
     /**
      * Channel socket
      */
-    private ServerSocket socket;
+    private SSLServerSocket socket;
 
     /**
      * Channel constructor
@@ -32,7 +34,6 @@ public class Channel implements Runnable{
      */
     public Channel(int port) throws IOException {
         this.port = port;
-
         start();
     }
 
@@ -41,8 +42,12 @@ public class Channel implements Runnable{
      * @throws IOException
      */
     private void start() throws IOException {
-        this.socket = new ServerSocket(this.port);
-        System.out.println("--- Started TCP Channel on port "+ this.port + " ---");
+        SSLServerSocketFactory ssf;
+
+        ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        socket = (SSLServerSocket) ssf.createServerSocket(this.port);
+
+        System.out.println("--- Started SSL Channel on port "+ this.port + " ---");
     }
 
     /**
@@ -52,7 +57,7 @@ public class Channel implements Runnable{
     public void run() {
         while(true) {
             try {
-                Socket connection = this.socket.accept();
+                SSLSocket connection = (SSLSocket) this.socket.accept();
 				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 				Message message = (Message) ois.readObject();
                 MessageHandler handler = new MessageHandler(message, connection.getInetAddress());

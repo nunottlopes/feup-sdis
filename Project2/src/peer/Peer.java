@@ -1,5 +1,27 @@
 package peer;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.rmi.AlreadyBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import channel.Channel;
 import chord.Chord;
 import message.Message;
@@ -9,16 +31,6 @@ import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
 import protocol.restore.RestoreInitiator;
 import rmi.RemoteInterface;
-
-
-import java.io.*;
-import java.net.*;
-import java.rmi.AlreadyBoundException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.Map;
-import java.util.concurrent.*;
 
 /**
  * Peer class
@@ -90,7 +102,7 @@ public class Peer implements RemoteInterface {
     private int maxChordPeers = 32;
     private Chord chord;
 
-    private Channel tcp_channel;
+    private Channel channel;
 
     /**
      * Peer main function
@@ -108,7 +120,11 @@ public class Peer implements RemoteInterface {
             return;
         }
 
-        Peer.instance = new Peer(args);
+        try {
+            Peer.instance = new Peer(args);
+        } catch (IOException e) {
+            System.exit(1);
+        }
 
         // RMI Connection
         RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
@@ -126,6 +142,11 @@ public class Peer implements RemoteInterface {
      */
     public Peer(String args[]) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
+
+        System.setProperty("javax.net.ssl.trustStore", "keys/truststore");
+        System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+        System.setProperty("javax.net.ssl.keyStore", "keys/keystore");
+        System.setProperty("javax.net.ssl.keyStorePassword", "123456");
 
         this.peerID = Integer.parseInt(args[0]);
         this.accessPoint = args[1];
@@ -147,8 +168,9 @@ public class Peer implements RemoteInterface {
             this.chord = new Chord(maxChordPeers, port);
         }
 
-        this.tcp_channel = new Channel(Integer.parseInt(args[2]));
-        new Thread(tcp_channel).start();
+        this.channel = new Channel(Integer.parseInt(args[2]));
+
+        new Thread(this.channel).start();
     }
 
     /**
@@ -325,15 +347,21 @@ public class Peer implements RemoteInterface {
      */
     public synchronized void send(Message msg, InetAddress destination) {
 
-        InetSocketAddress address = new InetSocketAddress(destination, this.tcp_channel.getPort());
+        InetSocketAddress address = new InetSocketAddress(destination, this.channel.getPort());
+
+        SSLSocket socket;
+        SSLSocketFactory ssf;
+
+        ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
         try {
-            Socket connection = new Socket();
-            connection.connect(address, (int) this.timeout);
-            ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
+            socket = (SSLSocket) ssf.createSocket();
+            socket.connect(address, (int) this.timeout);
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
             oos.writeObject(msg);
-            connection.close();
-        } catch (IOException e1) {
+            socket.close();
+        }
+        catch( IOException e) {
             System.out.println("Error sending message to " + address);
         }
     }
