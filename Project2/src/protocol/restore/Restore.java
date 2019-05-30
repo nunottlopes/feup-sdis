@@ -81,12 +81,11 @@ public class Restore {
                     return;
                 }
 
-//                if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
-//                    Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
-//                } else {
-//                    sendCHUNK(fileId, chunkNo, body, address);
-//                }
-                sendCHUNK(fileId, chunkNo, body, address);
+                if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
+                    Peer.getInstance().getProtocolInfo().chunkSent(fileId, chunkNo, body);
+                } else {
+                    sendCHUNK(fileId, chunkNo, body, address);
+                }
             } else {
                 Peer.getInstance().getProtocolInfo().removeChunkFromSent(fileId, chunkNo);
             }
