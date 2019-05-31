@@ -13,7 +13,7 @@ public class ChordMaintenance implements Runnable
 	public void run()
 	{
 		
-		System.out.println(parent);
+		//System.out.println(parent);
 		
 		parent.stabilize();
 		parent.fixFingers();
