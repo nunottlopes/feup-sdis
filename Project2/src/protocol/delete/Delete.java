@@ -50,7 +50,7 @@ public class Delete {
             for(Chunk c : chunks){
                 pool.execute(() -> {
                     int chunkNo = c.getChunkNo();
-                    int hash = Math.floorMod(Chord.sha1(fileId + chunkNo), Peer.getInstance().getMaxChordPeers());
+                    int hash = Peer.getInstance().getChord().hash(fileId + chunkNo);
 
                     if (Peer.getInstance().getChord().amISuccessor(hash)) {
                         sendDeleteToSuccessors(fileId, c.getRepDegree(), hash);

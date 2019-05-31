@@ -126,7 +126,7 @@ public class Chord
 
 		if (!client)
 		{
-			this.id = Math.floorMod(sha1(this.address.toString()), this.maxPeers);
+			this.id = hash(this.address.toString());
 		}
 
 
@@ -228,7 +228,11 @@ public class Chord
 
 		return null;
 	}
-
+	
+	public int hash(String key)
+	{
+		return Math.floorMod(sha1(key), this.maxPeers);
+	}
 	public boolean amISuccessor(int hash)
 	{
 		return ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1, true)) || hash == this.id); // I am the successor of the hash
@@ -523,7 +527,7 @@ public class Chord
 					ConcurrentHashMap<Integer,Chunk> chunksMap = fileChunks.getValue();
 					for(Map.Entry<Integer, Chunk> chunkEntry: chunksMap.entrySet()){
 						Chunk chunk = chunkEntry.getValue();
-						int chunkHash = sha1(chunk.getFileId() + chunk.getChunkNo());
+						int chunkHash = hash(chunk.getFileId() + chunk.getChunkNo());
 		
 							
 						if(this.id < peerHash){
