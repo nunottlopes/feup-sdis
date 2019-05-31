@@ -100,7 +100,7 @@ public class Peer implements RemoteInterface {
 
     private long timeout = 1 * 5000;
 
-    private int maxChordPeers = 32;
+    private int maxChordPeers = 128;
     private Chord chord;
 
     private Channel channel;

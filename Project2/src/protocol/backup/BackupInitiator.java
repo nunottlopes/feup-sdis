@@ -108,33 +108,42 @@ public class BackupInitiator {
                     String name = fileId + c.getChunkNo();
                     int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
                     
-                    System.out.println("Asked for chunk with hash " + hash);
-                    
+                    //System.out.println("Asked for chunk with hash " + hash);
                     for (int n = 0; n < repDegree; n++){
-                        System.out.println("LOOKING UP FOR HASH " + hash);
+                        //System.out.println("LOOKING UP FOR HASH " + hash);
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+
+                        try {
+                            TimeUnit.SECONDS.sleep((long) Math.random());
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        if(message != null){
+                            System.out.println("HASH= " + hash + " HASH_PEER= "+ message[2]);
+                        }
 
                         if(message != null){
                             try {
                                 InetAddress address = InetAddress.getByName(message[3]);
                                 if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
                                     //if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
-                                        System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n);
+                                        //System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n);
                                         sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 } else{
-                                    System.out.println("SAVING CHUNK "+c.getChunkNo() + " rep index= "+n);
+                                    //System.out.println("SAVING CHUNK "+c.getChunkNo() + " rep index= "+n);
                                     new Backup(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 }
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();
                             }
 
-                            System.out.println("CHORD RECEIVED MESSAGE HASH " +  message[2]);
+                            //System.out.println("CHORD RECEIVED MESSAGE HASH " +  message[2]);
                             hash = Integer.parseInt(message[2]) + 1;
                         }
                         else {
                             n--;
-                            System.out.println("NÃO ENVIOU FILE ID: "+fileId+" CHUNK NO: "+ c.getChunkNo());
+                            //System.out.println("NÃO ENVIOU FILE ID: "+fileId+" CHUNK NO: "+ c.getChunkNo());
                         }
                     }
 
@@ -147,7 +156,7 @@ public class BackupInitiator {
                         delay *= 2;
                         int currentRepDegree = status.getChunkRepDegree(fileId, c.getChunkNo());
                         if(currentRepDegree >= repDegree){
-                            System.out.println("SUCESSO CHUNK "+c.getChunkNo() + " repdegree= " + currentRepDegree);
+                            //System.out.println("SUCESSO CHUNK "+c.getChunkNo() + " repdegree= " + currentRepDegree);
                             break;
                         }
                     }
