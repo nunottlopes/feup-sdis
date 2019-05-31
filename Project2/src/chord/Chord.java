@@ -461,7 +461,7 @@ public class Chord
 	}
 
 	public String getChordAddress(){
-		return this.address.getHostName();
+		return this.address.getAddress().toString().substring(1);
 	}
 
 	public static InetAddress getExternalIP()

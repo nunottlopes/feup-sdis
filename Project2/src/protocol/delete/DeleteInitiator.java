@@ -7,7 +7,9 @@ import peer.Peer;
 import protocol.InvalidProtocolExecution;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -73,33 +75,39 @@ public class DeleteInitiator {
                     if(message != null){
                         Chunk chunk = null;
 						int id = Integer.parseInt(message[2]);
-						InetSocketAddress address = new InetSocketAddress(message[3], Integer.parseInt(message[4]));
+                        InetAddress address = null;
+
+                        try {
+							address = InetAddress.getByName(message[3]);
+						} catch (UnknownHostException e1) {
+						}
                      
 						if (!message[3].equals(Peer.getInstance().getChord().getChordAddress()))
 						{
-							sendGETCHUNK(fileId, n, address.getAddress());
+							sendGETCHUNK(fileId, n, address);
+							
+							int delay = 10, maxTime = 2000;
+							
+							for (int j = 0; j < maxTime/delay; j++)
+							{
+								try {
+							        TimeUnit.MILLISECONDS.sleep(delay);
+							    } catch (InterruptedException e) {
+							        e.printStackTrace();
+							    }
+							                                    
+							    if (Peer.getInstance().getProtocolInfo().hasReceivedChunk(fileId, n))
+							    {
+							    	chunk = Peer.getInstance().getFileManager().getChunk(fileId, n);
+							        break;
+							    }
+							}
 						}
 						else
 						{
 							chunk = Peer.getInstance().getFileManager().getChunk(fileId, n);
 						}
-						
-						int delay = 10, maxTime = 2000;
-						
-						for (int j = 0; j < maxTime/delay; j++)
-						{
-							try {
-						        TimeUnit.MILLISECONDS.sleep(delay);
-						    } catch (InterruptedException e) {
-						        e.printStackTrace();
-						    }
-						                                    
-						    if (Peer.getInstance().getProtocolInfo().hasReceivedChunk(fileId, n))
-						    {
-						    	chunk = Peer.getInstance().getFileManager().getChunk(fileId, n);
-						        break;
-						    }
-						}
+									
 						
 						if (chunk == null) // Error
 							System.err.println("Error getting chunk for delete");
@@ -113,7 +121,7 @@ public class DeleteInitiator {
 							
 							if (!message[3].equals(Peer.getInstance().getChord().getChordAddress()))
 							{
-							    sendDELETE(fileId, address.getAddress());
+							    sendDELETE(fileId, address);
 							}
 							else
 							{
@@ -126,7 +134,13 @@ public class DeleteInitiator {
 						    message = Peer.getInstance().getChord().sendLookup(id+1, true);
 							
 							id = Integer.parseInt(message[2]);
-							address = new InetSocketAddress(message[3], Integer.parseInt(message[4]));
+							
+							try {
+								address = InetAddress.getByName(message[3]);
+							} catch (UnknownHostException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
                 }
