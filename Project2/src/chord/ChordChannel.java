@@ -291,7 +291,7 @@ public class ChordChannel implements Runnable {
 			//
 			// }
 			catch (IOException e) {
-				System.err.println("\rFailed!");
+				System.err.print("\rServer is overloaded!");
 
 				if (fix)
 				{
