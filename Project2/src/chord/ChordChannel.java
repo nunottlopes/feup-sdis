@@ -291,10 +291,19 @@ public class ChordChannel implements Runnable {
 			//
 			// }
 			catch (IOException e) {
-				System.err.println("Failed!");
+				System.err.println("\rFailed!");
 
 				if (fix)
-					this.parent.fixSuccessor(address);
+				{
+					try
+					{
+						this.parent.fixSuccessor(address);
+					}
+					catch (NullPointerException e2)
+					{
+						
+					}
+				}
 			}
 		}
 
