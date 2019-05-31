@@ -185,7 +185,7 @@ public class ChordChannel implements Runnable {
 
 	}
 
-	protected void receiveKeys(Socket connection, int chunkNum,ObjectInputStream ois) {
+	protected void receiveKeys(ObjectInputStream ois, int chunkNum) {
 		if (chunkNum > 0) {
 			try {
 
