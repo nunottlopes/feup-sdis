@@ -118,8 +118,8 @@ public class Chord
 		this.r = (int)Math.ceil(this.m/3.0);
 		this.maxPeers = (int)Math.pow(2, this.m);
 
-		//this.address = new InetSocketAddress(getAddress(), port);
-		this.address = new InetSocketAddress("25.43.160.5", port);
+		this.address = new InetSocketAddress(getAddress(), port);
+		//this.address = new InetSocketAddress("25.43.160.5", port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 
 		if (!client)
