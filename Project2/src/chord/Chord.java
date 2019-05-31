@@ -446,12 +446,17 @@ public class Chord
 		try {
 			Socket socket = new Socket();
 			socket.connect(new InetSocketAddress("google.com", 80));
-			address = socket.getLocalAddress().getHostAddress();
+			address = socket.getLocalAddress().getHostName();
+			InetSocketAddress foo = new InetSocketAddress(address, 0);
+			InetSocketAddress bar = new InetSocketAddress(foo.getAddress().getHostAddress(), 0);
+			address = bar.getHostName();
 			socket.close();
 		}
 		catch(Exception e){
 			System.out.println("Failed to get local address");
 		}
+		
+		
 		return address;
 	}
 
