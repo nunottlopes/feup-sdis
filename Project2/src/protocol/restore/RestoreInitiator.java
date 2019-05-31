@@ -84,7 +84,7 @@ public class RestoreInitiator {
                     if(message != null){
                         try {
                             InetAddress address = InetAddress.getByName(message[3]);
-                            if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
+                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
                                 sendGETCHUNK(fileId, chunkNo, address);
                             } else{
                                 new Restore(fileId, chunkNo, address);
