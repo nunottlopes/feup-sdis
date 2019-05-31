@@ -73,7 +73,7 @@ public class Restore {
                 return;
             }
 
-            if(address.getHostAddress().equals(Peer.getInstance().getChord().getAddress())){
+            if(address.getHostAddress().equals(Peer.getInstance().getChord().getChordAddress())){
                 Peer.getInstance().getProtocolInfo().addReceivedChunk(fileId, chunkNo, body);
             } else {
                 sendCHUNK(fileId, chunkNo, body, address);

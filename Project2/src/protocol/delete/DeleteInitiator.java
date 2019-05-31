@@ -78,7 +78,7 @@ public class DeleteInitiator {
                     if(message != null){
                         try {
                             InetAddress address = InetAddress.getByName(message[3]);
-                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
+                            if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
                                 sendDELETE(fileId, address);
                             } else{
                                 new Delete(fileId);
