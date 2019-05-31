@@ -27,7 +27,7 @@ import peer.Peer;
 
 
 public class Chord
-{	
+{
 	 protected int id;
 	 protected int m;
 	 protected int r; //successorList size, r < m
@@ -38,29 +38,31 @@ public class Chord
 	 protected Pair<Integer, InetSocketAddress> predecessor = null;
 	 protected Pair<Integer, InetSocketAddress>[] fingerTable = null;
 	 protected Pair<Integer, InetSocketAddress>[] successorList = null;
-	
+
 	 protected ChordChannel channel = null;
-		 
+
 	 protected ScheduledThreadPoolExecutor  pool = null;
-	 
+
 	 protected boolean client = false;
+
+	 private Peer peer = null;
 
 
 	public Chord(int maxPeers, int port)
 	{
 		this.initialize(maxPeers, port, false);
-		
+
 		this.fingerTable[0] = new Pair<>(this.id, new InetSocketAddress(this.address.getAddress().getHostAddress(), this.address.getPort()));
-		
+
 		this.updateSuccessorList();
 
 		startMaintenance();
 	}
-	
+
 	public Chord(int maxPeers, int port, InetSocketAddress address, boolean client)
 	{
 		this.initialize(maxPeers, port, client);
-		
+
 		if (!client) // Peer
 		{			
 			String[] args = channel.sendLookup(address, this.address, this.id, true, false);
@@ -68,7 +70,7 @@ public class Chord
 			if (args != null) // Success
 			{
 				int peerId = Integer.parseInt(args[2]);
-				
+
 				if (peerId == this.id)
 				{
 					System.err.println("The network already has a peer with this id!");
@@ -80,26 +82,26 @@ public class Chord
 				System.err.println("Failed to connect to peer!");
 				System.exit(1);
 			}
-			
+
 			int value = getFingerTableIndex(0);
 			args = channel.sendLookup(address, this.address, value, true, false);
 
-			
+
 			if (args != null) // Success
 			{
 				int peerId = Integer.parseInt(args[2]);
 				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
-				
+
 				this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(peerId, peerIP);
 				updateSuccessorList();
 			}
-			
+
 			startMaintenance();
 			getKeysFromSuccessor();
 
 		}
 		else // Client
-		{			
+		{
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
 		}
 
@@ -109,8 +111,8 @@ public class Chord
 	{
 		this(maxPeers, port, address, false);
 	}
-	
-	
+
+
 	@SuppressWarnings("unchecked")
 	private void initialize(int maxPeers, int port, boolean client)
 	{
@@ -121,28 +123,28 @@ public class Chord
 		this.address = new InetSocketAddress(getAddress(), port);
 		//this.address = new InetSocketAddress("localhost", port);
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
-		
+
 		if (!client)
 		{
 			this.id = Math.floorMod(sha1(this.address.toString()), this.maxPeers);
 		}
 
-		
+
 		this.fingerTable = new Pair[this.m];
 		this.successorList = new Pair[this.r];
-		
+
 		this.channel = new ChordChannel(this);
 		this.channel.open(port);
-		
+
 		this.client = client;
 	}
-	
+
 	private void startMaintenance()
 	{
         pool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
         pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 500, TimeUnit.MILLISECONDS);
 	}
-	
+
 	public String[] lookup(int hash, boolean successor)
 	{
 		return lookup(this.address, hash, successor);
@@ -152,29 +154,30 @@ public class Chord
 		String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
 		return args;
 	}
-	
+
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
 	{
 
 		if (client)
-		{			
+		{
 			long start = System.currentTimeMillis();
-			
+
 			String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
-			
+
 			long end = System.currentTimeMillis();
-			
+
 			if (args == null)
 				System.err.println("Connection peer is not alive!");
-			
+
 			System.out.println("Query took " + (end-start) + " milliseconds");
+
 	
 			if ((end-start) > this.channel.timeout)
 				System.err.println("timeout");
 			
 			return args;
 		}
-		
+
 		if (!successor)
 		{
 			if (predecessor == null)
@@ -185,16 +188,16 @@ public class Chord
 			{
 				channel.sendReturn(predecessor.first, predecessor.second, origin, hash, successor);
 			}
-			
+
 			return null;
 		}
-		
+
 		if ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1, true)) || hash == this.id) // I am the successor of the hash
 		{
 			channel.sendReturn(this.id, this.address, origin, hash, successor);
 			return null;
 		}
-		
+
 		if (isInInterval(hash, this.id, fingerTable[0].first+1)) // My successor is the successor of the hash
 		{
 			channel.sendReturn(fingerTable[0].first, fingerTable[0].second, origin, hash, successor);
@@ -207,13 +210,13 @@ public class Chord
 			{
 				if (fingerTable[i] == null || fingerTable[i].first == null || fingerTable[i].second == null)
 					continue;
-				
+
 				if (isInInterval(fingerTable[i].first, this.id, hash)) // If peer id is greater than the hash then we have exceeded the desired peer
 					break;
 			}
-			
+
 			if (i == -1)
-			{			
+			{
 				channel.sendReturn(this.id, this.address, origin, hash, successor);
 			}
 			else
@@ -225,20 +228,26 @@ public class Chord
 
 		return null;
 	}
-	
+
+	public boolean amISuccessor(int hash)
+	{
+		return ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1, true)) || hash == this.id); // I am the successor of the hash
+	}
+
 	public String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
 	{
 		return channel.sendLookup(connectionIP, requestIP, hash, successor);
 	}
-	
+
 	protected void stabilize()
 	{
 		Pair<Integer, InetSocketAddress> successor = null;
 		Pair<Integer, InetSocketAddress> successorPredecessor = null;
-		
+
 		for (int i = 0; i < this.r; i++) // Search for first successor alive
 		{
 			successor = this.successorList[i];
+
 			
 			if (successor == null)
 				continue;
@@ -248,19 +257,19 @@ public class Chord
 				successorPredecessor = this.predecessor;
 				break;
 			}
-			
+
 			String[] args = channel.sendLookup(successor.second, this.address, successor.first, false);
-			
+
 			if (args != null)
 			{
 				if (Integer.parseInt(args[2]) == -1)
 					successorPredecessor = null;
 				else
 					successorPredecessor = new Pair<>(Integer.parseInt(args[2]), new InetSocketAddress(args[3], Integer.parseInt(args[4])));
-				
+
 				if (i > 0)
 					fingerTable[0] = successor;
-				
+
 				break;
 			}
 		}
@@ -270,12 +279,12 @@ public class Chord
 			fingerTable[0] = successorPredecessor;
 			successor = fingerTable[0];
 		}
-		
+
 		channel.sendNotify(this.id, this.address, successor.second);
-		
+
 		this.updateSuccessorList();
 	}
-	
+
 	protected void notify(int originId, InetSocketAddress originIP)
 	{
 		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id, true))
@@ -283,53 +292,53 @@ public class Chord
 			this.predecessor = new Pair<>(originId, originIP);
 		}
 	}
-	
+
 	protected void fixFingers()
 	{
 		this.fingerFixerIndex = (this.fingerFixerIndex + 1) % this.m; // Increments fingerFixerIndex
-		
+
 		int value = getFingerTableIndex(this.fingerFixerIndex);
 
 		String[] args = channel.sendLookup(this.fingerTable[0].second, this.address, value, true);
-		
+
 		if (args == null)
 		{
 			return;
 		}
-		
+
 		int peerId = Integer.parseInt(args[2]);
 		InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
-		
+
 		this.fingerTable[this.fingerFixerIndex] = new Pair<>(peerId, peerIP);
 
 	}
-	
+
 	protected void checkPredecessor()
 	{
 		if (this.predecessor != null)
 		{
 			String[] args = channel.sendLookup(this.predecessor.second, this.address, this.predecessor.first, true);
-			
+
 			if (args == null)
 				this.predecessor = null;
 		}
 	}
 
-	
+
 	protected void updateSuccessorList()
 	{
 		Pair<Integer, InetSocketAddress> successor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
 		for (int i = 0; i < this.successorList.length; i++)
 		{
 			String[] args = this.channel.sendLookup(successor.second, this.address, successor.first+1, true);
-			
+
 			if (args != null) // Success
 			{
 				int peerId = Integer.parseInt(args[2]);
 				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
-				
+
 				successor = new Pair<>(peerId, peerIP);
-				
+
 				this.successorList[i] = new Pair<>(successor);
 			}
 		}
@@ -374,27 +383,27 @@ public class Chord
 		if (this.predecessor != null && this.predecessor.second.equals(IP))
 			this.predecessor = null;
 	}
-	
+
 	protected boolean isInInterval(int target, int lowerBound, int upperBound)
 	{
 		return isInInterval(target, lowerBound, upperBound, false);
 	}
-	
+
 	protected boolean isInInterval(int target, int lowerBound, int upperBound, boolean inclusive)
 	{
 		target = Math.floorMod(target,  this.maxPeers);
 		lowerBound = Math.floorMod(lowerBound,  this.maxPeers);
 		upperBound = Math.floorMod(upperBound,  this.maxPeers);
-		
+
 		if (Math.abs(upperBound - lowerBound) <= 1)
 			return inclusive;
-		
+
 		if (upperBound == 0)
 		{
 			upperBound = Math.floorMod(upperBound-1,  this.maxPeers);
-			return (target > lowerBound && target <= upperBound); 
+			return (target > lowerBound && target <= upperBound);
 		}
-			
+
 		if (upperBound > lowerBound)
 			return (target > lowerBound && target < upperBound);
 		else
@@ -406,7 +415,7 @@ public class Chord
 		return (this.id + (int)Math.pow(2, i)) % this.maxPeers;
 	}
 
-		
+
 	public static InetAddress getLocalIP()
 	{
 		try
@@ -432,7 +441,7 @@ public class Chord
 
 		return null;
 	}
-	
+
 	public String getAddress() {
 		String address = "";
 		try {
@@ -446,7 +455,7 @@ public class Chord
 		}
 		return address;
 	}
-	
+
 	public static InetAddress getExternalIP()
 	{
 		String ip;
@@ -462,10 +471,10 @@ public class Chord
 			ip = null;
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
-	
+
 
 	public static int sha1(String s)
 	{
@@ -539,8 +548,12 @@ public class Chord
 		return keysValues;
 	}
 
-	public void storeChunk(Chunk chunk){
-		Peer.getInstance().getFileManager().addChunk(chunk);
+	public synchronized void storeChunk(Chunk chunk){
+		this.peer.getFileManager().addChunk(chunk);
+	}
+
+
+	public void setPeer(Peer peer){
+		this.peer = peer;
 	}
 }
-

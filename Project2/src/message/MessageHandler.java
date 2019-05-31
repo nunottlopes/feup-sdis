@@ -39,16 +39,16 @@ public class MessageHandler implements Runnable {
         if(this.msg.getType() == Message.MessageType.PUTCHUNK && msg.getSenderId() != Peer.getInstance().getId()) {
             new Backup(this.msg, address);
         }
-        if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
-            Peer.getInstance().getProtocolInfo().addPeerSavedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.address);
+        else if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
+            Peer.getInstance().getProtocolInfo().addPeerSavedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.address, this.msg.getSenderId());
         }
-        if(this.msg.getType() == Message.MessageType.DELETE){
+        else if(this.msg.getType() == Message.MessageType.DELETE){
             new Delete(this.msg);
         }
-        if(this.msg.getType() == Message.MessageType.GETCHUNK && msg.getSenderId() != Peer.getInstance().getId()){
+        else if(this.msg.getType() == Message.MessageType.GETCHUNK && msg.getSenderId() != Peer.getInstance().getId()){
             new Restore(this.msg, address);
         }
-        if(this.msg.getType() == Message.MessageType.CHUNK && msg.getSenderId() != Peer.getInstance().getId()){
+        else if(this.msg.getType() == Message.MessageType.CHUNK && msg.getSenderId() != Peer.getInstance().getId()){
             Peer.getInstance().getProtocolInfo().addReceivedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.msg.getBody());
         }
         Peer.getInstance().writePeerToFile();

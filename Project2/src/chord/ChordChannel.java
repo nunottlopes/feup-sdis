@@ -50,7 +50,7 @@ public class ChordChannel implements Runnable {
 
 				String message = (String) ois.readObject();
 
-				handleMessage(connection, message);
+				handleMessage(connection, message,ois);
 
 				connection.close();
 			} catch (IOException e) {
@@ -61,7 +61,7 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
-	protected void handleMessage(Socket connection, String message) {
+	protected void handleMessage(Socket connection, String message,ObjectInputStream ois) {
 		String[] args = message.split(" +");
 
 		if (args[0].equals("CHORDLOOKUP")) // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
@@ -73,8 +73,7 @@ public class ChordChannel implements Runnable {
 			}
 		}
 
-		else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP>
-												// <target_port> <key>
+		else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
 		{
 			synchronized (this.parent) {
 				if (connection == null)
@@ -104,7 +103,7 @@ public class ChordChannel implements Runnable {
 		{
 			System.out.println("Received " + message);
 			int chunkNum = Integer.parseInt(args[1]);
-			this.receiveKeys(connection, chunkNum);
+			this.receiveKeys(ois, chunkNum);
 
 		}
 
@@ -181,13 +180,31 @@ public class ChordChannel implements Runnable {
 
 	}
 
-	protected void receiveKeys(Socket connection, int chunkNum) {
-		for (int i = 0; i < chunkNum; i++) {
+	protected void receiveKeys(ObjectInputStream ois, int chunkNum) {
+		if (chunkNum > 0) {
 			try {
-				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 
-				Chunk chunk = (Chunk) ois.readObject();
-				this.parent.storeChunk(chunk);
+				Object obj = ois.readObject();
+								
+				// Check it's an ArrayList
+				if (obj instanceof ArrayList<?>) {
+					// Get the List.
+					ArrayList<?> al = (ArrayList<?>) obj;
+					if (al.size() > 0) {
+					  // Iterate.
+					  for (int i = 0; i < al.size(); i++) {
+							// Still not enough for a type.
+							Object o = al.get(i);
+							if (o instanceof Chunk) {
+							  // Here we go!
+							  Chunk chunk = (Chunk) o;
+							  synchronized(this.parent){
+							  	this.parent.storeChunk(chunk);
+							  }
+							}
+					  }
+					}
+			  }
 				System.out.println("--------------CHUNK RECEIVED------------");
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
@@ -242,7 +259,7 @@ public class ChordChannel implements Runnable {
 
 	protected void sendMessage(InetSocketAddress address, String message, boolean fix) {
 		if (address.equals(this.parent.address)) {
-			handleMessage(null, message);
+			handleMessage(null, message,null);
 		} else {
 			try {
 				Socket connection = new Socket();
@@ -292,10 +309,13 @@ public class ChordChannel implements Runnable {
 
 				String message = "CHORDKEYS " + keysChunks.size();
 				oos.writeObject(message);
-				for (Pair<Integer, Chunk> chunk : keysChunks) {
-					oos.writeObject(chunk.second);
-				}
+				ArrayList<Chunk> chunks = new ArrayList<>();
 
+				for(Pair<Integer,Chunk> pair: keysChunks){
+					chunks.add(pair.second);
+					
+				}
+				oos.writeObject(chunks);
 				connection.close();
 			} catch (IOException e) {
 				System.err.println("Failed!");

@@ -13,11 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ProtocolInfo implements Serializable {
 
-//    /**
-//     * Saving chunks perceived replication degree
-//     */
-//    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<Integer> > > chunksRepDegree;
-
     /**
      * Backup Initiator perceived replication degree
      */
@@ -28,21 +23,21 @@ public class ProtocolInfo implements Serializable {
      */
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, byte[] > > restoredChunks_init;
 
-//    /**
-//     * Chunks number received while on protocol reclaim
-//     */
-//    private ConcurrentHashMap<String, Set<Integer>> chunksReceivedWhileReclaim;
+    /**
+     * Running Reclaim protocol state
+     */
+    private boolean reclaimProtocol = false;
 
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Set<InetAddress> > > peersWhoSavedChunk;
+
+
 
     /**
      * ProtocolInfo constructor
      */
     public ProtocolInfo() {
-        //chunksRepDegree = new ConcurrentHashMap<>();
         backupRepDegree_init = new ConcurrentHashMap<>();
         restoredChunks_init = new ConcurrentHashMap<>();
-        //chunksReceivedWhileReclaim = new ConcurrentHashMap<>();
         peersWhoSavedChunk = new ConcurrentHashMap<>();
     }
 
@@ -139,7 +134,7 @@ public class ProtocolInfo implements Serializable {
         return restoredChunks_init.get(fileId).get(chunkNo);
     }
 
-    public void addPeerSavedChunk(String fileId, int chunkNo, InetAddress address) {
+    public void addPeerSavedChunk(String fileId, int chunkNo, InetAddress address, int peerid) {
         System.out.println("\n> STORED received");
         System.out.println("- Sender Address = " + address);
         System.out.println("- File Id = " + fileId);
@@ -147,6 +142,9 @@ public class ProtocolInfo implements Serializable {
 
         peersWhoSavedChunk.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
         peersWhoSavedChunk.get(fileId).get(chunkNo).add(address);
+
+        backupRepDegree_init.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
+        backupRepDegree_init.get(fileId).get(chunkNo).add(peerid);
     }
 
     public boolean hasPeerSavedChunk(String fileId, int chunkNo, InetAddress address){

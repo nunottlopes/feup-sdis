@@ -37,20 +37,12 @@ public class Restore {
      */
     public Restore(Message msg, InetAddress address) {
 
+        this(msg.getFileId(), msg.getChunkNo(), address);
+
         System.out.println("\n> " + msg.getType() + " received");
         System.out.println("- Sender Id = " + msg.getSenderId());
         System.out.println("- File Id = " + msg.getFileId());
         System.out.println("- Chunk No = " + msg.getChunkNo());
-
-        this.fileId = msg.getFileId();
-        this.chunkNo = msg.getChunkNo();
-        this.address = address;
-
-        if(Peer.getInstance().getFileManager().hasChunk(this.fileId, this.chunkNo)){
-            start();
-        } else{
-            System.out.println("!!!!!! no chunk !!!!");
-        }
     }
 
     public Restore(String fileId, int chunkNo, InetAddress address){
@@ -60,6 +52,8 @@ public class Restore {
 
         if(Peer.getInstance().getFileManager().hasChunk(fileId, chunkNo)){
             start();
+        } else{
+            System.out.println("!!!!!! no chunk !!!!");
         }
     }
 

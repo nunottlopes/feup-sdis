@@ -30,6 +30,7 @@ import protocol.ProtocolInfo;
 import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
 import protocol.restore.RestoreInitiator;
+import protocol.reclaim.ReclaimInitiator;
 import rmi.RemoteInterface;
 
 /**
@@ -136,10 +137,6 @@ public class Peer implements RemoteInterface {
         } catch (Exception e) {
             System.out.println("--- Client service unavailable ---");
         }
-//        RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(Peer.instance, 0);
-//
-//        Registry registry = LocateRegistry.getRegistry();
-//        registry.rebind(Peer.accessPoint, stub);
 
         System.out.println("--- Peer ready ---");
     }
@@ -176,7 +173,7 @@ public class Peer implements RemoteInterface {
             int port = Integer.parseInt(args[3]);
             this.chord = new Chord(maxChordPeers, port);
         }
-
+        this.chord.setPeer(this);
         this.channel = new Channel(Integer.parseInt(args[2]));
 
         new Thread(this.channel).start();
@@ -245,6 +242,22 @@ public class Peer implements RemoteInterface {
     }
 
     /**
+     * Initializes reclaim protocol
+     * @param spaceReclaim
+     */
+    public void reclaim(long spaceReclaim) {
+        System.out.println("\n----- RECLAIM SERVICE ----- DISK SPACE RECLAIM = " + spaceReclaim);
+        ReclaimInitiator reclaimInitiator = new ReclaimInitiator(spaceReclaim);
+        try {
+            reclaimInitiator.run();
+        } catch (InvalidProtocolExecution e) {
+            System.out.println(e);
+        }
+        writePeerToFile();
+        System.out.println("\n---- FINISHED RECLAIM SERVICE ----");
+    }
+
+    /**
      * Initializes delete protocol
      * @param filepath
      */
@@ -275,7 +288,6 @@ public class Peer implements RemoteInterface {
             ConcurrentHashMap.Entry<Integer, Chunk> firstEntry = chunkMap.entrySet().iterator().next();
             String fileId = chunkMap.get(firstEntry.getKey()).getFileId();
             int desiredRepDegree = chunkMap.get(firstEntry.getKey()).getRepDegree();
-
             ret += "\n> File Pathname = " + path_name + "\n> File Id = " + fileId + "\n> Desired Replication Degree= " + desiredRepDegree + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
