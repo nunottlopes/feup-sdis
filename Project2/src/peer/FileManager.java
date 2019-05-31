@@ -92,9 +92,15 @@ public class FileManager implements Serializable {
      * @param chunkNo
      */
     public void removeChunk(String fileId, int chunkNo) {
-        chunksStored.get(fileId).remove(chunkNo);
-        if(chunksStored.get(fileId).size() == 0)
-            chunksStored.remove(fileId);
+    	
+    	ConcurrentHashMap<Integer, Chunk> fileMap = chunksStored.get(fileId);
+    	
+    	if (fileMap != null)
+    	{
+    		fileMap.remove(chunkNo);
+            if(fileMap.size() == 0)
+                chunksStored.remove(fileId);
+    	}
     }
 
     /**
