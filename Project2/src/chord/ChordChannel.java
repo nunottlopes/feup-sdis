@@ -22,7 +22,7 @@ public class ChordChannel implements Runnable {
 
 	private ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
 
-	private long timeout = 1 * 5000;
+	protected long timeout = 1 * 2000;
 
 	public ChordChannel(Chord parent) {
 		this.parent = parent;
@@ -73,16 +73,13 @@ public class ChordChannel implements Runnable {
 			}
 		}
 
-		else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP>
-												// <target_port> <key>
+		else if (args[0].equals("CHORDRETURN")) // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP> <target_port> <key>
 		{
 			synchronized (this.parent) {
 				if (connection == null)
-					messageQueue
-							.add(new Pair<InetSocketAddress, String[]>((InetSocketAddress) this.parent.address, args));
+					messageQueue.add(new Pair<InetSocketAddress, String[]>((InetSocketAddress) this.parent.address, args));
 				else
-					messageQueue.add(new Pair<InetSocketAddress, String[]>(
-							(InetSocketAddress) connection.getRemoteSocketAddress(), args));
+					messageQueue.add(new Pair<InetSocketAddress, String[]>((InetSocketAddress) connection.getRemoteSocketAddress(), args));
 
 				this.parent.notify();
 			}
@@ -92,13 +89,13 @@ public class ChordChannel implements Runnable {
 		{
 			System.out.println("Received CHORDGETKEYS");
 
-			synchronized (this.parent) {
+//			synchronized (this.parent) {
 
 				int hash = Integer.parseInt(args[1]);
 				ArrayList<Pair<Integer, Chunk>> chunks = this.parent.getKeysToPredecessor(hash);
 				this.sendKeys(new InetSocketAddress(args[2], Integer.parseInt(args[3])), chunks);
 				System.out.println("CHUNKS SENT");
-			}
+//			}
 
 		}
 
@@ -118,13 +115,11 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
-	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash,
-			boolean successor) {
+	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor) {
 		return sendLookup(connectionIP, requestIP, hash, successor, true);
 	}
 
-	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash,
-			boolean successor, boolean fix) {
+	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor, boolean fix) {
 		String message = createLookupMessage(requestIP, hash, successor);
 		sendMessage(connectionIP, message, fix);
 
@@ -297,7 +292,7 @@ public class ChordChannel implements Runnable {
 				System.err.println("Failed!");
 
 				if (fix)
-					this.parent.fixSuccessor();
+					this.parent.fixSuccessor(address);
 			}
 		}
 

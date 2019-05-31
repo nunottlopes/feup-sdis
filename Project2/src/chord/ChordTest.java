@@ -47,6 +47,8 @@ public class ChordTest
 		{
 			port = Integer.parseInt(args[0]);
 			chord = new Chord(maxPeers, port);
+			
+			System.err.println(chord.isInInterval(0, 28, 10));
 		}
 		
 
