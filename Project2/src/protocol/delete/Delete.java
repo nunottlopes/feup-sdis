@@ -32,15 +32,13 @@ public class Delete {
      * @param msg
      */
     public Delete(Message msg) {
-
-//        System.out.println("\n> DELETE received");
-//        System.out.println("- Sender Id = " + msg.getSenderId());
-//        System.out.println("- File Id = " + msg.getFileId());
-
         this(msg.getFileId());
     }
 
     public Delete(String fileId){
+    	System.out.println("\n> DELETE received");
+        System.out.println("- File Id = " + fileId);
+        
         this.fm = Peer.getInstance().getFileManager();
 
         if(this.fm.hasStoredChunks(fileId)){

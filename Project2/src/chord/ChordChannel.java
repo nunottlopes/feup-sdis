@@ -11,23 +11,50 @@ import java.util.ArrayList;
 
 import peer.Chunk;
 
+/**
+ * ChordChannel class
+ *
+ */
 public class ChordChannel implements Runnable {
+	/**
+	 * The Choord object parent
+	 */
 	private Chord parent = null;;
 
+	/**
+	 * The thread where the channel is running
+	 */
 	private Thread thread = null;
 
+	/**
+	 * The channel's socket
+	 */
 	private ServerSocket socket = null;
 
+	/**
+	 * The received message's queue
+	 */
 	private ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>> messageQueue = null;
 
+	/**
+	 * Read timeout
+	 */
 	protected long timeout = 1 * 2000;
 
+	/**
+	 * ChordChannel's constructor
+	 * @param parent
+	 */
 	public ChordChannel(Chord parent) {
 		this.parent = parent;
 
 		messageQueue = new ConcurrentLinkedQueue<Pair<InetSocketAddress, String[]>>();
 	}
 
+	/**
+	 * Opens a ServerSocket
+	 * @param port
+	 */
 	protected void open(int port) {
 		try {
 			socket = new ServerSocket(port);
@@ -38,6 +65,9 @@ public class ChordChannel implements Runnable {
 		this.start();
 	}
 
+	/**
+	 * The Thread action
+	 */
 	@Override
 	public void run() {
 		while (true) {
@@ -59,6 +89,12 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
+	/**
+	 * Handles a received message
+	 * @param connection
+	 * @param message
+	 * @param ois
+	 */
 	protected void handleMessage(Socket connection, String message,ObjectInputStream ois) {
 		String[] args = message.split(" +");
 
@@ -113,10 +149,27 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
+	/**
+	 * Sends Lookup message
+	 * @param connectionIP
+	 * @param requestIP
+	 * @param hash
+	 * @param successor
+	 * @return
+	 */
 	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor) {
 		return sendLookup(connectionIP, requestIP, hash, successor, true);
 	}
 
+	/**
+	 * sendLookup argument overload
+	 * @param connectionIP
+	 * @param requestIP
+	 * @param hash
+	 * @param successor
+	 * @param fix
+	 * @return
+	 */
 	protected String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor, boolean fix) {
 		String message = createLookupMessage(requestIP, hash, successor);
 		sendMessage(connectionIP, message, fix);
@@ -152,6 +205,13 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
+	/**
+	 * Relays lookup to another peer
+	 * @param connectionIP
+	 * @param requestIP
+	 * @param hash
+	 * @param successor
+	 */
 	protected void relayLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash,
 			boolean successor) {
 		String message = createLookupMessage(requestIP, hash, successor);
@@ -159,6 +219,14 @@ public class ChordChannel implements Runnable {
 		sendMessage(connectionIP, message);
 	}
 
+	/**
+	 * Sends a Chord return message
+	 * @param targetId
+	 * @param targetIP
+	 * @param destination
+	 * @param hash
+	 * @param successor
+	 */
 	protected void sendReturn(int targetId, InetSocketAddress targetIP, InetSocketAddress destination, int hash,
 			boolean successor) {
 		String message = createReturnMessage(targetId, targetIP, hash, successor);
@@ -166,6 +234,12 @@ public class ChordChannel implements Runnable {
 		sendMessage(destination, message);
 	}
 
+	/**
+	 * Notifies the chord
+	 * @param originId
+	 * @param originIP
+	 * @param destination
+	 */
 	protected void sendNotify(int originId, InetSocketAddress originIP, InetSocketAddress destination) {
 		// if (!destination.equals(this.parent.address))
 		// {
@@ -175,6 +249,11 @@ public class ChordChannel implements Runnable {
 		// }
 	}
 
+	/**
+	 * Sends the chunk's keys
+	 * @param targetIP
+	 * @param keysChunks
+	 */
 	protected void sendKeys(InetSocketAddress targetIP, ArrayList<Pair<Integer, Chunk>> keysChunks) {
 		sendChunks(targetIP, keysChunks);
 
@@ -182,6 +261,11 @@ public class ChordChannel implements Runnable {
 
 	}
 
+	/**
+	 * Receives the chunk's keys
+	 * @param ois
+	 * @param chunkNum
+	 */
 	protected void receiveKeys(ObjectInputStream ois, int chunkNum) {
 		if (chunkNum > 0) {
 			try {
@@ -214,6 +298,13 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
+	/**
+	 * Creates The lookup message
+	 * @param requestIP
+	 * @param hash
+	 * @param successor
+	 * @return
+	 */
 	protected String createLookupMessage(InetSocketAddress requestIP, int hash, boolean successor) {
 		String message = "CHORDLOOKUP" + " "; // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port>
 												// <key>
@@ -231,6 +322,14 @@ public class ChordChannel implements Runnable {
 		return message;
 	}
 
+	/**
+	 * Creates return message
+	 * @param targetId
+	 * @param targetIP
+	 * @param hash
+	 * @param successor
+	 * @return
+	 */
 	protected String createReturnMessage(int targetId, InetSocketAddress targetIP, int hash, boolean successor) {
 		String message = "CHORDRETURN" + " "; // CHORDRETURN <{SUCCESSOR | PREDECESSOR}> <target_id> <target_IP>
 												// <target_port> <key>
@@ -248,6 +347,12 @@ public class ChordChannel implements Runnable {
 		return message;
 	}
 
+	/**
+	 * Creates the Notify message
+	 * @param originId
+	 * @param originIP
+	 * @return
+	 */
 	protected String createNotifyMessage(int originId, InetSocketAddress originIP) {
 		String message = "CHORDNOTIFY" + " " + originId + " " + originIP.getAddress().getHostAddress() + " "
 				+ originIP.getPort(); // CHORDNOTIFY <origin_id> <origin_IP> <origin_port>
@@ -255,10 +360,21 @@ public class ChordChannel implements Runnable {
 		return message;
 	}
 
+	/**
+	 * Sends a message
+	 * @param address
+	 * @param message
+	 */
 	protected void sendMessage(InetSocketAddress address, String message) {
 		sendMessage(address, message, false);
 	}
 
+	/**
+	 * SendMessage argument overload
+	 * @param address
+	 * @param message
+	 * @param fix
+	 */
 	protected void sendMessage(InetSocketAddress address, String message, boolean fix) {
 		if (address.equals(this.parent.address)) {
 			handleMessage(null, message,null);
@@ -271,25 +387,6 @@ public class ChordChannel implements Runnable {
 				oos.writeObject(message);
 				connection.close();
 			}
-			// catch (SocketTimeoutException e)
-			// {
-			// System.err.println("SocketTimeoutException");
-			// System.err.println(e.getMessage());
-			// System.err.println("Failed!");
-			//
-			// if (fix)
-			// this.parent.fixSuccessor();
-			// }
-			// catch (SocketException e)
-			// {
-			// System.err.println("SocketException");
-			// System.err.println(e.getMessage());
-			// System.err.println("Failed!");
-			//
-			// if (fix)
-			// this.parent.fixSuccessor();
-			//
-			// }
 			catch (IOException e) {
 				System.err.print("\rServer is overloaded!");
 
@@ -302,6 +399,11 @@ public class ChordChannel implements Runnable {
 
 	}
 
+	/**
+	 * Sends Chunks
+	 * @param address
+	 * @param keysChunks
+	 */
 	protected void sendChunks(InetSocketAddress address, ArrayList<Pair<Integer, Chunk>> keysChunks) {
 		if (address.equals(this.parent.address)) {
 			return;
@@ -328,12 +430,24 @@ public class ChordChannel implements Runnable {
 
 	}
 
+	/**
+	 * Sends Get keys message
+	 * @param connectionIP
+	 * @param requestIP
+	 * @param hash
+	 */
 	protected void sendGetKeys(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash) {
 		String msg = createGetKeysMessage(requestIP, hash);
 		sendMessage(connectionIP, msg);
 		System.out.println("-------SEND GET KEYS ---------");
 	}
 
+	/**
+	 * Creates Get Keys Message
+	 * @param originIP
+	 * @param hash
+	 * @return
+	 */
 	protected String createGetKeysMessage(InetSocketAddress originIP, int hash) {
 		String message = "CHORDGETKEYS" + " " + hash + " " + originIP.getAddress().getHostAddress() + " "
 				+ originIP.getPort(); // CHORDGETKEYS <origin_id> <origin_IP> <origin_port>
@@ -341,6 +455,9 @@ public class ChordChannel implements Runnable {
 		return message;
 	}
 
+	/**
+	 * Starts ChordChannel Thread
+	 */
 	protected void start() {
 		thread = new Thread(this, "ChordChannel");
 

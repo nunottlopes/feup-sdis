@@ -465,7 +465,10 @@ public class Peer implements RemoteInterface {
         return executor;
     }
 
-
+    /**
+     * Returns the maximum number of peers in the chord
+     * @return maximum number of peers
+     */
     public int getMaxChordPeers() {
         return maxChordPeers;
     }

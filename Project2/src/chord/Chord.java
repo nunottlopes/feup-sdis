@@ -1,21 +1,14 @@
 package chord;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -26,18 +19,56 @@ import peer.Chunk;
 import peer.Peer;
 
 
+/**
+ * Chord class
+ */
 public class Chord
 {
+	/**
+	 * The peer's unique identifier
+	 */
 	 protected int id;
+	 
+	 /**
+	  * Number of bits of the addressing space
+	  */
 	 protected int m;
-	 protected int r; //successorList size, r < m
+	 
+	 /**
+	  * The successorList's size, r < m
+	  */
+	 protected int r;
+	 
+	 /**
+	  * The maximum amount of peers of the ring, 2^m
+	  */
 	 protected int maxPeers;
+	 
+	 /**
+	  * The peer's address
+	  */
 	 protected InetSocketAddress address;
+	 
+	 /**
+	  * The index used on the maintenance function fixFingers
+	  */
 	 protected int fingerFixerIndex = 0;
 
+	 /**
+	  * The peer's predecessor
+	  */
 	 protected Pair<Integer, InetSocketAddress> predecessor = null;
+	 
+	 /**
+	  * The peer's finger table. Stores m entries of other peers in the ring
+	  */
 	 protected Pair<Integer, InetSocketAddress>[] fingerTable = null;
+	 
+	 /**
+	  * The list of its successors, size r
+	  */
 	 protected Pair<Integer, InetSocketAddress>[] successorList = null;
+
 
 	 protected ChordChannel channel = null;
 
@@ -47,7 +78,13 @@ public class Chord
 
 	 protected Peer peer = null;
 
-
+	
+	/**
+	 * The chord's constructor for initializing a ring
+	 * 
+	 * @param maxPeers The minimum amount of peers supported in the ring
+	 * @param port The chord's port number
+	 */
 	public Chord(int maxPeers, int port)
 	{
 		this.initialize(maxPeers, port, false);
@@ -58,7 +95,14 @@ public class Chord
 
 		startMaintenance();
 	}
-
+	
+	/**
+	 * The Constructor
+	 * @param maxPeers The minimum amount of peers supported in the ring
+	 * @param port The chord's port number
+	 * @param address The connection address
+	 * @param client Whether it is a member of the ring
+	 */
 	public Chord(int maxPeers, int port, InetSocketAddress address, boolean client)
 	{
 		this.initialize(maxPeers, port, client);
@@ -106,13 +150,24 @@ public class Chord
 		}
 
 	}
-
+	
+	/**
+	 * Default constructor
+	 * @param maxPeers The minimum amount of peers supported in the ring
+	 * @param port The chord's port number
+	 * @param address The connection address
+	 */
 	public Chord(int maxPeers, int port, InetSocketAddress address)
 	{
 		this(maxPeers, port, address, false);
 	}
 
-
+	/**
+	 * Common code between the constructors
+	 * @param maxPeers The minimum amount of peers supported in the ring
+	 * @param port The chord's port number
+	 * @param client Whether it is a member of the ring
+	 */
 	@SuppressWarnings("unchecked")
 	private void initialize(int maxPeers, int port, boolean client)
 	{
@@ -138,18 +193,33 @@ public class Chord
 
 		this.client = client;
 	}
-
+	
+	/**
+	 * Starts the maintenance routine
+	 */
 	private void startMaintenance()
 	{
         pool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
         pool.scheduleWithFixedDelay(new ChordMaintenance(this), 1500, 500, TimeUnit.MILLISECONDS);
 	}
-
+	
+	/**
+	 * Call lookup with this peer as the destination
+	 * @param hash
+	 * @param successor
+	 * @return
+	 */
 	public String[] lookup(int hash, boolean successor)
 	{
 		return lookup(this.address, hash, successor);
 	}
-
+	
+	/**
+	 * Call lookup with this peer as the destination
+	 * @param hash
+	 * @param successor
+	 * @return
+	 */
 	public String[] sendLookup(int hash, boolean successor){
 		
 		if (fingerTable[0] == null)
@@ -158,7 +228,14 @@ public class Chord
 		String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
 		return args;
 	}
-
+	
+	/**
+	 * Runs the lookup protocol. Searches first for directly behind itself and directly in front. It its not in either, iterates the finger table.
+	 * @param origin The origin of the request
+	 * @param hash The hash we are searching
+	 * @param successor Whether its the successor or the predecessor
+	 * @return The response message
+	 */
 	public String[] lookup(InetSocketAddress origin, int hash, boolean successor)
 	{
 
@@ -233,16 +310,32 @@ public class Chord
 		return null;
 	}
 
+	/**
+	 * Returns whether it is the direct successor of the hash
+	 * @param hash The hash
+	 * @return whether it is the direct successor of the hash
+	 */
 	public boolean amISuccessor(int hash)
 	{
 		return ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1, true)) || hash == this.id); // I am the successor of the hash
 	}
-
+	
+	/**
+	 * Overloaded function for sendLookup
+	 * @param connectionIP
+	 * @param requestIP
+	 * @param hash
+	 * @param successor
+	 * @return
+	 */
 	public String[] sendLookup(InetSocketAddress connectionIP, InetSocketAddress requestIP, int hash, boolean successor)
 	{
 		return channel.sendLookup(connectionIP, requestIP, hash, successor);
 	}
-
+	
+	/**
+	 * Stabilize protocol. Notifies the successors's predecessor
+	 */
 	protected void stabilize()
 	{
 		Pair<Integer, InetSocketAddress> successor = null;
@@ -287,7 +380,12 @@ public class Chord
 
 		this.updateSuccessorList();
 	}
-
+	
+	/**
+	 * Updates its predecessor.
+	 * @param originId
+	 * @param originIP
+	 */
 	protected void notify(int originId, InetSocketAddress originIP)
 	{
 		if (this.predecessor == null || isInInterval(originId, this.predecessor.first, this.id, true))
@@ -296,6 +394,9 @@ public class Chord
 		}
 	}
 
+	/**
+	 * Fix the finger table entry with index fingerFixerIndex
+	 */
 	protected void fixFingers()
 	{
 		this.fingerFixerIndex = (this.fingerFixerIndex + 1) % this.m; // Increments fingerFixerIndex
@@ -315,7 +416,10 @@ public class Chord
 		this.fingerTable[this.fingerFixerIndex] = new Pair<>(peerId, peerIP);
 
 	}
-
+	
+	/**
+	 * Check's if the predecessor has failed
+	 */
 	protected void checkPredecessor()
 	{
 		if (this.predecessor != null)
@@ -327,7 +431,9 @@ public class Chord
 		}
 	}
 
-
+	/**
+	 * Updates all entries of the successorList
+	 */
 	protected void updateSuccessorList()
 	{
 		Pair<Integer, InetSocketAddress> successor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
@@ -350,6 +456,10 @@ public class Chord
 		}
 	}
 	
+	/**
+	 * Function called when IP fails. Removes IP from all the tables
+	 * @param IP
+	 */
 	protected void fixSuccessor(InetSocketAddress IP)
 	{
 		for (int i = 0; i < this.fingerTable.length; i++)
@@ -391,12 +501,27 @@ public class Chord
 		if (this.predecessor != null && this.predecessor.second.equals(IP))
 			this.predecessor = null;
 	}
-
+	
+	/**
+	 * Overloaded function for isInInterval.
+	 * @param target
+	 * @param lowerBound
+	 * @param upperBound
+	 * @return
+	 */
 	protected boolean isInInterval(int target, int lowerBound, int upperBound)
 	{
 		return isInInterval(target, lowerBound, upperBound, false);
 	}
-
+	
+	/**
+	 * Check whether target is between upperBound and lowerBound
+	 * @param target
+	 * @param lowerBound
+	 * @param upperBound
+	 * @param inclusive
+	 * @return
+	 */
 	protected boolean isInInterval(int target, int lowerBound, int upperBound, boolean inclusive)
 	{
 		target = Math.floorMod(target,  this.maxPeers);
@@ -417,39 +542,21 @@ public class Chord
 		else
 			return !isInInterval(target, upperBound-1, lowerBound+1, inclusive);
 	}
-
+	
+	/**
+	 * Calculates fingerTable number by index
+	 * @param i
+	 * @return
+	 */
 	protected int getFingerTableIndex(int i)
 	{
 		return (this.id + (int)Math.pow(2, i)) % this.maxPeers;
 	}
 
-
-	public static InetAddress getLocalIP()
-	{
-		try
-		{
-			Enumeration<NetworkInterface> e = null;
-			e = NetworkInterface.getNetworkInterfaces();
-			while (e.hasMoreElements())
-			{
-				NetworkInterface n = (NetworkInterface) e.nextElement();
-				Enumeration<InetAddress> ee = n.getInetAddresses();
-				while (ee.hasMoreElements())
-				{
-					InetAddress i = (InetAddress) ee.nextElement();
-					if (i.isSiteLocalAddress())
-						return i;
-				}
-			}
-		}
-		catch (SocketException e1)
-		{
-			e1.printStackTrace();
-		}
-
-		return null;
-	}
-
+	/**
+	 * Gets the local IP Address
+	 * @return The local IP Address
+	 */
 	public String getAddress() {
 		String address = "";
 		try {
@@ -463,35 +570,30 @@ public class Chord
 		}
 		return address;
 	}
-
+	
+	/**
+	 * Gets the chord's address
+	 * @return
+	 */
 	public String getChordAddress(){
 		return this.address.getAddress().toString().substring(1);
 	}
-
-	public static InetAddress getExternalIP()
-	{
-		String ip;
-		try
-		{
-			URL whatismyip = new URL("http://checkip.amazonaws.com");
-			BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
-			ip = in.readLine(); //you get the IP as a String
-			return InetAddress.getByName(ip);
-		}
-		catch (IOException e)
-		{
-			ip = null;
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
+	
+	/**
+	 * Calculates the hash of key
+	 * @param key
+	 * @return
+	 */
     public int hash(String key)
     {
         return Math.floorMod(sha1(key), this.maxPeers);
     }
-
+    
+    /**
+     * Calculates the SHA1 hash
+     * @param s
+     * @return
+     */
 	public static int sha1(String s)
 	{
         MessageDigest digest = null;
@@ -507,25 +609,44 @@ public class Chord
 
 		return wrapped.getInt();
     }
-
+	
+	/**
+	 * Gets the maximum amount of allowed peers
+	 * @return The maximum amount of allowed peers
+	 */
 	public int getMaxPeers() {
 		return maxPeers;
 	}
-
+	
+	/**
+	 * Returns a string
+	 */
 	@Override
 	public String toString()
 	{
 		return "Chord: " + "m=" + m + ", id = " + id + ", address=" + address + "\nfingerFixerIndex=" + fingerFixerIndex + "\npredecessor=" + predecessor + ", \nfingerTable=" + Arrays.toString(fingerTable) + "\nsuccessorList=" + Arrays.toString(successorList);
 	}
-
+	
+	/**
+	 * Gets the immediate succesor
+	 * @return
+	 */
 	public InetAddress getSuccessor() {
 		return fingerTable[0].second.getAddress();
 	}
-
+	
+	/**
+	 * Requests the keys from it's successor
+	 */
 	private void getKeysFromSuccessor(){
 		this.channel.sendGetKeys(fingerTable[0].second,this.address, this.id);
 	}
-
+	
+	/**
+	 * Sends the keys to the predecessor
+	 * @param peerHash
+	 * @return
+	 */
 	public ArrayList<Pair<Integer, Chunk>> getKeysToPredecessor(int peerHash){
 		ArrayList<Pair<Integer, Chunk>> keysValues = new ArrayList<>();
 
@@ -563,19 +684,35 @@ public class Chord
 
 		return keysValues;
 	}
-
+	
+	/**
+	 * Stores a chunk
+	 * @param chunk A chunk
+	 */
 	public synchronized void storeChunk(Chunk chunk){
 		peer.getFileManager().addChunk(chunk);
 	}
-
+	
+	/**
+	 * Sets the peer object
+	 * @param peer
+	 */
 	public void setPeer(Peer peer){
 		this.peer = peer;
 	}
-
+	
+	/**
+	 * Gets the id
+	 * @return The id
+	 */
 	public int getId() {
 		return id;
 	}
-
+	
+	/**
+	 * Gets the chord's IP Address as an InetAddress
+	 * @return
+	 */
 	public InetAddress getInetChordAddress(){
 		return this.address.getAddress();
 	}

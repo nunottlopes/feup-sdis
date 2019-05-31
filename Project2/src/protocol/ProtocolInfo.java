@@ -140,10 +140,10 @@ public class ProtocolInfo implements Serializable {
     }
 
     public void addPeerSavedChunk(String fileId, int chunkNo, InetAddress address, int peerid) {
-//        System.out.println("\n> STORED received");
+        System.out.println("\n> STORED received");
 //        System.out.println("- Sender Address = " + address);
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
 
         peersWhoSavedChunk.get(fileId).putIfAbsent(chunkNo, new HashSet<>());
         peersWhoSavedChunk.get(fileId).get(chunkNo).add(address);

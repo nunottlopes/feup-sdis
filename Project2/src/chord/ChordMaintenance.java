@@ -1,9 +1,20 @@
 package chord;
 
+/**
+ * ChordMaintanance Class
+ *
+ */
 public class ChordMaintenance implements Runnable
 {
+	/**
+	 * The parent Chord object
+	 */
 	Chord parent = null;
 	
+	/**
+	 * ChordMaintenance's constructor
+	 * @param parent
+	 */
 	public ChordMaintenance(Chord parent)
 	{
 		this.parent = parent;
@@ -13,7 +24,7 @@ public class ChordMaintenance implements Runnable
 	public void run()
 	{
 		
-		System.out.println(parent);
+//		System.out.println(parent);
 		
 		parent.stabilize();
 		parent.fixFingers();

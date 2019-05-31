@@ -49,11 +49,11 @@ public class SendMessage {
 
         Peer.getInstance().send(msg, destination);
 
-//        System.out.println("\n> PUTCHUNK sent");
+        System.out.println("\n> PUTCHUNK sent");
 //        System.out.println("- Address destination = " + destination);
-//        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-//        System.out.println("- File Id = " + fileId);
-//        System.out.println("- Chunk No = " + chunkNo);
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
+        System.out.println("- Chunk No = " + chunkNo);
     }
 
     /**
@@ -70,9 +70,9 @@ public class SendMessage {
 
         Peer.getInstance().send(msg, destination);
 
-//        System.out.println("\n> DELETE sent");
-//        System.out.println("- Sender Id = " + Peer.getInstance().getId());
-//        System.out.println("- File Id = " + fileId);
+        System.out.println("\n> DELETE sent");
+        System.out.println("- Sender Id = " + Peer.getInstance().getId());
+        System.out.println("- File Id = " + fileId);
     }
 
     /**

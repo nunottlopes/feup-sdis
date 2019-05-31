@@ -25,11 +25,6 @@ import static message.SendMessage.sendPUTCHUNK;
 public class DeleteInitiator {
 
     /**
-     * Max number of times a DELETE message should be sent
-     */
-    public static final int MAX_DELETE_MESSAGES = 1;
-
-    /**
      * Time interval between each DELETE message
      */
     private static final int TIME_INTERVAL = 500;
@@ -65,40 +60,30 @@ public class DeleteInitiator {
 
         int number_of_chunks = (int) file.length() / (Chunk.MAX_SIZE) + 1;
 
-        CountDownLatch latch = new CountDownLatch(MAX_DELETE_MESSAGES);
 
-        for (int i = 0 ; i < MAX_DELETE_MESSAGES; i++){
-            Peer.getInstance().getExecutor().schedule(()->{
-                for(int n = 0; n < number_of_chunks; n++){
-                    String name = fileId + n;
-                    int hash = Peer.getInstance().getChord().hash(name);
+        Peer.getInstance().getExecutor().schedule(()->{
+            for(int n = 0; n < number_of_chunks; n++){
+                String name = fileId + n;
+                int hash = Peer.getInstance().getChord().hash(name);
 
-                    String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
+                String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 
-                    if(message != null){
-                        try {
-                            InetAddress address = InetAddress.getByName(message[3]);
-                            if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
-                                sendDELETE(fileId, address);
-                            } else{
-                                new Delete(fileId);
-                            }
-                        } catch (UnknownHostException e) {
-                            e.printStackTrace();
+                if(message != null){
+                    try {
+                        InetAddress address = InetAddress.getByName(message[3]);
+                        if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
+                            sendDELETE(fileId, address);
+                        } else{
+                            new Delete(fileId);
                         }
-                    } else{
-                        n--;
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
                     }
+                } else{
+                    n--;
                 }
+            }
 
-                latch.countDown();
-                }, TIME_INTERVAL*i, TimeUnit.MILLISECONDS);
-        }
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        }, 0, TimeUnit.MILLISECONDS);
     }
 }
