@@ -108,6 +108,7 @@ public class BackupInitiator {
                     String name = fileId + c.getChunkNo();
                     int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
                     for (int n = 0; n < repDegree; n++){
+                        System.out.println("LOOKING UP FOR HASH " + hash);
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 
                         if(message != null){
@@ -124,6 +125,8 @@ public class BackupInitiator {
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();
                             }
+
+                            System.out.println("CHORD RECEIVED MESSAGE HASH " +  message[2]);
                             hash = Integer.parseInt(message[2]) + 1;
                         }
                         else {

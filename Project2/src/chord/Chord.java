@@ -45,8 +45,6 @@ public class Chord
 
 	 protected boolean client = false;
 
-	 private Peer peer = null;
-
 
 	public Chord(int maxPeers, int port)
 	{
@@ -523,11 +521,10 @@ public class Chord
 	}
 
 	public synchronized void storeChunk(Chunk chunk){
-		this.peer.getFileManager().addChunk(chunk);
+		Peer.getInstance().getFileManager().addChunk(chunk);
 	}
 
-
-	public void setPeer(Peer peer){
-		this.peer = peer;
+	public int getId() {
+		return id;
 	}
 }
