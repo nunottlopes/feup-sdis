@@ -6,7 +6,7 @@ public class ChordTest
 {
 	public static void main(String[] args)
 	{
-		int maxPeers = 32;
+		int maxPeers = 128;
 		int port;
 		InetSocketAddress connectionPeer = null;
 		
@@ -48,7 +48,7 @@ public class ChordTest
 			port = Integer.parseInt(args[0]);
 			chord = new Chord(maxPeers, port);
 			
-			System.err.println(chord.isInInterval(0, 28, 10));
+//			System.err.println(chord.isInInterval(0, 28, 10));
 		}
 		
 

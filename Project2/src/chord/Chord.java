@@ -247,7 +247,6 @@ public class Chord
 		for (int i = 0; i < this.r; i++) // Search for first successor alive
 		{
 			successor = this.successorList[i];
-
 			
 			if (successor == null)
 				continue;
@@ -346,14 +345,10 @@ public class Chord
 	
 	protected void fixSuccessor(InetSocketAddress IP)
 	{
-		int j = 0;
 		for (int i = 0; i < this.fingerTable.length; i++)
 		{
 			if (this.fingerTable[i].second.equals(IP))
-			{
-				j++;
 				this.fingerTable[i] = null;
-			}
 		}
 		
 		if (fingerTable[0] == null)

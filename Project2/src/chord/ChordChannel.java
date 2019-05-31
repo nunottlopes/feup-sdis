@@ -123,11 +123,15 @@ public class ChordChannel implements Runnable {
 		String message = createLookupMessage(requestIP, hash, successor);
 		sendMessage(connectionIP, message, fix);
 
-		synchronized (this.parent) {
-			try {
+		synchronized (this.parent) 
+		{
+			try 
+			{
 				if (!connectionIP.equals(this.parent.address))
-					this.parent.wait(this.timeout);
-			} catch (InterruptedException e) {
+					this.parent.wait(this.timeout*2);
+			}
+			catch (InterruptedException e)
+			{
 				e.printStackTrace();
 			}
 
