@@ -74,6 +74,8 @@ public class RestoreInitiator {
 
             String name = fileId + chunkNo;
             int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
+            
+            System.out.println("Asked for chunk with hash " + hash);
 
             pool.execute(() -> {
 

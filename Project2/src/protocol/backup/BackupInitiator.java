@@ -125,6 +125,9 @@ public class BackupInitiator {
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
                     String name = fileId + c.getChunkNo();
                     int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
+                    
+                    System.out.println("Asked for chunk with hash " + hash);
+                    
                     for (int n = 0; n < repDegree; n++){
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 

@@ -63,7 +63,7 @@ public class Chord
 		
 		if (!client) // Peer
 		{			
-			String[] args = channel.sendLookup(address, this.address, this.id, true);
+			String[] args = channel.sendLookup(address, this.address, this.id, true, false);
 			
 			if (args != null) // Success
 			{
@@ -82,7 +82,7 @@ public class Chord
 			}
 			
 			int value = getFingerTableIndex(0);
-			args = channel.sendLookup(address, this.address, value, true);
+			args = channel.sendLookup(address, this.address, value, true, false);
 
 			
 			if (args != null) // Success
@@ -95,13 +95,14 @@ public class Chord
 			}
 			
 			startMaintenance();
+			getKeysFromSuccessor();
+
 		}
 		else // Client
 		{			
 			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(0, address);
 		}
 
-		getKeysFromSuccessor();
 	}
 
 	public Chord(int maxPeers, int port, InetSocketAddress address)
@@ -122,7 +123,9 @@ public class Chord
 		this.address = new InetSocketAddress(this.address.getAddress().getHostAddress(), port);
 		
 		if (!client)
+		{
 			this.id = Math.floorMod(sha1(this.address.toString()), this.maxPeers);
+		}
 
 		
 		this.fingerTable = new Pair[this.m];
@@ -165,6 +168,9 @@ public class Chord
 				System.err.println("Connection peer is not alive!");
 			
 			System.out.println("Query took " + (end-start) + " milliseconds");
+	
+			if ((end-start) > this.channel.timeout)
+				System.err.println("timeout");
 			
 			return args;
 		}
@@ -233,6 +239,9 @@ public class Chord
 		for (int i = 0; i < this.r; i++) // Search for first successor alive
 		{
 			successor = this.successorList[i];
+			
+			if (successor == null)
+				continue;
 			
 			if (successor.first == this.id)
 			{
@@ -326,34 +335,44 @@ public class Chord
 		}
 	}
 	
-	protected void fixSuccessor()
+	protected void fixSuccessor(InetSocketAddress IP)
 	{
-		Pair<Integer, InetSocketAddress> successor = null;
-		boolean found = false;
-		
-		for (int i = 0; i < this.r; i++) // Search for first successor alive
+		int j = 0;
+		for (int i = 0; i < this.fingerTable.length; i++)
 		{
-			successor = this.successorList[i];
-			
-			if (successor.first == this.id)
+			if (this.fingerTable[i].second.equals(IP))
 			{
-				found = true;
-				break;
-			}
-			
-			String[] args = channel.sendLookup(successor.second, this.address, successor.first, false, false);
-			
-			if (args != null)
-			{
-				found = true;
-				break;
+				j++;
+				this.fingerTable[i] = null;
 			}
 		}
 		
-		if (found)
-			this.fingerTable[0] = successor;
-		else
-			this.fingerTable[0] = new Pair<Integer, InetSocketAddress>(this.id, this.address);
+		if (fingerTable[0] == null)
+		{
+			int i;
+			for (i = 0; i < this.fingerTable.length; i++)
+			{
+				if (fingerTable[i] != null)
+				{
+					fingerTable[0] = new Pair<>(fingerTable[i]);
+					break;
+				}
+			}
+			
+			if (i == this.fingerTable.length)
+				this.fingerTable[0] = new Pair<>(this.id, this.address);
+		}
+			
+		
+		for (int i = 0; i < this.successorList.length; i++)
+		{
+			if (this.successorList[i].second.equals(IP))
+				this.successorList[i] = null;
+		}
+		
+		
+		if (this.predecessor != null && this.predecessor.second.equals(IP))
+			this.predecessor = null;
 	}
 	
 	protected boolean isInInterval(int target, int lowerBound, int upperBound)
@@ -379,9 +398,7 @@ public class Chord
 		if (upperBound > lowerBound)
 			return (target > lowerBound && target < upperBound);
 		else
-		{
 			return !isInInterval(target, upperBound-1, lowerBound+1, inclusive);
-		}
 	}
 
 	protected int getFingerTableIndex(int i)
@@ -487,28 +504,35 @@ public class Chord
 	public ArrayList<Pair<Integer, Chunk>> getKeysToPredecessor(int peerHash){
 		ArrayList<Pair<Integer, Chunk>> keysValues = new ArrayList<>();
 
-		ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> chunksStored = Peer.getInstance().getFileManager().getChunksStored();
+		if (Peer.getInstance() != null)
+		{
+			ConcurrentHashMap<String, ConcurrentHashMap<Integer, Chunk>> chunksStored = Peer.getInstance().getFileManager().getChunksStored();
 
-		for(Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> fileChunks: chunksStored.entrySet()){
-			ConcurrentHashMap<Integer,Chunk> chunksMap = fileChunks.getValue();
-			for(Map.Entry<Integer, Chunk> chunkEntry: chunksMap.entrySet()){
-				Chunk chunk = chunkEntry.getValue();
-				int chunkHash = sha1(chunk.getFileId() + chunk.getChunkNo());
-
-					
-				if(this.id < peerHash){
-					if(chunkHash > this.id && chunkHash <= peerHash){
-						keysValues.add(new Pair<Integer,Chunk>(chunkHash,chunk));
-						chunksMap.remove(chunkEntry.getKey());
+			if (chunksStored != null)
+			{
+				
+				for(Map.Entry<String, ConcurrentHashMap<Integer, Chunk>> fileChunks: chunksStored.entrySet()){
+					ConcurrentHashMap<Integer,Chunk> chunksMap = fileChunks.getValue();
+					for(Map.Entry<Integer, Chunk> chunkEntry: chunksMap.entrySet()){
+						Chunk chunk = chunkEntry.getValue();
+						int chunkHash = sha1(chunk.getFileId() + chunk.getChunkNo());
+		
+							
+						if(this.id < peerHash){
+							if(chunkHash > this.id && chunkHash <= peerHash){
+								keysValues.add(new Pair<Integer,Chunk>(chunkHash,chunk));
+								chunksMap.remove(chunkEntry.getKey());
+							}
+						}
+		
+						else{
+							if(chunkHash <= peerHash || chunkHash > this.id){
+								keysValues.add(new Pair<Integer,Chunk>(chunkHash,chunk));
+								chunksMap.remove(chunkEntry.getKey());
+							}
+						}
 					}
-				}
-
-				else{
-					if(chunkHash <= peerHash || chunkHash > this.id){
-						keysValues.add(new Pair<Integer,Chunk>(chunkHash,chunk));
-						chunksMap.remove(chunkEntry.getKey());
-					}
-				}
+				}	
 			}
 		}
 
