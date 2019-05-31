@@ -173,7 +173,7 @@ public class Peer implements RemoteInterface {
             int port = Integer.parseInt(args[3]);
             this.chord = new Chord(maxChordPeers, port);
         }
-
+        this.chord.setPeer(this);
         this.channel = new Channel(Integer.parseInt(args[2]));
 
         new Thread(this.channel).start();
