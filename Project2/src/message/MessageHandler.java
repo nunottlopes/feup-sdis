@@ -37,12 +37,10 @@ public class MessageHandler implements Runnable {
     @Override
     public void run() {
         if(this.msg.getType() == Message.MessageType.PUTCHUNK && msg.getSenderId() != Peer.getInstance().getId()) {
-            if(Peer.getInstance().getProtocolInfo().isReclaimProtocol())
-                Peer.getInstance().getProtocolInfo().addChunksReceivedWhileReclaim(msg.getFileId(), msg.getChunkNo());
             new Backup(this.msg, address);
         }
         else if(this.msg.getType() == Message.MessageType.STORED && msg.getSenderId() != Peer.getInstance().getId()) {
-            Peer.getInstance().getProtocolInfo().addPeerSavedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.address);
+            Peer.getInstance().getProtocolInfo().addPeerSavedChunk(this.msg.getFileId(), this.msg.getChunkNo(), this.address, this.msg.getSenderId());
         }
         else if(this.msg.getType() == Message.MessageType.DELETE){
             new Delete(this.msg);

@@ -71,7 +71,7 @@ public class ReclaimInitiator {
             fm.updateFreeMem(spaceReclaim);
         }
 
-        if (i == chunks.size()) { // Failed
+        if (i == chunks.size() && fm.getMaxMemory() != spaceReclaim) {
             System.out.println("Could not reclaim for "+ spaceReclaim + " bytes");
         }
     }

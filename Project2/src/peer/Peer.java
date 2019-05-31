@@ -31,10 +31,7 @@ import protocol.backup.BackupInitiator;
 import protocol.delete.DeleteInitiator;
 import protocol.restore.RestoreInitiator;
 import protocol.reclaim.ReclaimInitiator;
-import java.util.HashMap;
 import rmi.RemoteInterface;
-import java.util.ArrayList;
-import chord.Pair;
 
 /**
  * Peer class
@@ -291,7 +288,6 @@ public class Peer implements RemoteInterface {
             ConcurrentHashMap.Entry<Integer, Chunk> firstEntry = chunkMap.entrySet().iterator().next();
             String fileId = chunkMap.get(firstEntry.getKey()).getFileId();
             int desiredRepDegree = chunkMap.get(firstEntry.getKey()).getRepDegree();
-
             ret += "\n> File Pathname = " + path_name + "\n> File Id = " + fileId + "\n> Desired Replication Degree= " + desiredRepDegree + "\n";
 
             for(Integer chunkno : chunkMap.keySet()){
