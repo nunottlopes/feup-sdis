@@ -126,10 +126,11 @@ public class BackupInitiator {
                                 InetAddress address = InetAddress.getByName(message[3]);
                                 if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
                                     if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
-                                        System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n);
+                                        System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n + " hash=" + hash);
                                         sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 } else{
                                     new Backup(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
+                                    Peer.getInstance().getProtocolInfo().addPeerSavedChunk(fileId, c.getChunkNo(), Peer.getInstance().getChord().getInetChordAddress(), Peer.getInstance().getId());
                                 }
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();

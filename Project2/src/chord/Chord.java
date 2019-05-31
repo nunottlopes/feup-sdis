@@ -553,5 +553,9 @@ public class Chord
 		return id;
 	}
 
+	public InetAddress getInetChordAddress(){
+		return this.address.getAddress();
+	}
+
 
 }
