@@ -50,7 +50,7 @@ public class ChordChannel implements Runnable {
 
 				String message = (String) ois.readObject();
 
-				handleMessage(connection, message);
+				handleMessage(connection, message,ois);
 
 				connection.close();
 			} catch (IOException e) {
@@ -61,7 +61,7 @@ public class ChordChannel implements Runnable {
 		}
 	}
 
-	protected void handleMessage(Socket connection, String message) {
+	protected void handleMessage(Socket connection, String message,ObjectInputStream ois) {
 		String[] args = message.split(" +");
 
 		if (args[0].equals("CHORDLOOKUP")) // CHORDLOOKUP <{SUCCESSOR | PREDECESSOR}> <request_IP> <request_port> <key>
@@ -106,7 +106,7 @@ public class ChordChannel implements Runnable {
 		{
 			System.out.println("Received " + message);
 			int chunkNum = Integer.parseInt(args[1]);
-			this.receiveKeys(connection, chunkNum);
+			this.receiveKeys(ois, chunkNum);
 
 		}
 
@@ -185,10 +185,9 @@ public class ChordChannel implements Runnable {
 
 	}
 
-	protected void receiveKeys(Socket connection, int chunkNum) {
+	protected void receiveKeys(Socket connection, int chunkNum,ObjectInputStream ois) {
 		if (chunkNum > 0) {
 			try {
-				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 
 				Object obj = ois.readObject();
 								
@@ -263,7 +262,7 @@ public class ChordChannel implements Runnable {
 
 	protected void sendMessage(InetSocketAddress address, String message, boolean fix) {
 		if (address.equals(this.parent.address)) {
-			handleMessage(null, message);
+			handleMessage(null, message,null);
 		} else {
 			try {
 				Socket connection = new Socket();
