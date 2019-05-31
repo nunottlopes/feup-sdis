@@ -295,14 +295,7 @@ public class ChordChannel implements Runnable {
 
 				if (fix)
 				{
-					try
-					{
-						this.parent.fixSuccessor(address);
-					}
-					catch (NullPointerException e2)
-					{
-						
-					}
+					this.parent.fixSuccessor(address);
 				}
 			}
 		}

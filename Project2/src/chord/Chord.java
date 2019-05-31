@@ -151,6 +151,10 @@ public class Chord
 	}
 
 	public String[] sendLookup(int hash, boolean successor){
+		
+		if (fingerTable[0] == null)
+			return null;
+		
 		String[] args = channel.sendLookup(fingerTable[0].second, this.address, hash, successor);
 		return args;
 	}
