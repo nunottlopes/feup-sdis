@@ -126,7 +126,7 @@ public class Chord
 
 		if (!client)
 		{
-			this.id = hash(this.address.toString());
+            this.id = hash(this.address.toString());
 		}
 
 
@@ -228,11 +228,7 @@ public class Chord
 
 		return null;
 	}
-	
-	public int hash(String key)
-	{
-		return Math.floorMod(sha1(key), this.maxPeers);
-	}
+
 	public boolean amISuccessor(int hash)
 	{
 		return ((this.predecessor != null && isInInterval(hash, this.predecessor.first, this.id+1, true)) || hash == this.id); // I am the successor of the hash
@@ -446,17 +442,12 @@ public class Chord
 		try {
 			Socket socket = new Socket();
 			socket.connect(new InetSocketAddress("google.com", 80));
-			address = socket.getLocalAddress().getHostName();
-			InetSocketAddress foo = new InetSocketAddress(address, 0);
-			InetSocketAddress bar = new InetSocketAddress(foo.getAddress().getHostAddress(), 0);
-			address = bar.getHostName();
+			address = socket.getLocalAddress().getHostAddress();
 			socket.close();
 		}
 		catch(Exception e){
 			System.out.println("Failed to get local address");
 		}
-		
-		
 		return address;
 	}
 
@@ -483,6 +474,10 @@ public class Chord
 		return null;
 	}
 
+    public int hash(String key)
+    {
+        return Math.floorMod(sha1(key), this.maxPeers);
+    }
 
 	public static int sha1(String s)
 	{

@@ -106,7 +106,7 @@ public class BackupInitiator {
 
                 for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
                     String name = fileId + c.getChunkNo();
-                    int hash = Peer.getInstance().getChord().hash(name);
+                    int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
 
                     for (int n = 0; n < repDegree; n++){
                         String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
@@ -117,16 +117,11 @@ public class BackupInitiator {
                             e.printStackTrace();
                         }
 
-//                        if(message != null){
-//                            System.out.println("HASH= " + hash + " HASH_PEER= "+ message[2]);
-//                        }
-
                         if(message != null){
                             try {
                                 InetAddress address = InetAddress.getByName(message[3]);
                                 if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
                                     if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
-                                        //System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n + " hash=" + hash);
                                         sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 } else{
                                     new Backup(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);

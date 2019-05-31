@@ -11,4 +11,4 @@ rmi:
 	rmiregistry -J-Djava.class.path=$(OUT_DIR)
  
 clean:
-	@rm -rf OUT_DIR database/
+	@rm -rf out/ database/
