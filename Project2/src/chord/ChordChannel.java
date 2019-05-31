@@ -190,10 +190,25 @@ public class ChordChannel implements Runnable {
 			try {
 				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 
-				ArrayList<Chunk> chunks = (ArrayList<Chunk>) ois.readObject();
-				for(Chunk chunk: chunks){
-				this.parent.storeChunk(chunk);
-				}
+				Object obj = ois.readObject();
+								
+				// Check it's an ArrayList
+				if (obj instanceof ArrayList<?>) {
+					// Get the List.
+					ArrayList<?> al = (ArrayList<?>) obj;
+					if (al.size() > 0) {
+					  // Iterate.
+					  for (int i = 0; i < al.size(); i++) {
+							// Still not enough for a type.
+							Object o = al.get(i);
+							if (o instanceof Chunk) {
+							  // Here we go!
+							  Chunk chunk = (Chunk) o;
+							  this.parent.storeChunk(chunk);
+							}
+					  }
+					}
+			  }
 				System.out.println("--------------CHUNK RECEIVED------------");
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
@@ -302,6 +317,7 @@ public class ChordChannel implements Runnable {
 
 				for(Pair<Integer,Chunk> pair: keysChunks){
 					chunks.add(pair.second);
+					
 				}
 				oos.writeObject(chunks);
 				connection.close();
