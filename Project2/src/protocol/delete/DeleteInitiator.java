@@ -112,13 +112,11 @@ public class DeleteInitiator {
 						if (chunk == null) // Error
 							System.err.println("Error getting chunk for delete");
 						
-						Peer.getInstance().getFileManager().removeChunk(fileId, n);
 						
 						int repDegree = chunk.getRepDegree();
 						
 						for (int j = 0; j < repDegree; j++)
-						{
-							
+						{				
 							if (!message[3].equals(Peer.getInstance().getChord().getChordAddress()))
 							{
 							    sendDELETE(fileId, address);
@@ -130,8 +128,7 @@ public class DeleteInitiator {
 							
 						    
 						    id = Math.floorMod(id+1, Peer.getInstance().getChord().getMaxPeers());
-						    
-						    message = Peer.getInstance().getChord().sendLookup(id+1, true);
+						    message = Peer.getInstance().getChord().sendLookup(id, true);
 							
 							id = Integer.parseInt(message[2]);
 							
@@ -142,6 +139,11 @@ public class DeleteInitiator {
 								e.printStackTrace();
 							}
 						}
+						
+						System.out.println("Before removeChunk");
+						Peer.getInstance().getFileManager().removeChunk(fileId, n);
+						System.out.println("After removeChunk");
+
 					}
                 }
 
