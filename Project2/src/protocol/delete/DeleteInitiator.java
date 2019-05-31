@@ -27,7 +27,7 @@ public class DeleteInitiator {
     /**
      * Max number of times a DELETE message should be sent
      */
-    public static final int MAX_DELETE_MESSAGES = 5;
+    public static final int MAX_DELETE_MESSAGES = 1;
 
     /**
      * Time interval between each DELETE message
@@ -71,7 +71,7 @@ public class DeleteInitiator {
             Peer.getInstance().getExecutor().schedule(()->{
                 for(int n = 0; n < number_of_chunks; n++){
                     String name = fileId + n;
-                    int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
+                    int hash = Peer.getInstance().getChord().hash(name);
 
                     String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
 

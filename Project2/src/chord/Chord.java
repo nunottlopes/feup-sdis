@@ -126,7 +126,7 @@ public class Chord
 
 		if (!client)
 		{
-			this.id = Math.floorMod(sha1(this.address.toString()), this.maxPeers);
+            this.id = hash(this.address.toString());
 		}
 
 
@@ -452,7 +452,7 @@ public class Chord
 	}
 
 	public String getChordAddress(){
-		return this.address.getHostName();
+		return this.address.getAddress().toString().substring(1);
 	}
 
 	public static InetAddress getExternalIP()
@@ -474,6 +474,10 @@ public class Chord
 		return null;
 	}
 
+    public int hash(String key)
+    {
+        return Math.floorMod(sha1(key), this.maxPeers);
+    }
 
 	public static int sha1(String s)
 	{
@@ -523,7 +527,7 @@ public class Chord
 					ConcurrentHashMap<Integer,Chunk> chunksMap = fileChunks.getValue();
 					for(Map.Entry<Integer, Chunk> chunkEntry: chunksMap.entrySet()){
 						Chunk chunk = chunkEntry.getValue();
-						int chunkHash = sha1(chunk.getFileId() + chunk.getChunkNo());
+						int chunkHash = hash(chunk.getFileId() + chunk.getChunkNo());
 		
 							
 						if(this.id < peerHash){
