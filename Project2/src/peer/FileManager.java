@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Chunk FileManager class
  */
 public class FileManager implements Serializable {
+    static final long serialVersionUID = 40L;
 
     /**
      * Peer max disk space reserved for backup service

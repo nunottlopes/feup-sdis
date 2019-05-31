@@ -9,6 +9,8 @@ import java.util.Arrays;
  */
 public class Message implements Serializable {
 
+    static final long serialVersionUID = 40L;
+
     /**
      * CR
      */

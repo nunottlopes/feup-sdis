@@ -8,6 +8,7 @@ import java.util.Set;
  * Chunk class
  */
 public class Chunk implements Serializable {
+    static final long serialVersionUID = 41L;
 
     /**
      * Chunk max data size
