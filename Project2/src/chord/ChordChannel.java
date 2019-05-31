@@ -203,7 +203,9 @@ public class ChordChannel implements Runnable {
 							if (o instanceof Chunk) {
 							  // Here we go!
 							  Chunk chunk = (Chunk) o;
-							  this.parent.storeChunk(chunk);
+							  synchronized(this.parent){
+							  	this.parent.storeChunk(chunk);
+							  }
 							}
 					  }
 					}
