@@ -333,16 +333,19 @@ public class Chord
 		Pair<Integer, InetSocketAddress> successor = new Pair<Integer, InetSocketAddress>(this.id, this.address);
 		for (int i = 0; i < this.successorList.length; i++)
 		{
-			String[] args = this.channel.sendLookup(successor.second, this.address, successor.first+1, true);
-
-			if (args != null) // Success
+			if (successor != null)
 			{
-				int peerId = Integer.parseInt(args[2]);
-				InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
+				String[] args = this.channel.sendLookup(successor.second, this.address, successor.first+1, true);
 
-				successor = new Pair<>(peerId, peerIP);
+				if (args != null) // Success
+				{
+					int peerId = Integer.parseInt(args[2]);
+					InetSocketAddress peerIP = new InetSocketAddress(args[3], Integer.parseInt(args[4]));
 
-				this.successorList[i] = new Pair<>(successor);
+					successor = new Pair<>(peerId, peerIP);
+
+					this.successorList[i] = new Pair<>(successor);
+				}
 			}
 		}
 	}
