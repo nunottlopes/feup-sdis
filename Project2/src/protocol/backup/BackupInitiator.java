@@ -117,16 +117,16 @@ public class BackupInitiator {
                             e.printStackTrace();
                         }
 
-                        if(message != null){
-                            System.out.println("HASH= " + hash + " HASH_PEER= "+ message[2]);
-                        }
+//                        if(message != null){
+//                            System.out.println("HASH= " + hash + " HASH_PEER= "+ message[2]);
+//                        }
 
                         if(message != null){
                             try {
                                 InetAddress address = InetAddress.getByName(message[3]);
                                 if (!message[3].equals(Peer.getInstance().getChord().getChordAddress())){
                                     if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
-                                        System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n + " hash=" + hash);
+                                        //System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n + " hash=" + hash);
                                         sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 } else{
                                     new Backup(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
@@ -136,7 +136,7 @@ public class BackupInitiator {
                                 e.printStackTrace();
                             }
 
-                            hash = Integer.parseInt(message[2]) + 1;
+                            hash = Math.floorMod(Integer.parseInt(message[2]) + 1, Peer.getInstance().getMaxChordPeers());
                         }
                         else {
                             n--;
@@ -152,7 +152,6 @@ public class BackupInitiator {
                         delay *= 2;
                         int currentRepDegree = status.getChunkRepDegree(fileId, c.getChunkNo());
                         if(currentRepDegree >= repDegree){
-                            //System.out.println("SUCESSO CHUNK "+c.getChunkNo() + " repdegree= " + currentRepDegree);
                             break;
                         }
                     }

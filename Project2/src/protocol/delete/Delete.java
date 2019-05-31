@@ -94,7 +94,8 @@ public class Delete {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-                hash = Integer.parseInt(message[2]) + 1;
+
+                hash = Math.floorMod(Integer.parseInt(message[2]) + 1, Peer.getInstance().getMaxChordPeers());
             }
         }
     }

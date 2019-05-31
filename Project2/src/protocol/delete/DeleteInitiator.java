@@ -86,6 +86,8 @@ public class DeleteInitiator {
                         } catch (UnknownHostException e) {
                             e.printStackTrace();
                         }
+                    } else{
+                        n--;
                     }
                 }
 
