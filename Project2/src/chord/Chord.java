@@ -351,6 +351,9 @@ public class Chord
 	{
 		for (int i = 0; i < this.fingerTable.length; i++)
 		{
+			if (this.fingerTable[i] == null)
+				continue;
+			
 			if (this.fingerTable[i].second.equals(IP))
 				this.fingerTable[i] = null;
 		}
@@ -374,6 +377,9 @@ public class Chord
 		
 		for (int i = 0; i < this.successorList.length; i++)
 		{
+			if (this.successorList[i] == null)
+				continue;
+			
 			if (this.successorList[i].second.equals(IP))
 				this.successorList[i] = null;
 		}
