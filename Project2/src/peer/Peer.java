@@ -328,6 +328,9 @@ public class Peer implements RemoteInterface {
             FileInputStream fis_protocolinfo = new FileInputStream(new File(getStoredProtocolInfoFilePath()));
             ObjectInputStream ois_protocolinfo = new ObjectInputStream(fis_protocolinfo);
             protocolInfo = (ProtocolInfo) ois_protocolinfo.readObject();
+            
+            fis_filemanager.close();
+            fis_protocolinfo.close();
 
         } catch (FileNotFoundException e) {
             return false;
@@ -355,6 +358,9 @@ public class Peer implements RemoteInterface {
             FileOutputStream fos_protocolinfo = new FileOutputStream(new File(getStoredProtocolInfoFilePath()));
             ObjectOutputStream oos_protocolinfo = new ObjectOutputStream(fos_protocolinfo);
             oos_protocolinfo.writeObject(protocolInfo);
+            
+            fos_filemanager.close();
+            fos_protocolinfo.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
