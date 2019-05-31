@@ -62,12 +62,6 @@ public class BackupInitiator {
     private File file;
 
     /**
-     * Chunk to be sent in PUTCHUNK message
-     * Only used by reclaim protocol
-     */
-    private Chunk chunk;
-
-    /**
      * BackupInitiator constructor
      * @param path
      * @param repDegree
@@ -76,18 +70,6 @@ public class BackupInitiator {
         this.path = path;
         this.repDegree = repDegree;
         this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
-    }
-
-    /**
-     * BackupInitiator constructor used by reclaim protocol
-     * @param path
-     * @param repDegree
-     * @param chunk
-     */
-    public BackupInitiator(String path, int repDegree, Chunk chunk){
-        this(path, repDegree);
-        this.chunk = chunk;
-        this.fileId = chunk.getFileId();
     }
 
     /**
@@ -132,15 +114,21 @@ public class BackupInitiator {
                             try {
                                 InetAddress address = InetAddress.getByName(message[3]);
                                 if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
-                                    if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
+                                    //if(!status.hasPeerSavedChunk(fileId, c.getChunkNo(), address))
+                                        System.out.println("SENDING CHUNK "+c.getChunkNo() + " rep index= "+n);
                                         sendPUTCHUNK(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 } else{
+                                    System.out.println("SAVING CHUNK "+c.getChunkNo() + " rep index= "+n);
                                     new Backup(fileId, c.getChunkNo(), c.getRepDegree(), c.getData(), address);
                                 }
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();
                             }
                             hash = Integer.parseInt(message[2]) + 1;
+                        }
+                        else {
+                            n--;
+                            System.out.println("NÃO ENVIOU FILE ID: "+fileId+" CHUNK NO: "+ c.getChunkNo());
                         }
                     }
 
@@ -152,7 +140,10 @@ public class BackupInitiator {
                         }
                         delay *= 2;
                         int currentRepDegree = status.getChunkRepDegree(fileId, c.getChunkNo());
-                        if(currentRepDegree >= repDegree) break;
+                        if(currentRepDegree >= repDegree){
+                            System.out.println("SUCESSO CHUNK "+c.getChunkNo() + " repdegree= " + currentRepDegree);
+                            break;
+                        }
                     }
                 }
 
@@ -167,65 +158,6 @@ public class BackupInitiator {
         }
 
         Peer.getInstance().getProtocolInfo().endBackup(fileId, repDegree, path);
-    }
-
-    /**
-     * Runs backup protocol for one chunk only
-     */
-    public void run_one_chunk() {
-
-        CountDownLatch latch = new CountDownLatch(1);
-
-        pool.execute(() -> {
-            int delay = 1;
-
-            ProtocolInfo status = Peer.getInstance().getProtocolInfo();
-
-            String name = fileId + chunk.getChunkNo();
-            int hash = Math.floorMod(Chord.sha1(name), Peer.getInstance().getMaxChordPeers());
-
-            for(int i = 0; i < MAX_RETRANSMISSIONS; i++) {
-                for (int n = 0; n < repDegree; n++){
-                    String[] message = Peer.getInstance().getChord().sendLookup(hash, true);
-
-                    if(message != null){
-                        try {
-                            InetAddress address = InetAddress.getByName(message[3]);
-                            if (!message[3].equals(Peer.getInstance().getChord().getAddress())){
-                                if(!status.hasPeerSavedChunk(fileId, chunk.getChunkNo(), address))
-                                    sendPUTCHUNK(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
-                            } else{
-                                new Backup(fileId, chunk.getChunkNo(), chunk.getRepDegree(), chunk.getData(), address);
-                            }
-                        } catch (UnknownHostException e) {
-                            e.printStackTrace();
-                        }
-                        hash = Integer.parseInt(message[2]) + 1;
-                    }
-                }
-
-                if(i != MAX_RETRANSMISSIONS-1){
-                    try {
-                        TimeUnit.SECONDS.sleep(delay);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    delay *= 2;
-                    int currentRepDegree = status.getChunkRepDegree(chunk.getFileId(), chunk.getChunkNo());
-                    if(currentRepDegree >= repDegree) break;
-                }
-            }
-
-            latch.countDown();
-
-        });
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
     }
 
     /**
