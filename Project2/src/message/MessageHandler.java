@@ -4,7 +4,6 @@ import peer.Peer;
 import protocol.backup.Backup;
 import protocol.delete.Delete;
 import protocol.restore.Restore;
-import protocol.reclaim.Reclaim;
 
 import java.net.InetAddress;
 
@@ -47,9 +46,6 @@ public class MessageHandler implements Runnable {
         }
         else if(this.msg.getType() == Message.MessageType.DELETE){
             new Delete(this.msg);
-        }
-        else if(this.msg.getType() == Message.MessageType.REMOVED && msg.getSenderId() != Peer.getInstance().getId()){
-            new Reclaim(this.msg);
         }
         else if(this.msg.getType() == Message.MessageType.GETCHUNK && msg.getSenderId() != Peer.getInstance().getId()){
             new Restore(this.msg, address);

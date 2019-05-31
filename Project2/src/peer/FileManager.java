@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import static globals.Globals.getFileData;
-import static message.SendMessage.sendREMOVED;
 
 /**
  * Chunk FileManager class

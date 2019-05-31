@@ -119,25 +119,4 @@ public class SendMessage {
         System.out.println("- File Id = " + fileId);
         System.out.println("- Chunk No = " + chunkNo);
     }
-
-    /**
-     * Sends REMOVED message
-     * @param fileId
-     * @param chunkNo
-     */
-    public static void sendREMOVED(String fileId, int chunkNo, InetAddress destination) {
-        String[] args = {
-                Integer.toString(Peer.getInstance().getId()),
-                fileId,
-                Integer.toString(chunkNo)
-        };
-
-        Message msg = new Message(Message.MessageType.REMOVED, args);
-
-        Peer.getInstance().send(msg, destination);
-
-        System.out.println("\n> REMOVED sent");
-        System.out.println("- File Id = " + fileId);
-        System.out.println("- Chunk No = " + chunkNo);
-    }
 }
