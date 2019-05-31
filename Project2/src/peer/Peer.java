@@ -100,7 +100,7 @@ public class Peer implements RemoteInterface {
 
     private long timeout = 1 * 5000;
 
-    private int maxChordPeers = 32;
+    private int maxChordPeers = 128;
     private Chord chord;
 
     private Channel channel;
@@ -173,7 +173,7 @@ public class Peer implements RemoteInterface {
             int port = Integer.parseInt(args[3]);
             this.chord = new Chord(maxChordPeers, port);
         }
-        this.chord.setPeer(this);
+        System.out.println("--- Chord Id is " + this.chord.getId() + " ---");
         this.channel = new Channel(Integer.parseInt(args[2]));
 
         new Thread(this.channel).start();
