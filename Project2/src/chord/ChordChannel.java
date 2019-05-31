@@ -186,12 +186,14 @@ public class ChordChannel implements Runnable {
 	}
 
 	protected void receiveKeys(Socket connection, int chunkNum) {
-		for (int i = 0; i < chunkNum; i++) {
+		if (chunkNum > 0) {
 			try {
 				ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 
-				Chunk chunk = (Chunk) ois.readObject();
+				ArrayList<Chunk> chunks = (ArrayList<Chunk>) ois.readObject();
+				for(Chunk chunk: chunks){
 				this.parent.storeChunk(chunk);
+				}
 				System.out.println("--------------CHUNK RECEIVED------------");
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
@@ -296,10 +298,12 @@ public class ChordChannel implements Runnable {
 
 				String message = "CHORDKEYS " + keysChunks.size();
 				oos.writeObject(message);
-				for (Pair<Integer, Chunk> chunk : keysChunks) {
-					oos.writeObject(chunk.second);
-				}
+				ArrayList<Chunk> chunks = new ArrayList<>();
 
+				for(Pair<Integer,Chunk> pair: keysChunks){
+					chunks.add(pair.second);
+				}
+				oos.writeObject(chunks);
 				connection.close();
 			} catch (IOException e) {
 				System.err.println("Failed!");
