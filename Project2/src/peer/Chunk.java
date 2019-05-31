@@ -12,7 +12,7 @@ public class Chunk implements Serializable {
     /**
      * Chunk max data size
      */
-    public final static int MAX_SIZE = 64*1000;
+    public final static int MAX_SIZE = 200*1000;
 
     /**
      * Chunk file id
